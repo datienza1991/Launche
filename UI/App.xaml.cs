@@ -1,6 +1,6 @@
-﻿using System.Configuration;
-using System.Data;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
+using UI.Database;
 
 namespace UI
 {
@@ -9,6 +9,24 @@ namespace UI
     /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+            var services = new ServiceCollection();
+
+            var serviceProvider = services
+                .AddSingleton<IAddTableSchemaVersion, AddTableSchemaVersion>()
+                .AddSingleton<ICheckVersionIfExists, CheckVersionIfExists>()
+                .AddSingleton<ICheckVersionTableIfExists, CheckVersionTableIfExists>()
+                .AddSingleton<ICreateSqliteConnection, CreateSqliteConnection>()
+                .AddSingleton<ICreateVersionsDbTable, CreateVersionsDbTable>()
+                .AddSingleton<IInitializedDatabaseMigration, InitializedDatabaseMigration>()
+                .AddSingleton<MainWindow>()
+                .BuildServiceProvider();
+
+            var mainWindow = serviceProvider.GetService<MainWindow>();
+            mainWindow?.Show();
+        }
     }
 
 }
