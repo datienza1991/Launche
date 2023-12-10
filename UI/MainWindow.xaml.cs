@@ -1,13 +1,5 @@
-﻿using System.Text;
+﻿using Microsoft.Win32;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace UI
 {
@@ -21,19 +13,16 @@ namespace UI
             InitializeComponent();
         }
 
-        private void txtVsCodePath_GotFocus(object sender, RoutedEventArgs e)
+        private void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
         {
-            if (txtVsCodePath.Text == "Enter some text here...")
-            {
-                txtVsCodePath.Text = "";
-            }
-        }
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "All Files (*.*)|*.*"; // Set the filter if needed
+            var result = openFileDialog.ShowDialog() ?? false;
 
-        private void txtVsCodePath_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(txtVsCodePath.Text))
+            if (result)
             {
-                txtVsCodePath.Text = "Enter some text here...";
+                string filePath = openFileDialog.FileName;
+                this.VsCodePathTextBox.Text = filePath;
             }
         }
     }
