@@ -1,0 +1,14 @@
+﻿<Window x:Class="UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:UI"
+        mc:Ignorable="d"
+        Title="Launche - VSCode Launcher" Height="450" Width="800">
+    <Grid>
+        
+        <Label Content="Vscode Path" HorizontalAlignment="Left" Margin="24,20,0,0" VerticalAlignment="Top" Height="26" Width="75"/>
+        <TextBox x:Name="txtVsCodePath" HorizontalAlignment="Left" Margin="31,46,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="289" ForceCursor="True" GotFocus="txtVsCodePath_GotFocus" LostFocus="txtVsCodePath_LostFocus" Text="Enter some text here..."/>
+    </Grid>
+</Window>
