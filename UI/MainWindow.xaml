@@ -9,6 +9,7 @@
     <Grid>
         
         <Label Content="Vscode Path" HorizontalAlignment="Left" Margin="24,20,0,0" VerticalAlignment="Top" Height="26" Width="75"/>
-        <TextBox x:Name="txtVsCodePath" HorizontalAlignment="Left" Margin="31,46,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="289" ForceCursor="True" GotFocus="txtVsCodePath_GotFocus" LostFocus="txtVsCodePath_LostFocus" Text="Enter some text here..."/>
+        <TextBox x:Name="VsCodePathTextBox" HorizontalAlignment="Left" Margin="31,46,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="289" ForceCursor="True"/>
+        <Button x:Name="VsCodePathOpenDialogButton" Content="Open Dialog" HorizontalAlignment="Left" Margin="335,45,0,0" VerticalAlignment="Top" Click="VsCodePathOpenDialogButton_Click"/>
     </Grid>
 </Window>
