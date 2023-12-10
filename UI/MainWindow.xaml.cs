@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System.Windows;
+using UI.Database;
 
 namespace UI
 {
@@ -8,9 +9,17 @@ namespace UI
     /// </summary>
     public partial class MainWindow : Window
     {
+        
+
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        public MainWindow(IInitializedDatabaseMigration initializedDatabaseMigration)
+        {
+            InitializeComponent();
+            initializedDatabaseMigration.Execute();
         }
 
         private void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
