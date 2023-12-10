@@ -6,8 +6,8 @@ namespace UI.Database
 
     public class InitializedDatabaseMigration(
         ICreateSqliteConnection createSqliteConnection,
-        ICheckVersionTableIfExists checkVersionTableIfExists, 
-        ICreateVersionsDbTable createVersionsDbTable, 
+        ICheckVersionTableIfExists checkVersionTableIfExists,
+        ICreateVersionsDbTable createVersionsDbTable,
         ICheckVersionIfExists checkVersionIfExists,
         IAddTableSchemaVersion addTableSchemaVersion
         ) : IInitializedDatabaseMigration
@@ -27,6 +27,40 @@ namespace UI.Database
             }
 
             this.AddProjectPathsTable(1);
+            this.AddVsCodePathsTable(2);
+            this.SeedInitialVsCodePath(3);
+        }
+
+        private void SeedInitialVsCodePath(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string createTableSql = "INSERT INTO VsCodePaths ( Path ) VALUES ( '...' )";
+            using var command = new SQLiteCommand(createTableSql, connection);
+            command.ExecuteNonQuery();
+
+            this.addTableSchemaVersion.Execute(version);
+
+        }
+
+        private void AddVsCodePathsTable(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (!isVersionExists)
+            {
+                using var connection = this.createSqliteConnection.Execute();
+                connection.Open();
+
+                string createTableSql = "CREATE TABLE VsCodePaths (Id INTEGER PRIMARY KEY AUTOINCREMENT,Path TEXT)";
+                using var command = new SQLiteCommand(createTableSql, connection);
+                command.ExecuteNonQuery();
+
+                this.addTableSchemaVersion.Execute(version);
+            }
         }
 
         private void AddProjectPathsTable(int version)
