@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using UI.Database;
+using UI.ProjectPath;
 using UI.VsCodePath;
 
 namespace UI
@@ -24,6 +25,7 @@ namespace UI
                 .AddSingleton<IInitializedDatabaseMigration, InitializedDatabaseMigration>()
                 .AddSingleton<ISaveVsCodePath, SaveVsCodePath>()
                 .AddSingleton<IGetVsCodePath, GetVsCodePath>()
+                .AddSingleton<IGetProjectPaths, GetProjectPaths>()
                 .AddSingleton<MainWindow>()
                 .BuildServiceProvider();
 
