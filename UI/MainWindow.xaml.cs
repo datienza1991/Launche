@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System.Windows;
 using UI.Database;
+using UI.ProjectPath;
 using UI.VsCodePath;
 
 namespace UI
@@ -12,18 +13,24 @@ namespace UI
     {
         private readonly IGetVsCodePath? getVsCodePath;
         private readonly ISaveVsCodePath? saveVsCodePath;
+        private readonly IGetProjectPaths? getProjectPaths;
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        public MainWindow(IInitializedDatabaseMigration initializedDatabaseMigration, IGetVsCodePath getVsCodePath, ISaveVsCodePath saveVsCodePath)
+        public MainWindow(
+            IInitializedDatabaseMigration initializedDatabaseMigration, 
+            IGetVsCodePath getVsCodePath, 
+            ISaveVsCodePath saveVsCodePath,
+            IGetProjectPaths getProjectPaths)
         {
             InitializeComponent();
             initializedDatabaseMigration.Execute();
             this.getVsCodePath = getVsCodePath;
             this.saveVsCodePath = saveVsCodePath;
+            this.getProjectPaths = getProjectPaths;
         }
 
         private void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
@@ -40,6 +47,7 @@ namespace UI
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            await this.getProjectPaths!.ExecuteAsync();
             if (this.getVsCodePath == null) return;
 
             var vsCodePath = await this.getVsCodePath.ExecuteAsync();
