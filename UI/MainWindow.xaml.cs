@@ -11,28 +11,29 @@ namespace UI
     public partial class MainWindow : Window
     {
         private readonly IGetVsCodePath? getVsCodePath;
+        private readonly ISaveVsCodePath? saveVsCodePath;
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        public MainWindow(IInitializedDatabaseMigration initializedDatabaseMigration, IGetVsCodePath getVsCodePath)
+        public MainWindow(IInitializedDatabaseMigration initializedDatabaseMigration, IGetVsCodePath getVsCodePath, ISaveVsCodePath saveVsCodePath)
         {
             InitializeComponent();
             initializedDatabaseMigration.Execute();
             this.getVsCodePath = getVsCodePath;
+            this.saveVsCodePath = saveVsCodePath;
         }
 
         private void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "All Files (*.*)|*.*"; // Set the filter if needed
-            var result = openFileDialog.ShowDialog() ?? false;
+            var openFolderDialog = new OpenFolderDialog();
+            var result = openFolderDialog.ShowDialog() ?? false;
 
             if (result)
             {
-                string filePath = openFileDialog.FileName;
+                string filePath = openFolderDialog.FolderName;
                 this.VsCodePathTextBox.Text = filePath;
             }
         }
@@ -40,10 +41,18 @@ namespace UI
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             if (this.getVsCodePath == null) return;
-             
+
             var vsCodePath = await this.getVsCodePath.ExecuteAsync();
 
             VsCodePathTextBox.Text = vsCodePath.Path;
+        }
+
+        private async void SaveVsCodePathButton_Click(object sender, RoutedEventArgs e)
+        {
+            var vsCodePath = VsCodePathTextBox?.Text;
+            var result = await this.saveVsCodePath!.ExecuteAsync(vsCodePath!);
+
+            if (result) { MessageBox.Show("Vs Code path saved!"); }
         }
     }
 }
