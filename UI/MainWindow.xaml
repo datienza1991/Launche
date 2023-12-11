@@ -8,7 +8,7 @@
         Title="Launche - VSCode Launcher" Height="450" Width="800" Loaded="Window_Loaded">
     <Grid>
         
-        <Label Content="Vscode Path" HorizontalAlignment="Left" Margin="24,20,0,0" VerticalAlignment="Top" Height="26" Width="75"/>
+        <Label Content="Vscode Path" HorizontalAlignment="Left" Margin="24,18,0,0" VerticalAlignment="Top" Height="26" Width="75"/>
 
         <TextBox x:Name="VsCodePathTextBox" HorizontalAlignment="Left" Margin="31,46,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" Width="289"  ForceCursor="True"/>
         

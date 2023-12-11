@@ -29,6 +29,41 @@ namespace UI.Database
             this.AddProjectPathsTable(1);
             this.AddVsCodePathsTable(2);
             this.SeedInitialVsCodePath(3);
+            this.AddNameOnProjectPathsTable(4);
+            this.SeedInitialProjectPaths(5);
+        }
+
+        private void SeedInitialProjectPaths(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string createTableSql = "INSERT INTO ProjectPaths ( Path, Name ) VALUES ( '...', '...' )";
+            using var command = new SQLiteCommand(createTableSql, connection);
+            command.ExecuteNonQuery();
+
+            this.addTableSchemaVersion.Execute(version);
+
+        }
+
+        private void AddNameOnProjectPathsTable(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (!isVersionExists)
+            {
+                using var connection = this.createSqliteConnection.Execute();
+                connection.Open();
+
+                string createTableSql = "ALTER TABLE ProjectPaths ADD Name TEXT";
+                using var command = new SQLiteCommand(createTableSql, connection);
+                command.ExecuteNonQuery();
+
+
+                this.addTableSchemaVersion.Execute(version);
+            }
         }
 
         private void SeedInitialVsCodePath(int version)
