@@ -22,6 +22,7 @@ namespace UI
                 .AddSingleton<ICreateSqliteConnection, CreateSqliteConnection>()
                 .AddSingleton<ICreateVersionsDbTable, CreateVersionsDbTable>()
                 .AddSingleton<IInitializedDatabaseMigration, InitializedDatabaseMigration>()
+                .AddSingleton<ISaveVsCodePath, SaveVsCodePath>()
                 .AddSingleton<IGetVsCodePath, GetVsCodePath>()
                 .AddSingleton<MainWindow>()
                 .BuildServiceProvider();
