@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using UI.Database;
+using UI.VsCodePath;
 
 namespace UI
 {
@@ -21,6 +22,7 @@ namespace UI
                 .AddSingleton<ICreateSqliteConnection, CreateSqliteConnection>()
                 .AddSingleton<ICreateVersionsDbTable, CreateVersionsDbTable>()
                 .AddSingleton<IInitializedDatabaseMigration, InitializedDatabaseMigration>()
+                .AddSingleton<IGetVsCodePath, GetVsCodePath>()
                 .AddSingleton<MainWindow>()
                 .BuildServiceProvider();
 
