@@ -10,8 +10,10 @@ namespace UI.Database
     {
         T Execute();
     }
-
-   
+    public interface IExecuteAsync<T>
+    {
+        Task<T> ExecuteAsync();
+    }
 
     public interface IExecute<T,P>
     {
