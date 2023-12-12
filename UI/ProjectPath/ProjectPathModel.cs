@@ -1,6 +1,6 @@
 ﻿namespace UI.ProjectPath;
 
-public class ProjectPath
+public class ProjectPathModel
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
