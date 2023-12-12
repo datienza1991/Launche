@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:UI"
         mc:Ignorable="d"
         Title="Launche - VSCode Launcher" Height="450" Width="800" Loaded="Window_Loaded">
-    <Grid>
+    <Grid HorizontalAlignment="Left" Width="800">
         
         <Label Content="Vscode Path" HorizontalAlignment="Left" Margin="24,18,0,0" VerticalAlignment="Top" Height="26" Width="75"/>
 
@@ -16,5 +16,39 @@
         
         <Button x:Name="SaveVsCodePathButton" Content="Save" HorizontalAlignment="Left" Margin="291,21,0,0" VerticalAlignment="Top" Click="SaveVsCodePathButton_Click"/>
         
+        <ListView x:Name="ProjectPathsList" ItemsSource="{Binding Entries}" Margin="31,83,0,108" HorizontalAlignment="Left">
+            <ListView.Resources>
+                <DataTemplate x:Key="Templ">
+                    <TextBlock HorizontalAlignment="Left" Text="Name"/>
+                </DataTemplate>
+                <DataTemplate x:Key="pathTemplate">
+                    <TextBlock HorizontalAlignment="Left" Text="Path"/>
+                </DataTemplate>
+                <Style x:Key="HeaderStyle" TargetType="GridViewColumnHeader">
+                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                    <Setter Property="Padding" Value="5,2,2,2"/>
+                </Style>
+            </ListView.Resources>
+            <ListView.View>
+                <GridView AllowsColumnReorder="true" ColumnHeaderToolTip="Employee Information">
+                    <GridView.Columns>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=Id}" Header="#" Width="24"/>
+                        <GridViewColumn 
+                            DisplayMemberBinding="{Binding Path=Name}"  
+                            HeaderTemplate="{StaticResource Templ}" 
+                            HeaderContainerStyle="{StaticResource HeaderStyle}" 
+                            Width="100" >
+                        </GridViewColumn>
+                        <GridViewColumn 
+                            DisplayMemberBinding="{Binding Path=Path}"  
+                            HeaderTemplate="{StaticResource pathTemplate}" 
+                            HeaderContainerStyle="{StaticResource HeaderStyle}" 
+                            Width="250" >
+                        </GridViewColumn>
+                    </GridView.Columns>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
     </Grid>
 </Window>
