@@ -1,11 +1,9 @@
-﻿using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
-using System.Data.SQLite;
+﻿using System.Data.SQLite;
 using UI.Database;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UI.VsCodePath;
 
-public interface ISaveVsCodePath: IExecuteAsync<string, bool>;
+public interface ISaveVsCodePath : IExecuteAsync<string, bool>;
 
 public class SaveVsCodePath(ICreateSqliteConnection createSqliteConnection) : ISaveVsCodePath
 {
