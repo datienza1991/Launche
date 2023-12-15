@@ -16,6 +16,7 @@ namespace UI
         private readonly IGetVsCodePath? getVsCodePath;
         private readonly ISaveVsCodePath? saveVsCodePath;
         private readonly IGetProjectPaths? getProjectPaths;
+        private readonly IAddProjectPath addProjectPath;
         private readonly MainWindowViewModel? mainWindowViewModel;
 
         public ObservableCollection<ProjectPathModel> Entries { get; private set; } = new ObservableCollection<ProjectPathModel>();
@@ -29,13 +30,15 @@ namespace UI
             IInitializedDatabaseMigration initializedDatabaseMigration,
             IGetVsCodePath getVsCodePath,
             ISaveVsCodePath saveVsCodePath,
-            IGetProjectPaths getProjectPaths)
+            IGetProjectPaths getProjectPaths,
+            IAddProjectPath addProjectPath
+        )
         {
             initializedDatabaseMigration.Execute();
             this.getVsCodePath = getVsCodePath;
             this.saveVsCodePath = saveVsCodePath;
             this.getProjectPaths = getProjectPaths;
-
+            this.addProjectPath = addProjectPath;
             this.mainWindowViewModel = new MainWindowViewModel();
             DataContext = this.mainWindowViewModel;
             InitializeComponent();
@@ -57,20 +60,26 @@ namespace UI
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            var vsCodePath = await this.getVsCodePath!.ExecuteAsync();
+            this.mainWindowViewModel!.VsCodePath = vsCodePath.Path;
+
+            await this.FetchProjectPaths();
+
+        }
+
+        private async Task FetchProjectPaths()
+        {
 
             var projectPaths = await this.getProjectPaths!.ExecuteAsync();
 
             if (this.getVsCodePath == null) return;
-
-            var vsCodePath = await this.getVsCodePath.ExecuteAsync();
-            this.mainWindowViewModel!.VsCodePath = vsCodePath.Path;
 
             foreach (var item in projectPaths.Select((value, index) => (value, index)))
             {
                 var (value, index) = item;
                 index++;
 
-                this.mainWindowViewModel.ProjectPathModels?.Add(new() { Id = index, Name = value.Name, Path = value.Path });
+                this.mainWindowViewModel!.ProjectPathModels?.Add(new() { Id = index, Name = value.Name, Path = value.Path });
             }
         }
 
@@ -84,6 +93,8 @@ namespace UI
 
         private void ProjectPathsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
+            if (lvProjectPaths.SelectedIndex == -1) return;
+
             var projectPath = (ProjectPathModel)lvProjectPaths.SelectedItem;
 
             this.mainWindowViewModel!.ProjectPath = projectPath!.Path;
@@ -102,6 +113,21 @@ namespace UI
 
                 this.mainWindowViewModel!.ProjectPath = filePath!;
                 this.mainWindowViewModel.ProjectPathTitle = name;
+            }
+        }
+
+        private async void btnSaveProjectPath_Click(object sender, RoutedEventArgs e)
+        {
+            var projectPathName = this.mainWindowViewModel?.ProjectPathTitle;
+            var projectPath = this.mainWindowViewModel?.ProjectPath;
+            var result = await this.addProjectPath!.ExecuteAsync(new() { Path = projectPath!, Name = projectPathName! });
+
+            if (result)
+            {
+                this.mainWindowViewModel?.ProjectPathModels!.Clear();
+                await this.FetchProjectPaths();
+
+                MessageBox.Show("Project path saved!");
             }
         }
     }
