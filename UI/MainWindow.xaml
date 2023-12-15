@@ -5,18 +5,67 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UI"
         mc:Ignorable="d"
-        Title="Launche - VSCode Launcher" Height="450" Width="800" Loaded="Window_Loaded">
-    <Grid HorizontalAlignment="Left" Width="800">
-        
-        <Label Content="Vscode Path" HorizontalAlignment="Left" Margin="24,18,0,0" VerticalAlignment="Top" Height="26" Width="75"/>
+        Title="Launche - VSCode Launcher" Height="450" Width="511" Loaded="Window_Loaded" WindowStyle="ToolWindow"
+        >
+    <Grid HorizontalAlignment="Center" Width="467">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="33"></RowDefinition>
+            <RowDefinition Height="23"></RowDefinition>
+            <RowDefinition Height="28"></RowDefinition>
+            <RowDefinition Height="28"></RowDefinition>
+            <RowDefinition Height="28"></RowDefinition>
+            <RowDefinition></RowDefinition>
 
-        <TextBox x:Name="VsCodePathTextBox" HorizontalAlignment="Left" Margin="31,46,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" Width="289"  ForceCursor="True"/>
-        
-        <Button x:Name="VsCodePathOpenDialogButton" Content="Open Dialog" HorizontalAlignment="Left" Margin="215,21,0,0" VerticalAlignment="Top" Click="VsCodePathOpenDialogButton_Click"/>
-        
-        <Button x:Name="SaveVsCodePathButton" Content="Save" HorizontalAlignment="Left" Margin="291,21,0,0" VerticalAlignment="Top" Click="SaveVsCodePathButton_Click"/>
-        
-        <ListView x:Name="ProjectPathsList" ItemsSource="{Binding Entries}" Margin="31,83,0,108" HorizontalAlignment="Left">
+        </Grid.RowDefinitions>
+
+        <Grid VerticalAlignment="Center" Background="#404040" Height="26" >
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Content="Vscode Path"  Width="75" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="White"/>
+            <Button  x:Name="SaveVsCodePathButton" Grid.Column="2" Content="Save" VerticalAlignment="Center" Click="SaveVsCodePathButton_Click" Margin="0,0,5,0" />
+            <Button x:Name="VsCodePathOpenDialogButton" Grid.Column="1" Content="Open Dialog" Margin="0,0,8,0" VerticalAlignment="Center" Click="VsCodePathOpenDialogButton_Click"/>
+        </Grid>
+
+        <TextBox Grid.Row="1" x:Name="VsCodePathTextBox" Text="{Binding VsCodePath, UpdateSourceTrigger=PropertyChanged}" TextWrapping="NoWrap" VerticalAlignment="Center" Height="18" />
+
+        <Grid Grid.Row="2" VerticalAlignment="Top" Background="#404040" Margin="0,5,0,0" Height="23">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition ></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="Project Path"  Width="75"  HorizontalAlignment="Left" Foreground="White"/>
+            <Button  Grid.Column="2" Content="Save" VerticalAlignment="Center" Click="SaveVsCodePathButton_Click" Height="20" Margin="0,0,5,0" />
+            <Button  Grid.Column="1" Content="Open Dialog" Margin="0,0,8,0" VerticalAlignment="Center" Click="VsCodePathOpenDialogButton_Click" Height="20"/>
+        </Grid>
+
+        <Grid Grid.Row="3" VerticalAlignment="Center" Height="26">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="Name"     VerticalAlignment="Top"   ForceCursor="True" />
+            <Label Grid.Column="1" Grid.ColumnSpan="2" Content="Path"     VerticalAlignment="Top"   />
+        </Grid>
+
+
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0" Grid.ColumnSpan="1"  Text="{Binding ProjectPathModel}"  TextWrapping="NoWrap" VerticalAlignment="Top"  Height="18" Margin="0,0,5,0" />
+            <TextBox Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ProjectPathTitle}"  TextWrapping="NoWrap" VerticalAlignment="Top"  Height="18" />
+        </Grid>
+
+        <ListView Grid.Row="5"   x:Name="lvProjectPaths" ItemsSource="{Binding ProjectPathModels}"  SelectionChanged="ProjectPathsList_SelectionChanged" Margin="0,0,0,10" >
             <ListView.Resources>
                 <DataTemplate x:Key="Templ">
                     <TextBlock HorizontalAlignment="Left" Text="Name"/>
@@ -34,16 +83,16 @@
                     <GridView.Columns>
                         <GridViewColumn DisplayMemberBinding="{Binding Path=Id}" Header="#" Width="24"/>
                         <GridViewColumn 
-                            DisplayMemberBinding="{Binding Path=Name}"  
-                            HeaderTemplate="{StaticResource Templ}" 
-                            HeaderContainerStyle="{StaticResource HeaderStyle}" 
-                            Width="100" >
+                DisplayMemberBinding="{Binding Path=Name}"  
+                HeaderTemplate="{StaticResource Templ}" 
+                HeaderContainerStyle="{StaticResource HeaderStyle}" 
+                Width="100" >
                         </GridViewColumn>
                         <GridViewColumn 
-                            DisplayMemberBinding="{Binding Path=Path}"  
-                            HeaderTemplate="{StaticResource pathTemplate}" 
-                            HeaderContainerStyle="{StaticResource HeaderStyle}" 
-                            Width="250" >
+                DisplayMemberBinding="{Binding Path=Path}"  
+                HeaderTemplate="{StaticResource pathTemplate}" 
+                HeaderContainerStyle="{StaticResource HeaderStyle}" 
+                Width="250" >
                         </GridViewColumn>
                     </GridView.Columns>
                 </GridView>
@@ -51,4 +100,5 @@
         </ListView>
 
     </Grid>
+
 </Window>
