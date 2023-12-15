@@ -1,6 +1,8 @@
 ﻿using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using UI.Database;
 using UI.ProjectPath;
@@ -147,6 +149,31 @@ namespace UI
                 this.mainWindowViewModel!.ProjectPathTitle = "";
                 MessageBox.Show("Project path saved!");
             }
+        }
+
+        private void ProjectPathsList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            try
+            {
+                if (!Directory.Exists(this.mainWindowViewModel!.ProjectPath))
+                {
+                    MessageBox.Show("Directory not found!", "Launch Vs code Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                ProcessStartInfo startInfo = new()
+                {
+                    FileName = this.mainWindowViewModel!.VsCodePath,
+                    Arguments = this.mainWindowViewModel!.ProjectPath,
+                };
+                Process.Start(startInfo);
+
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message, "Launch Vs code Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
         }
     }
 }

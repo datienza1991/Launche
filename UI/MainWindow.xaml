@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UI"
         mc:Ignorable="d"
-        Title="Launche - VSCode Launcher" Height="450" Width="511" Loaded="Window_Loaded" WindowStyle="ToolWindow"
+        Title="Launche - VSCode Launcher by Darren Atienza" Height="450" Width="511" Loaded="Window_Loaded" WindowStyle="ToolWindow"
         >
     <Grid HorizontalAlignment="Center" Width="467">
         <Grid.RowDefinitions>
@@ -65,7 +65,7 @@
             <TextBox Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ProjectPath}"  TextWrapping="NoWrap" VerticalAlignment="Top"  Height="18" />
         </Grid>
 
-        <ListView Grid.Row="5"   x:Name="lvProjectPaths" ItemsSource="{Binding ProjectPathModels, UpdateSourceTrigger=PropertyChanged}"  SelectionChanged="ProjectPathsList_SelectionChanged" Margin="0,0,0,10" >
+        <ListView Grid.Row="5"   x:Name="lvProjectPaths" ItemsSource="{Binding ProjectPathModels, UpdateSourceTrigger=PropertyChanged}" MouseDoubleClick="ProjectPathsList_MouseDoubleClick"  SelectionChanged="ProjectPathsList_SelectionChanged" Margin="0,0,0,10" >
             <ListView.Resources>
                 <DataTemplate x:Key="Templ">
                     <TextBlock HorizontalAlignment="Left" Text="Name"/>
@@ -78,8 +78,19 @@
                     <Setter Property="Padding" Value="5,2,2,2"/>
                 </Style>
             </ListView.Resources>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="{x:Type ListViewItem}">
+                    <Setter Property="ToolTip">
+                        <Setter.Value>
+                            <ToolTip>
+                                <Label Content="Double click to lunch VScode"></Label>
+                            </ToolTip>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
             <ListView.View>
-                <GridView AllowsColumnReorder="true" ColumnHeaderToolTip="Employee Information">
+                <GridView AllowsColumnReorder="true">
                     <GridView.Columns>
                         <GridViewColumn DisplayMemberBinding="{Binding Path=Index}" Header="#" Width="24"/>
                         <GridViewColumn 
