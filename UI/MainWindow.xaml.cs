@@ -17,9 +17,10 @@ namespace UI
         private readonly ISaveVsCodePath? saveVsCodePath;
         private readonly IGetProjectPaths? getProjectPaths;
         private readonly IAddProjectPath addProjectPath;
+        private readonly IEditProjectPath editProjectPath;
         private readonly MainWindowViewModel? mainWindowViewModel;
 
-        public ObservableCollection<ProjectPathModel> Entries { get; private set; } = new ObservableCollection<ProjectPathModel>();
+        public ObservableCollection<ProjectPath.ProjectPath> Entries { get; private set; } = new ObservableCollection<ProjectPath.ProjectPath>();
 
         public MainWindow()
         {
@@ -31,7 +32,8 @@ namespace UI
             IGetVsCodePath getVsCodePath,
             ISaveVsCodePath saveVsCodePath,
             IGetProjectPaths getProjectPaths,
-            IAddProjectPath addProjectPath
+            IAddProjectPath addProjectPath,
+            IEditProjectPath editProjectPath
         )
         {
             initializedDatabaseMigration.Execute();
@@ -39,6 +41,7 @@ namespace UI
             this.saveVsCodePath = saveVsCodePath;
             this.getProjectPaths = getProjectPaths;
             this.addProjectPath = addProjectPath;
+            this.editProjectPath = editProjectPath;
             this.mainWindowViewModel = new MainWindowViewModel();
             DataContext = this.mainWindowViewModel;
             InitializeComponent();
@@ -79,7 +82,7 @@ namespace UI
                 var (value, index) = item;
                 index++;
 
-                this.mainWindowViewModel!.ProjectPathModels?.Add(new() { Id = index, Name = value.Name, Path = value.Path });
+                this.mainWindowViewModel!.ProjectPathModels?.Add(new() { Index = index, Id = value.Id, Name = value.Name, Path = value.Path });
             }
         }
 
@@ -95,10 +98,11 @@ namespace UI
         {
             if (lvProjectPaths.SelectedIndex == -1) return;
 
-            var projectPath = (ProjectPathModel)lvProjectPaths.SelectedItem;
+            var projectPath = (ProjectPath.ProjectPath)lvProjectPaths.SelectedItem;
 
             this.mainWindowViewModel!.ProjectPath = projectPath!.Path;
             this.mainWindowViewModel.ProjectPathTitle = projectPath!.Name;
+            this.mainWindowViewModel.ProjectPathId = projectPath.Id;
         }
 
         private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
@@ -120,13 +124,27 @@ namespace UI
         {
             var projectPathName = this.mainWindowViewModel?.ProjectPathTitle;
             var projectPath = this.mainWindowViewModel?.ProjectPath;
-            var result = await this.addProjectPath!.ExecuteAsync(new() { Path = projectPath!, Name = projectPathName! });
+            var id = this.mainWindowViewModel?.ProjectPathId;
+
+            bool result;
+
+            if (this.mainWindowViewModel!.ProjectPathId == 0)
+            {
+
+                result = await this.addProjectPath!.ExecuteAsync(new() { Path = projectPath!, Name = projectPathName! });
+            }
+            else
+            {
+                result = await this.editProjectPath!.ExecuteAsync(new() { Id = id!.Value, Path = projectPath!, Name = projectPathName! });
+            }
 
             if (result)
             {
-                this.mainWindowViewModel?.ProjectPathModels!.Clear();
+                this.mainWindowViewModel.ProjectPathModels!.Clear();
                 await this.FetchProjectPaths();
-
+                this.mainWindowViewModel!.ProjectPath = "";
+                this.mainWindowViewModel!.ProjectPathId = 0;
+                this.mainWindowViewModel!.ProjectPathTitle = "";
                 MessageBox.Show("Project path saved!");
             }
         }
@@ -154,9 +172,9 @@ public class MainWindowViewModel : INotifyPropertyChanged
         }
     }
 
-    private ObservableCollection<ProjectPathModel>? projectPathModels;
+    private ObservableCollection<ProjectPathViewModel>? projectPathModels;
 
-    public ObservableCollection<ProjectPathModel>? ProjectPathModels
+    public ObservableCollection<ProjectPathViewModel>? ProjectPathModels
     {
         get { return projectPathModels; }
         set
@@ -190,5 +208,13 @@ public class MainWindowViewModel : INotifyPropertyChanged
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.ProjectPathTitle)));
         }
     }
+
+    public int ProjectPathId { get; internal set; }
+}
+
+public class ProjectPathViewModel : ProjectPath
+{
+    public int Index { get; set; }
+
 
 }
