@@ -41,7 +41,7 @@
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="Project Path"  Width="75"  HorizontalAlignment="Left" Foreground="White"/>
             <Button  Grid.Column="2" Content="Save" VerticalAlignment="Center" Click="SaveVsCodePathButton_Click" Height="20" Margin="0,0,5,0" />
-            <Button  Grid.Column="1" Content="Open Dialog" Margin="0,0,8,0" VerticalAlignment="Center" Click="VsCodePathOpenDialogButton_Click" Height="20"/>
+            <Button x:Name="btnOpenDialogProjectPath"  Grid.Column="1" Content="Open Dialog" Margin="0,0,8,0" VerticalAlignment="Center" Click="btnOpenDialogProjectPath_Click" Height="20"/>
         </Grid>
 
         <Grid Grid.Row="3" VerticalAlignment="Center" Height="26">
@@ -61,8 +61,8 @@
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <TextBox Grid.Column="0" Grid.ColumnSpan="1"  Text="{Binding ProjectPathModel}"  TextWrapping="NoWrap" VerticalAlignment="Top"  Height="18" Margin="0,0,5,0" />
-            <TextBox Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ProjectPathTitle}"  TextWrapping="NoWrap" VerticalAlignment="Top"  Height="18" />
+            <TextBox Grid.Column="0" Grid.ColumnSpan="1"  Text="{Binding ProjectPathTitle}"  TextWrapping="NoWrap" VerticalAlignment="Top"  Height="18" Margin="0,0,5,0" />
+            <TextBox Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ProjectPath}"  TextWrapping="NoWrap" VerticalAlignment="Top"  Height="18" />
         </Grid>
 
         <ListView Grid.Row="5"   x:Name="lvProjectPaths" ItemsSource="{Binding ProjectPathModels}"  SelectionChanged="ProjectPathsList_SelectionChanged" Margin="0,0,0,10" >

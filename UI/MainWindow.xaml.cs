@@ -84,69 +84,85 @@ namespace UI
 
         private void ProjectPathsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-
-
             var projectPath = (ProjectPathModel)lvProjectPaths.SelectedItem;
-            this.mainWindowViewModel!.ProjectPathModel = projectPath!.Path;
+
+            this.mainWindowViewModel!.ProjectPath = projectPath!.Path;
             this.mainWindowViewModel.ProjectPathTitle = projectPath!.Name;
-
         }
+
+        private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
+        {
+            var openFolderDialog = new OpenFolderDialog();
+            var result = openFolderDialog.ShowDialog() ?? false;
+
+            if (result)
+            {
+                string filePath = openFolderDialog.FolderName;
+                string name = openFolderDialog.SafeFolderName;
+
+                this.mainWindowViewModel!.ProjectPath = filePath!;
+                this.mainWindowViewModel.ProjectPathTitle = name;
+            }
         }
     }
+}
 
-    public class MainWindowViewModel : INotifyPropertyChanged
+public class MainWindowViewModel : INotifyPropertyChanged
+{
+    public MainWindowViewModel()
     {
-        public MainWindowViewModel()
+        this.ProjectPathModels = new();
+    }
+
+    private string? vsCodePath;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string? VsCodePath
+    {
+        get { return vsCodePath; }
+        set
         {
-            this.ProjectPathModels = new();
+            vsCodePath = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("VsCodePath"));
         }
+    }
 
-        private string? vsCodePath;
+    private ObservableCollection<ProjectPathModel>? projectPathModels;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public string? VsCodePath
+    public ObservableCollection<ProjectPathModel>? ProjectPathModels
+    {
+        get { return projectPathModels; }
+        set
         {
-            get { return vsCodePath; }
-            set
-            {
-                vsCodePath = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("VsCodePath"));
-            }
+            projectPathModels = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.ProjectPathModels)));
         }
+    }
 
-        private ObservableCollection<ProjectPathModel>? projectPathModels;
+    private string? projectPath;
 
-        public ObservableCollection<ProjectPathModel>? ProjectPathModels
+    public string? ProjectPath
+    {
+        get { return projectPath; }
+        set
         {
-            get { return projectPathModels; }
-            set
-            {
-                projectPathModels = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.ProjectPathModels)));
-            }
-        }
-
-        private string? projectPathModel;
-
-        public string? ProjectPathModel
-        {
-            get { return projectPathModel; }
-            set
-            {
-                projectPathModel = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.ProjectPathModel)));
-            }
-
-        }
-
-        private string? projectPathTitle;
-
-        public string? ProjectPathTitle
-        {
-            get { return projectPathTitle; }
-            set { projectPathTitle = value; 
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.ProjectPathTitle))); }
+            projectPath = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.ProjectPath)));
         }
 
     }
+
+    private string? projectPathTitle;
+
+    public string? ProjectPathTitle
+    {
+        get { return projectPathTitle; }
+        set
+        {
+            projectPathTitle = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.ProjectPathTitle)));
+        }
+    }
+
+}
