@@ -27,6 +27,7 @@ namespace UI
                 .AddSingleton<IGetVsCodePath, GetVsCodePath>()
                 .AddSingleton<IGetProjectPaths, GetProjectPaths>()
                 .AddSingleton<IAddProjectPath, AddProjectPath>()
+                .AddSingleton<IEditProjectPath, EditProjectPath>()
                 .AddSingleton<MainWindow>()
                 .BuildServiceProvider();
 

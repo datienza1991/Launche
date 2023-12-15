@@ -32,6 +32,22 @@ namespace UI.Database
             this.AddNameOnProjectPathsTable(4);
             this.SeedInitialProjectPaths(5);
             this.SeedNewProjectPath(6);
+            this.RemoveAllProjectPaths(7);
+        }
+
+        private void RemoveAllProjectPaths(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string createTableSql = "DELETE FROM ProjectPaths;";
+            using var command = new SQLiteCommand(createTableSql, connection);
+            command.ExecuteNonQuery();
+
+            this.addTableSchemaVersion.Execute(version);
         }
 
         private void SeedNewProjectPath(int version)
@@ -47,7 +63,6 @@ namespace UI.Database
             command.ExecuteNonQuery();
 
             this.addTableSchemaVersion.Execute(version);
-
         }
 
         private void SeedInitialProjectPaths(int version)

@@ -81,7 +81,7 @@
             <ListView.View>
                 <GridView AllowsColumnReorder="true" ColumnHeaderToolTip="Employee Information">
                     <GridView.Columns>
-                        <GridViewColumn DisplayMemberBinding="{Binding Path=Id}" Header="#" Width="24"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=Index}" Header="#" Width="24"/>
                         <GridViewColumn 
                 DisplayMemberBinding="{Binding Path=Name}"  
                 HeaderTemplate="{StaticResource Templ}" 
