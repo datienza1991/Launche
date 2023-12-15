@@ -31,6 +31,23 @@ namespace UI.Database
             this.SeedInitialVsCodePath(3);
             this.AddNameOnProjectPathsTable(4);
             this.SeedInitialProjectPaths(5);
+            this.SeedNewProjectPath(6);
+        }
+
+        private void SeedNewProjectPath(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string createTableSql = "INSERT INTO ProjectPaths ( Path, Name ) VALUES ( 'New Project Path Name', 'This is Project Path' )";
+            using var command = new SQLiteCommand(createTableSql, connection);
+            command.ExecuteNonQuery();
+
+            this.addTableSchemaVersion.Execute(version);
+
         }
 
         private void SeedInitialProjectPaths(int version)
