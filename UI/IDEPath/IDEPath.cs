@@ -1,4 +1,4 @@
-﻿namespace UI.VsCodePath;
+﻿namespace UI.IDEPath;
 
 public class IDEPath
 {

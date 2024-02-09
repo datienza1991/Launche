@@ -1,10 +1,10 @@
 ﻿using UI.Database;
 
-namespace UI.VsCodePath;
+namespace UI.IDEPath;
 
-public interface IGetVsCodePath : IExecuteAsync<IDEPath>;
+public interface IGetIDEPath : IExecuteAsync<IDEPath>;
 
-public class GetVsCodePath(ICreateSqliteConnection createSqliteConnection) : IGetVsCodePath
+public class GetIDEPath(ICreateSqliteConnection createSqliteConnection) : IGetIDEPath
 {
     private readonly ICreateSqliteConnection createSqliteConnection = createSqliteConnection;
 

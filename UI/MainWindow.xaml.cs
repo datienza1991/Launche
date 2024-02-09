@@ -5,8 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using UI.Database;
+using UI.IDEPath;
 using UI.ProjectPath;
-using UI.VsCodePath;
 
 namespace UI
 {
@@ -15,35 +15,35 @@ namespace UI
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly IGetVsCodePath? getVsCodePath;
-        private readonly ISaveVsCodePath? saveVsCodePath;
+        private readonly IGetIDEPath? getVsCodePath;
+        private readonly ISaveIDEPath? saveVsCodePath;
         private readonly IGetProjectPaths? getProjectPaths;
         private readonly IAddProjectPath addProjectPath;
         private readonly IEditProjectPath editProjectPath;
+        private readonly IGetIDEPaths getIDEPaths;
         private readonly MainWindowViewModel? mainWindowViewModel;
 
         public ObservableCollection<ProjectPath.ProjectPath> Entries { get; private set; } = new ObservableCollection<ProjectPath.ProjectPath>();
 
-        public MainWindow()
-        {
-            InitializeComponent();
-        }
+        public MainWindow() => InitializeComponent();
 
         public MainWindow(
             IInitializedDatabaseMigration initializedDatabaseMigration,
-            IGetVsCodePath getVsCodePath,
-            ISaveVsCodePath saveVsCodePath,
+            IGetIDEPath getVsCodePath,
+            ISaveIDEPath saveIdePath,
             IGetProjectPaths getProjectPaths,
             IAddProjectPath addProjectPath,
-            IEditProjectPath editProjectPath
+            IEditProjectPath editProjectPath,
+            IGetIDEPaths getIDEPaths
         )
         {
             initializedDatabaseMigration.Execute();
             this.getVsCodePath = getVsCodePath;
-            this.saveVsCodePath = saveVsCodePath;
+            this.saveVsCodePath = saveIdePath;
             this.getProjectPaths = getProjectPaths;
             this.addProjectPath = addProjectPath;
             this.editProjectPath = editProjectPath;
+            this.getIDEPaths = getIDEPaths;
             this.mainWindowViewModel = new MainWindowViewModel();
             DataContext = this.mainWindowViewModel;
             InitializeComponent();
@@ -51,24 +51,31 @@ namespace UI
         }
 
 
-        private void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
+        private async void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
         {
-            var openFolderDialog = new OpenFolderDialog();
+            var openFolderDialog = new OpenFileDialog();
+            openFolderDialog.Filter = "Executable Files | *.exe";
             var result = openFolderDialog.ShowDialog() ?? false;
 
-            if (result)
+            if (!result)
             {
-                string filePath = openFolderDialog.FolderName;
-                this.mainWindowViewModel!.VsCodePath = filePath;
+                return;
             }
+
+            string filePath = openFolderDialog.FileName;
+            var resultSave = await this.saveVsCodePath!.ExecuteAsync(filePath);
+            if (resultSave) { MessageBox.Show("IDE path saved!"); }
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            var vsCodePath = await this.getVsCodePath!.ExecuteAsync();
-            this.mainWindowViewModel!.VsCodePath = vsCodePath.Path;
+            //var vsCodePath = await this.getVsCodePath!.ExecuteAsync();
+            //this.mainWindowViewModel!.VsCodePath = vsCodePath.Path;
 
             await this.FetchProjectPaths();
+            await this.FetchIDEPaths();
+            this.mainWindowViewModel!.AllowedTypes!.Add("Folder");
+            this.mainWindowViewModel!.AllowedTypes!.Add("File");
 
         }
 
@@ -84,16 +91,24 @@ namespace UI
                 var (value, index) = item;
                 index++;
 
-                this.mainWindowViewModel!.ProjectPathModels?.Add(new() { Index = index, Id = value.Id, Name = value.Name, Path = value.Path });
+                this.mainWindowViewModel!.ProjectPathModels?.Add(new() { Index = index, Id = value.Id, Name = value.Name, Path = value.Path, IDEPathId = value.IDEPathId });
             }
         }
 
-        private async void SaveVsCodePathButton_Click(object sender, RoutedEventArgs e)
+        private async Task FetchIDEPaths()
         {
-            var vsCodePath = VsCodePathTextBox?.Text;
-            var result = await this.saveVsCodePath!.ExecuteAsync(vsCodePath!);
 
-            if (result) { MessageBox.Show("IDE path saved!"); }
+            var idePaths = await this.getIDEPaths!.ExecuteAsync();
+
+            if (this.getVsCodePath == null) return;
+
+            foreach (var item in idePaths.Select((value, index) => (value, index)))
+            {
+                var (value, index) = item;
+                index++;
+
+                this.mainWindowViewModel!.IdePathsModels?.Add(new() { Id = value.Id, Path = value.Path });
+            }
         }
 
         private void ProjectPathsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -105,6 +120,8 @@ namespace UI
             this.mainWindowViewModel!.ProjectPath = projectPath!.Path;
             this.mainWindowViewModel.ProjectPathTitle = projectPath!.Name;
             this.mainWindowViewModel.ProjectPathId = projectPath.Id;
+            this.mainWindowViewModel.SelectedIdePath = this.mainWindowViewModel!.IdePathsModels!.Single(x => x.Id == projectPath.IDEPathId);
+
         }
 
         private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
@@ -124,8 +141,10 @@ namespace UI
 
         private async void btnSaveProjectPath_Click(object sender, RoutedEventArgs e)
         {
+
             var projectPathName = this.mainWindowViewModel?.ProjectPathTitle;
             var projectPath = this.mainWindowViewModel?.ProjectPath;
+            var idePath = this.mainWindowViewModel!.IdePathsModels!.Where((item, index) => index == this.comboIDEPaths.SelectedIndex).Single();
             var id = this.mainWindowViewModel?.ProjectPathId;
 
             bool result;
@@ -133,11 +152,11 @@ namespace UI
             if (this.mainWindowViewModel!.ProjectPathId == 0)
             {
 
-                result = await this.addProjectPath!.ExecuteAsync(new() { Path = projectPath!, Name = projectPathName! });
+                result = await this.addProjectPath!.ExecuteAsync(new() { Path = projectPath!, Name = projectPathName!, IDEPathId =  idePath.Id});
             }
             else
             {
-                result = await this.editProjectPath!.ExecuteAsync(new() { Id = id!.Value, Path = projectPath!, Name = projectPathName! });
+                result = await this.editProjectPath!.ExecuteAsync(new() { Id = id!.Value, Path = projectPath!, Name = projectPathName!, IDEPathId = idePath.Id });
             }
 
             if (result)
@@ -162,7 +181,7 @@ namespace UI
                 }
                 ProcessStartInfo startInfo = new()
                 {
-                    FileName = this.mainWindowViewModel!.VsCodePath,
+                    //FileName = this.mainWindowViewModel!.VsCodePath,
                     Arguments = this.mainWindowViewModel!.ProjectPath,
                 };
                 Process.Start(startInfo);
@@ -175,6 +194,11 @@ namespace UI
             }
 
         }
+
+        private async void btnDeleteIdePath_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
     }
 }
 
@@ -183,21 +207,11 @@ public class MainWindowViewModel : INotifyPropertyChanged
     public MainWindowViewModel()
     {
         this.ProjectPathModels = new();
+        this.IdePathsModels = new();
+        this.AllowedTypes = new();
     }
-
-    private string? vsCodePath;
 
     public event PropertyChangedEventHandler? PropertyChanged;
-
-    public string? VsCodePath
-    {
-        get { return vsCodePath; }
-        set
-        {
-            vsCodePath = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("VsCodePath"));
-        }
-    }
 
     private ObservableCollection<ProjectPathViewModel>? projectPathModels;
 
@@ -208,6 +222,54 @@ public class MainWindowViewModel : INotifyPropertyChanged
         {
             projectPathModels = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.ProjectPathModels)));
+        }
+    }
+
+    private ObservableCollection<IDEPathsViewModel>? idePathsModels;
+
+    public ObservableCollection<IDEPathsViewModel>? IdePathsModels
+    {
+        get { return idePathsModels; }
+        set
+        {
+            idePathsModels = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.IdePathsModels)));
+        }
+    }
+
+    private ObservableCollection<string>? allowedTypes;
+
+    public ObservableCollection<string>? AllowedTypes
+    {
+        get { return allowedTypes; }
+        set
+        {
+            allowedTypes = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.AllowedTypes)));
+        }
+    }
+
+    private string? selectedAllowedType;
+
+    public string? SelectedAllowedType
+    {
+        get { return selectedAllowedType; }
+        set
+        {
+            selectedAllowedType = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.SelectedAllowedType)));
+        }
+    }
+
+    private IDEPathsViewModel? selectedIdePath;
+
+    public IDEPathsViewModel? SelectedIdePath
+    {
+        get { return selectedIdePath; }
+        set
+        {
+            selectedIdePath = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.SelectedIdePath)));
         }
     }
 
@@ -242,6 +304,8 @@ public class MainWindowViewModel : INotifyPropertyChanged
 public class ProjectPathViewModel : ProjectPath
 {
     public int Index { get; set; }
+}
 
-
+public class IDEPathsViewModel : IDEPath
+{
 }

@@ -1,11 +1,11 @@
 ﻿using System.Data.SQLite;
 using UI.Database;
 
-namespace UI.VsCodePath;
+namespace UI.IDEPath;
 
-public interface ISaveVsCodePath : IExecuteAsync<string, bool>;
+public interface ISaveIDEPath : IExecuteAsync<string, bool>;
 
-public class SaveVsCodePath(ICreateSqliteConnection createSqliteConnection) : ISaveVsCodePath
+public class SaveIDEPath(ICreateSqliteConnection createSqliteConnection) : ISaveIDEPath
 {
     private readonly ICreateSqliteConnection createSqliteConnection = createSqliteConnection;
 
@@ -16,7 +16,7 @@ public class SaveVsCodePath(ICreateSqliteConnection createSqliteConnection) : IS
         using var connection = this.createSqliteConnection.Execute();
         connection.Open();
 
-        string createTableSql = $"UPDATE {tableName} SET Path = @path WHERE Id = {id};";
+        string createTableSql = $"INSERT INTO IDEPaths ( Path ) VALUES ( @path );";
         using var command = new SQLiteCommand(createTableSql, connection);
         command.Parameters.AddWithValue("@path", path);
         var rows = await command.ExecuteNonQueryAsync();

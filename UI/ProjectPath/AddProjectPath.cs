@@ -15,12 +15,13 @@ namespace UI.ProjectPath
 
             connection.Open();
 
-            string createTableSql = $"INSERT INTO ProjectPaths( Path , Name ) VALUES ( @path , @name );";
+            string createTableSql = $"INSERT INTO ProjectPaths( Path , Name, IDEPathId ) VALUES ( @path , @name, @idePath );";
             
             using var command = new SQLiteCommand(createTableSql, connection);
             
             command.Parameters.AddWithValue("@path", param.Path);
             command.Parameters.AddWithValue("@name", param.Name);
+            command.Parameters.AddWithValue("@idePath", param.IDEPathId);
 
             var rows = await command.ExecuteNonQueryAsync();
 

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,8 @@ namespace UI.Database
     {
         public SQLiteConnection Execute()
         {
-            var path = @"C:\data\file-dev.db";
+            var fullPath = Path.GetFullPath(".");
+            var path = @$"{fullPath}\file.db";
             var connectionString = $"Data Source={path}";
             if (!System.IO.File.Exists(path))
             {
