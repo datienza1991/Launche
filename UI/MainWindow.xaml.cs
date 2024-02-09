@@ -93,7 +93,7 @@ namespace UI
             var vsCodePath = VsCodePathTextBox?.Text;
             var result = await this.saveVsCodePath!.ExecuteAsync(vsCodePath!);
 
-            if (result) { MessageBox.Show("Vs Code path saved!"); }
+            if (result) { MessageBox.Show("IDE path saved!"); }
         }
 
         private void ProjectPathsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -157,7 +157,7 @@ namespace UI
             {
                 if (!Directory.Exists(this.mainWindowViewModel!.ProjectPath))
                 {
-                    MessageBox.Show("Directory not found!", "Launch Vs code Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Directory not found!", "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
                 ProcessStartInfo startInfo = new()
@@ -171,7 +171,7 @@ namespace UI
             catch (Exception ex)
             {
 
-                MessageBox.Show(ex.Message, "Launch Vs code Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
         }

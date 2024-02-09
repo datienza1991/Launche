@@ -1,81 +1,165 @@
-﻿<Window x:Class="UI.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:UI"
-        mc:Ignorable="d"
-        Title="Launche - VSCode Launcher by Darren Atienza" Height="450" Width="511" Loaded="Window_Loaded" WindowStyle="ToolWindow"
-        >
-    <Grid HorizontalAlignment="Center" Width="467">
+﻿<Window
+    x:Class="UI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:UI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Launche - IDE Launcher by Darren Atienza"
+    Width="511"
+    Height="450"
+    Loaded="Window_Loaded"
+    WindowStyle="ToolWindow"
+    mc:Ignorable="d">
+    <Grid Width="467" HorizontalAlignment="Center">
         <Grid.RowDefinitions>
-            <RowDefinition Height="33"></RowDefinition>
-            <RowDefinition Height="23"></RowDefinition>
-            <RowDefinition Height="28"></RowDefinition>
-            <RowDefinition Height="28"></RowDefinition>
-            <RowDefinition Height="28"></RowDefinition>
-            <RowDefinition></RowDefinition>
+            <RowDefinition Height="33" />
+            <RowDefinition Height="23" />
+            <RowDefinition Height="28" />
+            <RowDefinition Height="28" />
+            <RowDefinition Height="28" />
+            <RowDefinition />
 
         </Grid.RowDefinitions>
 
-        <Grid VerticalAlignment="Center" Background="#404040" Height="26" >
+        <Grid
+            Height="26"
+            VerticalAlignment="Center"
+            Background="#404040">
 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <Label Grid.Column="0" Content="Vscode Path"  Width="75" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="White"/>
-            <Button  x:Name="SaveVsCodePathButton" Grid.Column="2" Content="Save" VerticalAlignment="Center" Click="SaveVsCodePathButton_Click" Margin="0,0,5,0" />
-            <Button x:Name="VsCodePathOpenDialogButton" Grid.Column="1" Content="Open Dialog" Margin="0,0,8,0" VerticalAlignment="Center" Click="VsCodePathOpenDialogButton_Click"/>
+            <Label
+                Grid.Column="0"
+                Width="75"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Content="IDE Path"
+                Foreground="White" />
+            <Button
+                x:Name="SaveVsCodePathButton"
+                Grid.Column="2"
+                Margin="0,0,5,0"
+                VerticalAlignment="Center"
+                Click="SaveVsCodePathButton_Click"
+                Content="Save" />
+            <Button
+                x:Name="VsCodePathOpenDialogButton"
+                Grid.Column="1"
+                Margin="0,0,8,0"
+                VerticalAlignment="Center"
+                Click="VsCodePathOpenDialogButton_Click"
+                Content="Open Dialog" />
         </Grid>
 
-        <TextBox Grid.Row="1" x:Name="VsCodePathTextBox" Text="{Binding VsCodePath, UpdateSourceTrigger=PropertyChanged}" TextWrapping="NoWrap" VerticalAlignment="Center" Height="18" />
+        <TextBox
+            x:Name="VsCodePathTextBox"
+            Grid.Row="1"
+            Height="18"
+            VerticalAlignment="Center"
+            Text="{Binding VsCodePath, UpdateSourceTrigger=PropertyChanged}"
+            TextWrapping="NoWrap" />
 
-        <Grid Grid.Row="2" VerticalAlignment="Top" Background="#404040" Margin="0,5,0,0" Height="23">
+        <Grid
+            Grid.Row="2"
+            Height="23"
+            Margin="0,5,0,0"
+            VerticalAlignment="Top"
+            Background="#404040">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition ></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Content="Project Path"  Width="75"  HorizontalAlignment="Left" Foreground="White"/>
-            <Button  Grid.Column="2" Content="Save" VerticalAlignment="Center" Click="btnSaveProjectPath_Click" Height="20" Margin="0,0,5,0" />
-            <Button x:Name="btnOpenDialogProjectPath"  Grid.Column="1" Content="Open Dialog" Margin="0,0,8,0" VerticalAlignment="Center" Click="btnOpenDialogProjectPath_Click" Height="20"/>
+            <Label
+                Grid.Column="0"
+                Width="75"
+                HorizontalAlignment="Left"
+                Content="Project Path"
+                Foreground="White" />
+            <Button
+                Grid.Column="2"
+                Height="20"
+                Margin="0,0,5,0"
+                VerticalAlignment="Center"
+                Click="btnSaveProjectPath_Click"
+                Content="Save" />
+            <Button
+                x:Name="btnOpenDialogProjectPath"
+                Grid.Column="1"
+                Height="20"
+                Margin="0,0,8,0"
+                VerticalAlignment="Center"
+                Click="btnOpenDialogProjectPath_Click"
+                Content="Open Dialog" />
         </Grid>
 
-        <Grid Grid.Row="3" VerticalAlignment="Center" Height="26">
+        <Grid
+            Grid.Row="3"
+            Height="26"
+            VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Content="Name"     VerticalAlignment="Top"   ForceCursor="True" />
-            <Label Grid.Column="1" Grid.ColumnSpan="2" Content="Path"     VerticalAlignment="Top"   />
+            <Label
+                Grid.Column="0"
+                VerticalAlignment="Top"
+                Content="Name"
+                ForceCursor="True" />
+            <Label
+                Grid.Column="1"
+                Grid.ColumnSpan="2"
+                VerticalAlignment="Top"
+                Content="Path" />
         </Grid>
 
 
         <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <TextBox Grid.Column="0" Grid.ColumnSpan="1"  Text="{Binding ProjectPathTitle}"  TextWrapping="NoWrap" VerticalAlignment="Top"  Height="18" Margin="0,0,5,0" />
-            <TextBox Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding ProjectPath}"  TextWrapping="NoWrap" VerticalAlignment="Top"  Height="18" />
+            <TextBox
+                Grid.Column="0"
+                Grid.ColumnSpan="1"
+                Height="18"
+                Margin="0,0,5,0"
+                VerticalAlignment="Top"
+                Text="{Binding ProjectPathTitle}"
+                TextWrapping="NoWrap" />
+            <TextBox
+                Grid.Column="1"
+                Grid.ColumnSpan="2"
+                Height="18"
+                VerticalAlignment="Top"
+                Text="{Binding ProjectPath}"
+                TextWrapping="NoWrap" />
         </Grid>
 
-        <ListView Grid.Row="5"   x:Name="lvProjectPaths" ItemsSource="{Binding ProjectPathModels, UpdateSourceTrigger=PropertyChanged}" MouseDoubleClick="ProjectPathsList_MouseDoubleClick"  SelectionChanged="ProjectPathsList_SelectionChanged" Margin="0,0,0,10" >
+        <ListView
+            x:Name="lvProjectPaths"
+            Grid.Row="5"
+            Margin="0,0,0,10"
+            ItemsSource="{Binding ProjectPathModels, UpdateSourceTrigger=PropertyChanged}"
+            MouseDoubleClick="ProjectPathsList_MouseDoubleClick"
+            SelectionChanged="ProjectPathsList_SelectionChanged">
             <ListView.Resources>
                 <DataTemplate x:Key="Templ">
-                    <TextBlock HorizontalAlignment="Left" Text="Name"/>
+                    <TextBlock HorizontalAlignment="Left" Text="Name" />
                 </DataTemplate>
                 <DataTemplate x:Key="pathTemplate">
-                    <TextBlock HorizontalAlignment="Left" Text="Path"/>
+                    <TextBlock HorizontalAlignment="Left" Text="Path" />
                 </DataTemplate>
                 <Style x:Key="HeaderStyle" TargetType="GridViewColumnHeader">
-                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                    <Setter Property="Padding" Value="5,2,2,2"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Left" />
+                    <Setter Property="Padding" Value="5,2,2,2" />
                 </Style>
             </ListView.Resources>
             <ListView.ItemContainerStyle>
@@ -83,7 +167,7 @@
                     <Setter Property="ToolTip">
                         <Setter.Value>
                             <ToolTip>
-                                <Label Content="Double click to lunch VScode"></Label>
+                                <Label Content="Double click to lunch VScode" />
                             </ToolTip>
                         </Setter.Value>
                     </Setter>
@@ -92,19 +176,20 @@
             <ListView.View>
                 <GridView AllowsColumnReorder="true">
                     <GridView.Columns>
-                        <GridViewColumn DisplayMemberBinding="{Binding Path=Index}" Header="#" Width="24"/>
-                        <GridViewColumn 
-                DisplayMemberBinding="{Binding Path=Name}"  
-                HeaderTemplate="{StaticResource Templ}" 
-                HeaderContainerStyle="{StaticResource HeaderStyle}" 
-                Width="100" >
-                        </GridViewColumn>
-                        <GridViewColumn 
-                DisplayMemberBinding="{Binding Path=Path}"  
-                HeaderTemplate="{StaticResource pathTemplate}" 
-                HeaderContainerStyle="{StaticResource HeaderStyle}" 
-                Width="250" >
-                        </GridViewColumn>
+                        <GridViewColumn
+                            Width="24"
+                            DisplayMemberBinding="{Binding Path=Index}"
+                            Header="#" />
+                        <GridViewColumn
+                            Width="100"
+                            DisplayMemberBinding="{Binding Path=Name}"
+                            HeaderContainerStyle="{StaticResource HeaderStyle}"
+                            HeaderTemplate="{StaticResource Templ}" />
+                        <GridViewColumn
+                            Width="250"
+                            DisplayMemberBinding="{Binding Path=Path}"
+                            HeaderContainerStyle="{StaticResource HeaderStyle}"
+                            HeaderTemplate="{StaticResource pathTemplate}" />
                     </GridView.Columns>
                 </GridView>
             </ListView.View>

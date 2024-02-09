@@ -11,11 +11,12 @@ public class SaveVsCodePath(ICreateSqliteConnection createSqliteConnection) : IS
 
     public async Task<bool> ExecuteAsync(string path)
     {
+        var tableName = $"{nameof(IDEPath)}s";
         var id = 1;
         using var connection = this.createSqliteConnection.Execute();
         connection.Open();
 
-        string createTableSql = $"UPDATE VsCodePaths SET Path = @path WHERE Id = {id};";
+        string createTableSql = $"UPDATE {tableName} SET Path = @path WHERE Id = {id};";
         using var command = new SQLiteCommand(createTableSql, connection);
         command.Parameters.AddWithValue("@path", path);
         var rows = await command.ExecuteNonQueryAsync();

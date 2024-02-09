@@ -14,7 +14,7 @@ namespace UI.Database
     {
         public SQLiteConnection Execute()
         {
-            var path = @"C:\data\file.db";
+            var path = @"C:\data\file-dev.db";
             var connectionString = $"Data Source={path}";
             if (!System.IO.File.Exists(path))
             {
