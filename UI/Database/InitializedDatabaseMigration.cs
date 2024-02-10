@@ -60,7 +60,7 @@ namespace UI.Database
                 	""Path"" TEXT,
                 	Name TEXT,
                 	IDEPathId INTEGER NOT NULL,
-                	CONSTRAINT ProjectPaths_FK FOREIGN KEY (IDEPathId) REFERENCES IDEPaths(Id) ON DELETE RESTRICT
+                	FOREIGN KEY (IDEPathId) REFERENCES IDEPaths (Id) ON UPDATE RESTRICT ON DELETE RESTRICT
                 );
 
                 INSERT INTO ProjectPaths

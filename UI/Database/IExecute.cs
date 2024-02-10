@@ -14,7 +14,7 @@ namespace UI.Database
     {
         Task<T> ExecuteAsync();
     }
-    
+
     public interface IExecuteAsync<P,T>
     {
         Task<T> ExecuteAsync(P param);

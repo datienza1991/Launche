@@ -74,7 +74,8 @@
                 IsEditable="True"
                 IsReadOnly="True"
                 ItemsSource="{Binding IdePathsModels, UpdateSourceTrigger=PropertyChanged}"
-                SelectedValue="{Binding SelectedIdePath, UpdateSourceTrigger=PropertyChanged}" />
+                SelectedValue="{Binding SelectedIdePath, UpdateSourceTrigger=PropertyChanged}"
+                SelectionChanged="comboIDEPaths_SelectionChanged" />
             <Button
                 x:Name="btnDeleteIdePath"
                 Grid.Column="5"
@@ -100,6 +101,7 @@
                 <ColumnDefinition />
                 <ColumnDefinition />
                 <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Label
                 Grid.Column="0"
@@ -108,21 +110,8 @@
                 Content="Project Path"
                 Foreground="White" />
             <Button
-                Grid.Column="2"
-                Height="20"
-                Margin="0,0,5,0"
-                VerticalAlignment="Center"
-                Click="btnSaveProjectPath_Click"
-                Content="Save">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="3" />
-                    </Style>
-                </Button.Resources>
-            </Button>
-            <Button
                 x:Name="btnOpenDialogProjectPath"
-                Grid.Column="1"
+                Grid.Column="2"
                 Height="20"
                 Margin="0,0,8,0"
                 VerticalAlignment="Center"
@@ -134,13 +123,41 @@
                     </Style>
                 </Button.Resources>
             </Button>
-        </Grid>
+            <Button
+                x:Name="btnNewProjectPath"
+                Grid.Column="1"
+                Height="20"
+                Margin="0,0,5,0"
+                VerticalAlignment="Center"
+                Click="btnNewProjectPath_Click"
+                Content="New">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="3" />
+                    </Style>
+                </Button.Resources>
+            </Button>
+            <Button
+                Grid.Column="3"
+                Height="20"
+                Margin="0,0,5,0"
+                VerticalAlignment="Center"
+                Click="btnSaveProjectPath_Click"
+                Content="Save">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="3" />
+                    </Style>
+                </Button.Resources>
+            </Button>
 
+        </Grid>
         <Grid
             Grid.Row="3"
             Height="26"
             VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition />
                 <ColumnDefinition />
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -163,22 +180,37 @@
                 <ColumnDefinition />
                 <ColumnDefinition />
                 <ColumnDefinition />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <TextBox
                 Grid.Column="0"
                 Grid.ColumnSpan="1"
-                Height="18"
+                Height="20"
                 Margin="0,0,5,0"
                 VerticalAlignment="Top"
-                Text="{Binding ProjectPathTitle}"
+                Text="{Binding SelectedProjectPath.Name}"
                 TextWrapping="NoWrap" />
             <TextBox
                 Grid.Column="1"
                 Grid.ColumnSpan="2"
-                Height="18"
+                Height="20"
                 VerticalAlignment="Top"
-                Text="{Binding ProjectPath}"
+                Text="{Binding SelectedProjectPath.Path}"
                 TextWrapping="NoWrap" />
+            <Button
+                x:Name="btnDeleteProjectPath"
+                Grid.Column="3"
+                Height="20"
+                Margin="5,0,5,0"
+                VerticalAlignment="Top"
+                Click="btnDeleteProjectPath_Click"
+                Content="Delete">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="3" />
+                    </Style>
+                </Button.Resources>
+            </Button>
         </Grid>
 
         <ListView

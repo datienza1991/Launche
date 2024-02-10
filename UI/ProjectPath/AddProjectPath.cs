@@ -15,7 +15,9 @@ namespace UI.ProjectPath
 
             connection.Open();
 
-            string createTableSql = $"INSERT INTO ProjectPaths( Path , Name, IDEPathId ) VALUES ( @path , @name, @idePath );";
+            string createTableSql = @"
+                PRAGMA foreign_keys = ON; 
+                INSERT INTO ProjectPaths( Path , Name, IDEPathId ) VALUES ( @path , @name, @idePath );";
 
             using var command = new SQLiteCommand(createTableSql, connection);
 
