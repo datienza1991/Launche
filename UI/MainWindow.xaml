@@ -67,7 +67,7 @@
             <ComboBox
                 x:Name="comboIDEPaths"
                 Grid.Column="0"
-                Grid.ColumnSpan="3"
+                Grid.ColumnSpan="5"
                 Height="23"
                 DisplayMemberPath="Path"
                 Focusable="False"
@@ -75,19 +75,6 @@
                 IsReadOnly="True"
                 ItemsSource="{Binding IdePathsModels, UpdateSourceTrigger=PropertyChanged}"
                 SelectedValue="{Binding SelectedIdePath, UpdateSourceTrigger=PropertyChanged}" />
-            <ComboBox
-                x:Name="comboAllowedTypes"
-                Grid.Column="3"
-                Grid.ColumnSpan="2"
-                Height="23"
-                Margin="5,0,0,0"
-                DisplayMemberPath=""
-                Focusable="False"
-                IsEditable="True"
-                IsReadOnly="True"
-                ItemsSource="{Binding AllowedTypes, UpdateSourceTrigger=PropertyChanged}"
-                SelectedValue="{Binding SelectedAllowedType, UpdateSourceTrigger=PropertyChanged}"
-                Text="Allowed Types" />
             <Button
                 x:Name="btnDeleteIdePath"
                 Grid.Column="5"

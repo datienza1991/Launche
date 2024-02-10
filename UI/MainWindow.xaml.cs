@@ -69,14 +69,8 @@ namespace UI
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //var vsCodePath = await this.getVsCodePath!.ExecuteAsync();
-            //this.mainWindowViewModel!.VsCodePath = vsCodePath.Path;
-
             await this.FetchProjectPaths();
             await this.FetchIDEPaths();
-            this.mainWindowViewModel!.AllowedTypes!.Add("Folder");
-            this.mainWindowViewModel!.AllowedTypes!.Add("File");
-
         }
 
         private async Task FetchProjectPaths()
@@ -153,6 +147,7 @@ namespace UI
             {
 
                 result = await this.addProjectPath!.ExecuteAsync(new() { Path = projectPath!, Name = projectPathName!, IDEPathId =  idePath.Id});
+                
             }
             else
             {
@@ -181,7 +176,7 @@ namespace UI
                 }
                 ProcessStartInfo startInfo = new()
                 {
-                    //FileName = this.mainWindowViewModel!.VsCodePath,
+                    FileName = this.mainWindowViewModel!.SelectedIdePath!.Path,
                     Arguments = this.mainWindowViewModel!.ProjectPath,
                 };
                 Process.Start(startInfo);
@@ -208,7 +203,6 @@ public class MainWindowViewModel : INotifyPropertyChanged
     {
         this.ProjectPathModels = new();
         this.IdePathsModels = new();
-        this.AllowedTypes = new();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -234,30 +228,6 @@ public class MainWindowViewModel : INotifyPropertyChanged
         {
             idePathsModels = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.IdePathsModels)));
-        }
-    }
-
-    private ObservableCollection<string>? allowedTypes;
-
-    public ObservableCollection<string>? AllowedTypes
-    {
-        get { return allowedTypes; }
-        set
-        {
-            allowedTypes = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.AllowedTypes)));
-        }
-    }
-
-    private string? selectedAllowedType;
-
-    public string? SelectedAllowedType
-    {
-        get { return selectedAllowedType; }
-        set
-        {
-            selectedAllowedType = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.SelectedAllowedType)));
         }
     }
 
