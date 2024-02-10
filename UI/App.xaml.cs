@@ -2,7 +2,7 @@
 using System.Windows;
 using UI.Database;
 using UI.ProjectPath;
-using UI.VsCodePath;
+using UI.IDEPath;
 
 namespace UI
 {
@@ -23,11 +23,15 @@ namespace UI
                 .AddSingleton<ICreateSqliteConnection, CreateSqliteConnection>()
                 .AddSingleton<ICreateVersionsDbTable, CreateVersionsDbTable>()
                 .AddSingleton<IInitializedDatabaseMigration, InitializedDatabaseMigration>()
-                .AddSingleton<ISaveVsCodePath, SaveVsCodePath>()
-                .AddSingleton<IGetVsCodePath, GetVsCodePath>()
+                .AddSingleton<ISaveIDEPath, SaveIDEPath>()
+                .AddSingleton<IGetIDEPath, GetIDEPath>()
                 .AddSingleton<IGetProjectPaths, GetProjectPaths>()
                 .AddSingleton<IAddProjectPath, AddProjectPath>()
                 .AddSingleton<IEditProjectPath, EditProjectPath>()
+                .AddSingleton<IGetIDEPaths, GetIDEPaths>()
+                .AddSingleton<IGetLastProjectPath, GetLastProjectPath>()
+                .AddSingleton<IDeleteProjectPath, DeleteProjectPath>()
+                .AddSingleton<IDeleteIdePath, DeleteIdePath>()
                 .AddSingleton<MainWindow>()
                 .BuildServiceProvider();
 

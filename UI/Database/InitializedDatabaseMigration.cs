@@ -33,6 +33,126 @@ namespace UI.Database
             this.SeedInitialProjectPaths(5);
             this.SeedNewProjectPath(6);
             this.RemoveAllProjectPaths(7);
+            this.RenameVsCodePathsTableToIDEPaths(8);
+            this.AddColumnIDEPathIdToProjectPaths(10);
+            this.AddForeignIDEPathIdToProjectPaths(11);
+            this.SeedDefaultIDEPathOnProjectPaths(12);
+            this.SetIDEPathIdToNotNull(13);
+        }
+
+        private void SetIDEPathIdToNotNull(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string query = @"
+                CREATE TEMPORARY TABLE temp AS
+                    SELECT *
+                    FROM ProjectPaths;
+
+                DROP TABLE ProjectPaths;
+
+                CREATE TABLE ProjectPaths (
+                	Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                	""Path"" TEXT,
+                	Name TEXT,
+                	IDEPathId INTEGER NOT NULL,
+                	FOREIGN KEY (IDEPathId) REFERENCES IDEPaths (Id) ON UPDATE RESTRICT ON DELETE RESTRICT
+                );
+
+                INSERT INTO ProjectPaths
+                SELECT *
+                FROM temp;
+
+                DROP TABLE temp;
+                ";
+            using var command = new SQLiteCommand(query, connection);
+            command.ExecuteNonQuery();
+
+            this.addTableSchemaVersion.Execute(version);
+        }
+
+        private void SeedDefaultIDEPathOnProjectPaths(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string query = @"UPDATE ProjectPaths SET IDEPathId  = (SELECT  Id FROM IDEPaths LIMIT 1);";
+            using var command = new SQLiteCommand(query, connection);
+            command.ExecuteNonQuery();
+
+            this.addTableSchemaVersion.Execute(version);
+        }
+
+        private void AddForeignIDEPathIdToProjectPaths(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string query = @"
+                CREATE TEMPORARY TABLE temp AS
+                    SELECT *
+                    FROM ProjectPaths;
+
+                DROP TABLE ProjectPaths;
+
+                CREATE TABLE ProjectPaths (
+                	Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                	""Path"" TEXT,
+                	Name TEXT,
+                	IDEPathId INTEGER,
+                	CONSTRAINT ProjectPaths_FK FOREIGN KEY (IDEPathId) REFERENCES IDEPaths(Id) ON DELETE RESTRICT
+                );
+
+                INSERT INTO ProjectPaths
+                SELECT *
+                FROM temp;
+
+                DROP TABLE temp;
+                ";
+            using var command = new SQLiteCommand(query, connection);
+            command.ExecuteNonQuery();
+
+            this.addTableSchemaVersion.Execute(version);
+        }
+
+        private void AddColumnIDEPathIdToProjectPaths(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string query = "ALTER TABLE ProjectPaths ADD IDEPathId INTEGER;";
+            using var command = new SQLiteCommand(query, connection);
+            command.ExecuteNonQuery();
+
+            this.addTableSchemaVersion.Execute(version);
+        }
+
+        private void RenameVsCodePathsTableToIDEPaths(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string query = "ALTER TABLE VsCodePaths RENAME TO IDEPaths;";
+            using var command = new SQLiteCommand(query, connection);
+            command.ExecuteNonQuery();
+
+            this.addTableSchemaVersion.Execute(version);
         }
 
         private void RemoveAllProjectPaths(int version)

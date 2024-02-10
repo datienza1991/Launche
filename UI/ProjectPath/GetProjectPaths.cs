@@ -21,8 +21,9 @@ public class GetProjectPaths(ICreateSqliteConnection createSqliteConnection) : I
             _ = int.TryParse(reader[nameof(ProjectPath.Id)]?.ToString(), out int id);
             var path = reader[nameof(ProjectPath.Path)]?.ToString() ?? "";
             var name = reader[nameof(ProjectPath.Name)]?.ToString() ?? "";
+            var idePathId = reader[nameof(ProjectPath.IDEPathId)]?.ToString() ?? "";
 
-            projectPaths.Add(new() { Id = id, Path = path, Name = name });
+            projectPaths.Add(new() { Id = id, Path = path, Name = name, IDEPathId= int.Parse(idePathId) });
         }
 
         return projectPaths;
