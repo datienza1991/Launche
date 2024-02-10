@@ -1,5 +1,6 @@
 ﻿using System.Data.SQLite;
 using System.IO;
+using System.Reflection;
 
 namespace UI.Database
 {
@@ -9,7 +10,7 @@ namespace UI.Database
     {
         public SQLiteConnection Execute()
         {
-            var fullPath = Path.GetFullPath(".");
+            var fullPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var path = @$"{fullPath}\file.db";
             var connectionString = $"Data Source={path}";
             if (!System.IO.File.Exists(path))
