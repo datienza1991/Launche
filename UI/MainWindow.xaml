@@ -231,7 +231,7 @@
                     <Setter Property="Padding" Value="5,2,2,2" />
                 </Style>
                 <ContextMenu x:Key="ItemContextMenu">
-                    <MenuItem Header="Move up" />
+                    <MenuItem x:Name="mnuMoveUp" Header="Move up" Click="mnuMoveUp_Click" />
                     <MenuItem Header="Move down" />
                 </ContextMenu>
                 <ToolTip x:Key="ItemToolTip">
