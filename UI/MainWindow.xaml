@@ -230,16 +230,18 @@
                     <Setter Property="HorizontalContentAlignment" Value="Left" />
                     <Setter Property="Padding" Value="5,2,2,2" />
                 </Style>
+                <ContextMenu x:Key="ItemContextMenu">
+                    <MenuItem Header="Move up" />
+                    <MenuItem Header="Move down" />
+                </ContextMenu>
+                <ToolTip x:Key="ItemToolTip">
+                    <Label Content="Double click to lunch VScode" />
+                </ToolTip>
             </ListView.Resources>
             <ListView.ItemContainerStyle>
                 <Style TargetType="{x:Type ListViewItem}">
-                    <Setter Property="ToolTip">
-                        <Setter.Value>
-                            <ToolTip>
-                                <Label Content="Double click to lunch VScode" />
-                            </ToolTip>
-                        </Setter.Value>
-                    </Setter>
+                    <Setter Property="ToolTip" Value="{StaticResource ItemToolTip}" />
+                    <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}" />
                 </Style>
             </ListView.ItemContainerStyle>
             <ListView.View>
