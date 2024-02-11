@@ -113,7 +113,7 @@
                 x:Name="btnOpenDialogProjectPath"
                 Grid.Column="2"
                 Height="20"
-                Margin="0,0,8,0"
+                Margin="0,0,5,0"
                 VerticalAlignment="Center"
                 Click="btnOpenDialogProjectPath_Click"
                 Content="Open Dialog">
@@ -138,19 +138,19 @@
                 </Button.Resources>
             </Button>
             <Button
+                x:Name="btnDeleteProjectPath"
                 Grid.Column="3"
                 Height="20"
                 Margin="0,0,5,0"
                 VerticalAlignment="Center"
-                Click="btnSaveProjectPath_Click"
-                Content="Save">
+                Click="btnDeleteProjectPath_Click"
+                Content="Delete">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="3" />
                     </Style>
                 </Button.Resources>
             </Button>
-
         </Grid>
         <Grid
             Grid.Row="3"
@@ -197,14 +197,14 @@
                 VerticalAlignment="Top"
                 Text="{Binding SelectedProjectPath.Path}"
                 TextWrapping="NoWrap" />
+
             <Button
-                x:Name="btnDeleteProjectPath"
                 Grid.Column="3"
                 Height="20"
                 Margin="5,0,5,0"
                 VerticalAlignment="Top"
-                Click="btnDeleteProjectPath_Click"
-                Content="Delete">
+                Click="btnSaveProjectPath_Click"
+                Content="Save">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="3" />
@@ -212,7 +212,6 @@
                 </Button.Resources>
             </Button>
         </Grid>
-
         <ListView
             x:Name="lvProjectPaths"
             Grid.Row="5"
