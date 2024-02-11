@@ -156,7 +156,7 @@ namespace UI
                 string filePath = openFolderDialog.FolderName;
                 string name = openFolderDialog.SafeFolderName;
 
-                this.mainWindowViewModel!.SelectedProjectPath = new() { Path = filePath!, Name = name! };
+                this.mainWindowViewModel!.SelectedProjectPath = new() { Id = this.mainWindowViewModel!.SelectedProjectPath!.Id, Path = filePath!, Name = name! };
 
             }
         }
@@ -331,8 +331,30 @@ public class ProjectPathsViewModel : ProjectPath
 
 public class ProjectPathViewModel : ProjectPath
 {
+    public static ProjectPathViewModel Transform(ProjectPath from)
+    {
+        return new()
+        {
+            Id = from.Id,
+            IDEPathId = from.IDEPathId,
+            Name = from.Name,
+            Path = from.Path
+        };
+    }
+
+    public static ProjectPath Transform(ProjectPathViewModel from)
+    {
+        return new()
+        {
+            Id = from.Id,
+            IDEPathId = from.IDEPathId,
+            Name = from.Name,
+            Path = from.Path
+        };
+    }
 }
 
 public class IDEPathsViewModel : IDEPath
 {
 }
+
