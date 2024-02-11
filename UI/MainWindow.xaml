@@ -256,7 +256,6 @@
                             HeaderContainerStyle="{StaticResource HeaderStyle}"
                             HeaderTemplate="{StaticResource Templ}" />
                         <GridViewColumn
-                            Width="250"
                             DisplayMemberBinding="{Binding Path=Path}"
                             HeaderContainerStyle="{StaticResource HeaderStyle}"
                             HeaderTemplate="{StaticResource pathTemplate}" />
