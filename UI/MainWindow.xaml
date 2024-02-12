@@ -243,7 +243,7 @@
                         IsEnabled="{Binding EnableMoveDown}" />
                 </ContextMenu>
                 <ToolTip x:Key="ItemToolTip">
-                    <Label Content="Double click to lunch VScode" />
+                    <Label Content="Double click to lunch your IDE" />
                 </ToolTip>
             </ListView.Resources>
             <ListView.ItemContainerStyle>
