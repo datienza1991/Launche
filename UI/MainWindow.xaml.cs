@@ -8,8 +8,8 @@ using UI.Database;
 using UI.IDEPath;
 using UI.ProjectPath;
 
-namespace UI
-{
+namespace UI;
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -24,10 +24,11 @@ namespace UI
         private readonly IGetIDEPaths? getIDEPaths;
         private readonly IDeleteProjectPath? deleteProjectPath;
         private readonly IDeleteIdePath? deleteIdePath;
-        private readonly ISortUpProjectPath sortUpProjectPath;
+        private readonly ISortUpProjectPath? sortUpProjectPath;
+        private readonly ISortDownProjectPath? sortDownProjectPath;
         private readonly MainWindowViewModel? mainWindowViewModel;
 
-        public ObservableCollection<ProjectPath.ProjectPath> Entries { get; private set; } = new ObservableCollection<ProjectPath.ProjectPath>();
+        public ObservableCollection<ProjectPath.ProjectPath> Entries { get; private set; } = [];
 
         public MainWindow() => InitializeComponent();
 
@@ -42,7 +43,8 @@ namespace UI
             IGetIDEPaths getIDEPaths,
             IDeleteProjectPath deleteProjectPath,
             IDeleteIdePath deleteIdePath,
-            ISortUpProjectPath sortUpProjectPath
+            ISortUpProjectPath sortUpProjectPath,
+            ISortDownProjectPath sortDownProjectPath
         )
         {
             initializedDatabaseMigration.Execute();
@@ -56,6 +58,7 @@ namespace UI
             this.deleteProjectPath = deleteProjectPath;
             this.deleteIdePath = deleteIdePath;
             this.sortUpProjectPath = sortUpProjectPath;
+            this.sortDownProjectPath = sortDownProjectPath;
             this.mainWindowViewModel = new MainWindowViewModel();
             DataContext = this.mainWindowViewModel;
             InitializeComponent();
@@ -104,7 +107,20 @@ namespace UI
                 var (value, index) = item;
                 index++;
 
-                this.mainWindowViewModel!.ProjectPathModels?.Add(new() { Index = index, Id = value.Id, Name = value.Name, Path = value.Path, IDEPathId = value.IDEPathId, SortId = value.SortId });
+                this.mainWindowViewModel!.ProjectPathModels?.Add
+                 (
+                    new()
+                    {
+                        Index = index,
+                        Id = value.Id,
+                        Name = value.Name,
+                        Path = value.Path,
+                        IDEPathId = value.IDEPathId,
+                        SortId = value.SortId,
+                        EnableMoveUp = index != 1,
+                        EnableMoveDown = index != projectPaths.Count
+                    }
+                );
             }
         }
 
@@ -258,19 +274,25 @@ namespace UI
 
         private async void mnuMoveUp_Click(object sender, RoutedEventArgs e)
         {
-            await this.sortUpProjectPath.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!.SortId);
+            await this.sortUpProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!.SortId);
+            this.mainWindowViewModel.ProjectPathModels?.Clear();
+            await this.FetchProjectPaths();
+        }
+
+        private async void mnuMoveDown_Click(object sender, RoutedEventArgs e)
+        {
+            await this.sortDownProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!.SortId);
             this.mainWindowViewModel.ProjectPathModels?.Clear();
             await this.FetchProjectPaths();
         }
     }
-}
 
 public class MainWindowViewModel : INotifyPropertyChanged
 {
     public MainWindowViewModel()
     {
-        this.ProjectPathModels = new();
-        this.IdePathsModels = new();
+        this.ProjectPathModels = [];
+        this.IdePathsModels = [];
         this.SelectedProjectPath = new();
         this.SelectedIdePath = new();
     }
@@ -324,17 +346,18 @@ public class MainWindowViewModel : INotifyPropertyChanged
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.SelectedIdePath)));
         }
     }
-
 }
 
-public class ProjectPathsViewModel : ProjectPath
+public class ProjectPathsViewModel : ProjectPath.ProjectPath
 {
     public int Index { get; set; }
+    public bool EnableMoveUp { get; set; }
+    public bool EnableMoveDown { get; set; }
 }
 
-public class ProjectPathViewModel : ProjectPath
+public class ProjectPathViewModel : ProjectPath.ProjectPath
 {
-    public static ProjectPathViewModel Transform(ProjectPath from)
+    public static ProjectPathViewModel Transform(ProjectPath.ProjectPath from)
     {
         return new()
         {
@@ -346,7 +369,7 @@ public class ProjectPathViewModel : ProjectPath
         };
     }
 
-    public static ProjectPath Transform(ProjectPathViewModel from)
+    public static ProjectPath.ProjectPath Transform(ProjectPathViewModel from)
     {
         return new()
         {
@@ -358,7 +381,7 @@ public class ProjectPathViewModel : ProjectPath
     }
 }
 
-public class IDEPathsViewModel : IDEPath
+public class IDEPathsViewModel : IDEPath.IDEPath
 {
 }
 

@@ -231,8 +231,16 @@
                     <Setter Property="Padding" Value="5,2,2,2" />
                 </Style>
                 <ContextMenu x:Key="ItemContextMenu">
-                    <MenuItem x:Name="mnuMoveUp" Header="Move up" Click="mnuMoveUp_Click" />
-                    <MenuItem Header="Move down" />
+                    <MenuItem
+                        x:Name="mnuMoveUp"
+                        Click="mnuMoveUp_Click"
+                        Header="Move up"
+                        IsEnabled="{Binding EnableMoveUp}" />
+                    <MenuItem
+                        x:Name="mnuMoveDown"
+                        Click="mnuMoveDown_Click"
+                        Header="Move down"
+                        IsEnabled="{Binding EnableMoveDown}" />
                 </ContextMenu>
                 <ToolTip x:Key="ItemToolTip">
                     <Label Content="Double click to lunch VScode" />

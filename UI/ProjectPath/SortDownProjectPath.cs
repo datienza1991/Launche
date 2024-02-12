@@ -3,9 +3,9 @@ using UI.Database;
 
 namespace UI.ProjectPath
 {
-    public interface ISortDownProjectPath : IExecuteAsync<int, bool>;
+    public interface ISortUpProjectPath : IExecuteAsync<int, bool>;
 
-    public class SortDownProjectPath(ICreateSqliteConnection createSqliteConnection) : ISortDownProjectPath
+    public class SortUpProjectPath(ICreateSqliteConnection createSqliteConnection) : ISortUpProjectPath
     {
         private readonly ICreateSqliteConnection createSqliteConnection = createSqliteConnection;
 
@@ -22,7 +22,7 @@ namespace UI.ProjectPath
 
             using var command = new SQLiteCommand(createTableSql, connection);
 
-            var top = param + 1;
+            var top = param - 1;
 
             command.Parameters.AddWithValue("@SortIdTop", top);
             command.Parameters.AddWithValue("@SortIdDown", param);
