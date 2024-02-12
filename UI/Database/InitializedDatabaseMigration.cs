@@ -1,4 +1,5 @@
 ﻿using System.Data.SQLite;
+using UI.ProjectPath;
 
 namespace UI.Database
 {
@@ -18,7 +19,7 @@ namespace UI.Database
         private readonly ICheckVersionIfExists checkVersionIfExists = checkVersionIfExists;
         private readonly IAddTableSchemaVersion addTableSchemaVersion = addTableSchemaVersion;
 
-        public void Execute()
+        public async void Execute()
         {
             var isVersionTableExists = this.checkVersionTableIfExists.Execute();
             if (!isVersionTableExists)
@@ -38,6 +39,51 @@ namespace UI.Database
             this.AddForeignIDEPathIdToProjectPaths(11);
             this.SeedDefaultIDEPathOnProjectPaths(12);
             this.SetIDEPathIdToNotNull(13);
+            this.AddSortIdToProjectPaths(14);
+            await this.UpdateSortIdToIncrement(15);
+        }
+
+        private async Task UpdateSortIdToIncrement(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = $"SELECT * FROM ProjectPaths";
+            using var reader = await command.ExecuteReaderAsync();
+            var sortId = 1;
+
+            while (reader.Read())
+            {
+                _ = int.TryParse(reader["Id"]?.ToString(), out int id);
+
+                string query = "Update ProjectPaths Set SortId = @SortId WHERE Id = @Id";
+                using var updateCommand = new SQLiteCommand(query, connection);
+                updateCommand.Parameters.AddWithValue("@SortId", sortId);
+                updateCommand.Parameters.AddWithValue("@Id", id);
+                await updateCommand.ExecuteNonQueryAsync();
+                sortId++;
+            }
+
+            this.addTableSchemaVersion.Execute(version);
+        }
+
+        private void AddSortIdToProjectPaths(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string query = "ALTER TABLE ProjectPaths ADD SortId INTEGER DEFAULT(0);";
+            using var command = new SQLiteCommand(query, connection);
+            command.ExecuteNonQuery();
+
+            this.addTableSchemaVersion.Execute(version);
         }
 
         private void SetIDEPathIdToNotNull(int version)

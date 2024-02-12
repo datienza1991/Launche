@@ -32,6 +32,8 @@ namespace UI
                 .AddSingleton<IGetLastProjectPath, GetLastProjectPath>()
                 .AddSingleton<IDeleteProjectPath, DeleteProjectPath>()
                 .AddSingleton<IDeleteIdePath, DeleteIdePath>()
+                .AddSingleton<ISortUpProjectPath, SortUpProjectPath>()
+                .AddSingleton<ISortDownProjectPath, SortDownProjectPath>()
                 .AddSingleton<MainWindow>()
                 .BuildServiceProvider();
 

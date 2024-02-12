@@ -14,7 +14,7 @@ public class GetProjectPaths(ICreateSqliteConnection createSqliteConnection) : I
         var connection = this.createSqliteConnection.Execute();
         connection.Open();
         using var command = connection.CreateCommand();
-        command.CommandText = $"SELECT * FROM ProjectPaths";
+        command.CommandText = $"SELECT * FROM ProjectPaths ORDER BY SortId";
         using var reader = await command.ExecuteReaderAsync();
         while (reader.Read())
         {
@@ -22,8 +22,9 @@ public class GetProjectPaths(ICreateSqliteConnection createSqliteConnection) : I
             var path = reader[nameof(ProjectPath.Path)]?.ToString() ?? "";
             var name = reader[nameof(ProjectPath.Name)]?.ToString() ?? "";
             var idePathId = reader[nameof(ProjectPath.IDEPathId)]?.ToString() ?? "";
+            var sortId = reader[nameof(ProjectPath.SortId)]?.ToString() ?? "";
 
-            projectPaths.Add(new() { Id = id, Path = path, Name = name, IDEPathId= int.Parse(idePathId) });
+            projectPaths.Add(new() { Id = id, Path = path, Name = name, IDEPathId= int.Parse(idePathId), SortId=int.Parse(sortId) });
         }
 
         return projectPaths;
