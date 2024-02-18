@@ -6,12 +6,13 @@
     xmlns:local="clr-namespace:UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Launche - IDE Launcher by Darren Atienza"
-    Width="511"
-    Height="450"
+    Width="650"
+    Height="550"
+    MaxWidth="750"
     Loaded="Window_Loaded"
-    WindowStyle="ToolWindow"
+    WindowStyle="SingleBorderWindow"
     mc:Ignorable="d">
-    <Grid Width="467" HorizontalAlignment="Center">
+    <Grid Margin="5,2,5,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="33" />
             <RowDefinition Height="23" />
@@ -215,7 +216,7 @@
         <ListView
             x:Name="lvProjectPaths"
             Grid.Row="5"
-            Margin="0,0,0,10"
+            Margin="0,0,0,5"
             ItemsSource="{Binding ProjectPathModels, UpdateSourceTrigger=PropertyChanged}"
             MouseDoubleClick="ProjectPathsList_MouseDoubleClick"
             SelectionChanged="ProjectPathsList_SelectionChanged">
@@ -256,15 +257,16 @@
                 <GridView AllowsColumnReorder="true">
                     <GridView.Columns>
                         <GridViewColumn
-                            Width="24"
+                            Width="Auto"
                             DisplayMemberBinding="{Binding Path=Index}"
                             Header="#" />
                         <GridViewColumn
-                            Width="100"
+                            Width="Auto"
                             DisplayMemberBinding="{Binding Path=Name}"
                             HeaderContainerStyle="{StaticResource HeaderStyle}"
                             HeaderTemplate="{StaticResource Templ}" />
                         <GridViewColumn
+                            Width="Auto"
                             DisplayMemberBinding="{Binding Path=Path}"
                             HeaderContainerStyle="{StaticResource HeaderStyle}"
                             HeaderTemplate="{StaticResource pathTemplate}" />
