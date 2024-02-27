@@ -211,6 +211,7 @@ namespace UI;
                 {
                     FileName = this.mainWindowViewModel!.SelectedIdePath!.Path,
                     Arguments = this.mainWindowViewModel.SelectedProjectPath.Path,
+                    UseShellExecute = true,
                 };
                 Process.Start(startInfo);
 
