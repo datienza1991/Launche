@@ -12,7 +12,6 @@ public class SaveIDEPath(ICreateSqliteConnection createSqliteConnection) : ISave
     public async Task<bool> ExecuteAsync(string path)
     {
         var tableName = $"{nameof(IDEPath)}s";
-        var id = 1;
         using var connection = this.createSqliteConnection.Execute();
         connection.Open();
 
