@@ -19,6 +19,7 @@
             <RowDefinition Height="28" />
             <RowDefinition Height="28" />
             <RowDefinition Height="28" />
+            <RowDefinition Height="28" />
             <RowDefinition />
 
         </Grid.RowDefinitions>
@@ -213,9 +214,29 @@
                 </Button.Resources>
             </Button>
         </Grid>
+        <Grid Grid.Row="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label
+                Grid.Column="0"
+                Padding="5,0"
+                VerticalAlignment="Top"
+                Content="Search:"
+                ForceCursor="True" />
+            <TextBox
+                x:Name="txtSearch"
+                Grid.Column="1"
+                Height="20"
+                VerticalAlignment="Top"
+                Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"
+                TextChanged="TxtSearch_TextChanged"
+                TextWrapping="NoWrap" />
+        </Grid>
         <ListView
             x:Name="lvProjectPaths"
-            Grid.Row="5"
+            Grid.Row="6"
             Margin="0,0,0,5"
             ItemsSource="{Binding ProjectPathModels, UpdateSourceTrigger=PropertyChanged}"
             MouseDoubleClick="ProjectPathsList_MouseDoubleClick"
@@ -242,6 +263,7 @@
                         Click="mnuMoveDown_Click"
                         Header="Move down"
                         IsEnabled="{Binding EnableMoveDown}" />
+                    <MenuItem x:Name="MnuOpenFolderWindow" Header="Open Folder Window" Click="MnuOpenFolderWindow_Click" />
                 </ContextMenu>
                 <ToolTip x:Key="ItemToolTip">
                     <Label Content="Double click to lunch your IDE" />

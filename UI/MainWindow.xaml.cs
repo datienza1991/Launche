@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -10,283 +11,321 @@ using UI.ProjectPath;
 
 namespace UI;
 
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+/// <summary>
+/// Interaction logic for MainWindow.xaml
+/// </summary>
+public partial class MainWindow : Window
+{
+    private readonly IGetIDEPath? getVsCodePath;
+    private readonly ISaveIDEPath? saveVsCodePath;
+    private readonly IGetProjectPaths? getProjectPaths;
+    private readonly IAddProjectPath? addProjectPath;
+    private readonly IEditProjectPath? editProjectPath;
+    private readonly IGetLastProjectPath? getLastProjectPath;
+    private readonly IGetIDEPaths? getIDEPaths;
+    private readonly IDeleteProjectPath? deleteProjectPath;
+    private readonly IDeleteIdePath? deleteIdePath;
+    private readonly ISortUpProjectPath? sortUpProjectPath;
+    private readonly ISortDownProjectPath? sortDownProjectPath;
+    private readonly MainWindowViewModel? mainWindowViewModel;
+    private ImmutableList<ProjectPathsViewModel> projectPaths;
+
+    public ObservableCollection<ProjectPath.ProjectPath> Entries { get; private set; } = [];
+
+    public MainWindow() => InitializeComponent();
+
+    public MainWindow(
+        IInitializedDatabaseMigration initializedDatabaseMigration,
+        IGetIDEPath getVsCodePath,
+        ISaveIDEPath saveIdePath,
+        IGetProjectPaths getProjectPaths,
+        IAddProjectPath addProjectPath,
+        IEditProjectPath editProjectPath,
+        IGetLastProjectPath getLastProjectPath,
+        IGetIDEPaths getIDEPaths,
+        IDeleteProjectPath deleteProjectPath,
+        IDeleteIdePath deleteIdePath,
+        ISortUpProjectPath sortUpProjectPath,
+        ISortDownProjectPath sortDownProjectPath
+    )
     {
-        private readonly IGetIDEPath? getVsCodePath;
-        private readonly ISaveIDEPath? saveVsCodePath;
-        private readonly IGetProjectPaths? getProjectPaths;
-        private readonly IAddProjectPath? addProjectPath;
-        private readonly IEditProjectPath? editProjectPath;
-        private readonly IGetLastProjectPath? getLastProjectPath;
-        private readonly IGetIDEPaths? getIDEPaths;
-        private readonly IDeleteProjectPath? deleteProjectPath;
-        private readonly IDeleteIdePath? deleteIdePath;
-        private readonly ISortUpProjectPath? sortUpProjectPath;
-        private readonly ISortDownProjectPath? sortDownProjectPath;
-        private readonly MainWindowViewModel? mainWindowViewModel;
+        initializedDatabaseMigration.Execute();
+        this.getVsCodePath = getVsCodePath;
+        this.saveVsCodePath = saveIdePath;
+        this.getProjectPaths = getProjectPaths;
+        this.addProjectPath = addProjectPath;
+        this.editProjectPath = editProjectPath;
+        this.getLastProjectPath = getLastProjectPath;
+        this.getIDEPaths = getIDEPaths;
+        this.deleteProjectPath = deleteProjectPath;
+        this.deleteIdePath = deleteIdePath;
+        this.sortUpProjectPath = sortUpProjectPath;
+        this.sortDownProjectPath = sortDownProjectPath;
+        this.mainWindowViewModel = new MainWindowViewModel();
+        DataContext = this.mainWindowViewModel;
+        InitializeComponent();
 
-        public ObservableCollection<ProjectPath.ProjectPath> Entries { get; private set; } = [];
+    }
 
-        public MainWindow() => InitializeComponent();
 
-        public MainWindow(
-            IInitializedDatabaseMigration initializedDatabaseMigration,
-            IGetIDEPath getVsCodePath,
-            ISaveIDEPath saveIdePath,
-            IGetProjectPaths getProjectPaths,
-            IAddProjectPath addProjectPath,
-            IEditProjectPath editProjectPath,
-            IGetLastProjectPath getLastProjectPath,
-            IGetIDEPaths getIDEPaths,
-            IDeleteProjectPath deleteProjectPath,
-            IDeleteIdePath deleteIdePath,
-            ISortUpProjectPath sortUpProjectPath,
-            ISortDownProjectPath sortDownProjectPath
-        )
+    private async void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
+    {
+        var openFolderDialog = new OpenFileDialog();
+        openFolderDialog.Filter = "Executable Files | *.exe";
+        var result = openFolderDialog.ShowDialog() ?? false;
+
+        if (!result)
         {
-            initializedDatabaseMigration.Execute();
-            this.getVsCodePath = getVsCodePath;
-            this.saveVsCodePath = saveIdePath;
-            this.getProjectPaths = getProjectPaths;
-            this.addProjectPath = addProjectPath;
-            this.editProjectPath = editProjectPath;
-            this.getLastProjectPath = getLastProjectPath;
-            this.getIDEPaths = getIDEPaths;
-            this.deleteProjectPath = deleteProjectPath;
-            this.deleteIdePath = deleteIdePath;
-            this.sortUpProjectPath = sortUpProjectPath;
-            this.sortDownProjectPath = sortDownProjectPath;
-            this.mainWindowViewModel = new MainWindowViewModel();
-            DataContext = this.mainWindowViewModel;
-            InitializeComponent();
-
+            return;
         }
 
-
-        private async void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
+        string filePath = openFolderDialog.FileName;
+        var resultSave = await this.saveVsCodePath!.ExecuteAsync(filePath);
+        if (resultSave)
         {
-            var openFolderDialog = new OpenFileDialog();
-            openFolderDialog.Filter = "Executable Files | *.exe";
-            var result = openFolderDialog.ShowDialog() ?? false;
+            this.mainWindowViewModel!.IdePathsModels!.Clear();
+            await this.FetchIDEPaths();
+            this.mainWindowViewModel.SelectedIdePath = new();
+            this.mainWindowViewModel.SelectedProjectPath = new();
+            MessageBox.Show("IDE path saved!");
+        }
+    }
 
-            if (!result)
+    private async void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        await this.FetchProjectPaths();
+        await this.FetchIDEPaths();
+    }
+
+    private async Task FetchProjectPaths()
+    {
+
+        var projectPaths = await this.getProjectPaths!.ExecuteAsync();
+
+        if (this.getVsCodePath == null) return;
+
+        foreach (var item in projectPaths.Select((value, index) => (value, index)))
+        {
+            var (value, index) = item;
+            index++;
+
+            this.mainWindowViewModel!.ProjectPathModels?.Add
+             (
+                new()
+                {
+                    Index = index,
+                    Id = value.Id,
+                    Name = value.Name,
+                    Path = value.Path,
+                    IDEPathId = value.IDEPathId,
+                    SortId = value.SortId,
+                    EnableMoveUp = index != 1,
+                    EnableMoveDown = index != projectPaths.Count
+                }
+            );
+            this.projectPaths = this.mainWindowViewModel!.ProjectPathModels!.ToImmutableList();
+        }
+    }
+
+    private async Task FetchIDEPaths()
+    {
+
+        var idePaths = await this.getIDEPaths!.ExecuteAsync();
+
+        if (this.getVsCodePath == null) return;
+
+        foreach (var item in idePaths.Select((value, index) => (value, index)))
+        {
+            var (value, index) = item;
+            index++;
+
+            this.mainWindowViewModel!.IdePathsModels?.Add(new() { Id = value.Id, Path = value.Path });
+        }
+    }
+
+    private void ProjectPathsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (lvProjectPaths.SelectedIndex == -1) return;
+
+        var projectPath = (ProjectPathsViewModel)lvProjectPaths.SelectedItem;
+
+        try
+        {
+            this.mainWindowViewModel!.SelectedIdePath = this.mainWindowViewModel!.IdePathsModels!.Single(x => x.Id == projectPath.IDEPathId);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message);
+        }
+
+        this.mainWindowViewModel!.SelectedProjectPath = ProjectPathViewModel.Transform(projectPath);
+    }
+
+    private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
+    {
+        var openFolderDialog = new OpenFolderDialog();
+        var result = openFolderDialog.ShowDialog() ?? false;
+
+        if (result)
+        {
+            string filePath = openFolderDialog.FolderName;
+            string name = openFolderDialog.SafeFolderName;
+
+            this.mainWindowViewModel!.SelectedProjectPath = new() { Id = this.mainWindowViewModel!.SelectedProjectPath!.Id, Path = filePath!, Name = name! };
+
+        }
+    }
+
+    private async void btnSaveProjectPath_Click(object sender, RoutedEventArgs e)
+    {
+        bool result;
+
+        this.mainWindowViewModel!.SelectedProjectPath!.IDEPathId = this.mainWindowViewModel!.SelectedIdePath!.Id;
+
+        if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0)
+        {
+            result = await this.addProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!);
+            this.mainWindowViewModel.SelectedProjectPath.Id = (await this.getLastProjectPath!.ExecuteAsync()).Id;
+        }
+        else
+        {
+            result = await this.editProjectPath!.ExecuteAsync(this.mainWindowViewModel.SelectedProjectPath);
+        }
+
+        if (result)
+        {
+            this.mainWindowViewModel!.ProjectPathModels!.Clear();
+            await this.FetchProjectPaths();
+
+            MessageBox.Show("Project path saved!");
+        }
+    }
+
+    private void ProjectPathsList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        try
+        {
+            if (!Directory.Exists(this.mainWindowViewModel!.SelectedProjectPath!.Path))
             {
+                MessageBox.Show("Directory not found!", "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+            ProcessStartInfo startInfo = new()
+            {
+                FileName = this.mainWindowViewModel!.SelectedIdePath!.Path,
+                Arguments = this.mainWindowViewModel.SelectedProjectPath.Path,
+                UseShellExecute = true,
+            };
+            Process.Start(startInfo);
 
-            string filePath = openFolderDialog.FileName;
-            var resultSave = await this.saveVsCodePath!.ExecuteAsync(filePath);
-            if (resultSave)
+        }
+        catch (Exception ex)
+        {
+
+            MessageBox.Show(ex.Message, "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+    }
+
+    private async void btnDeleteIdePath_Click(object sender, RoutedEventArgs e)
+    {
+        if (this.mainWindowViewModel!.SelectedIdePath!.Id == 0) return;
+
+        try
+        {
+            var result = await this.deleteIdePath!.ExecuteAsync(this.mainWindowViewModel!.SelectedIdePath!.Id);
+
+            if (result)
             {
                 this.mainWindowViewModel!.IdePathsModels!.Clear();
                 await this.FetchIDEPaths();
-                this.mainWindowViewModel.SelectedIdePath = new();
-                this.mainWindowViewModel.SelectedProjectPath = new();
-                MessageBox.Show("IDE path saved!");
-            }
-        }
-
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            await this.FetchProjectPaths();
-            await this.FetchIDEPaths();
-        }
-
-        private async Task FetchProjectPaths()
-        {
-
-            var projectPaths = await this.getProjectPaths!.ExecuteAsync();
-
-            if (this.getVsCodePath == null) return;
-
-            foreach (var item in projectPaths.Select((value, index) => (value, index)))
-            {
-                var (value, index) = item;
-                index++;
-
-                this.mainWindowViewModel!.ProjectPathModels?.Add
-                 (
-                    new()
-                    {
-                        Index = index,
-                        Id = value.Id,
-                        Name = value.Name,
-                        Path = value.Path,
-                        IDEPathId = value.IDEPathId,
-                        SortId = value.SortId,
-                        EnableMoveUp = index != 1,
-                        EnableMoveDown = index != projectPaths.Count
-                    }
-                );
-            }
-        }
-
-        private async Task FetchIDEPaths()
-        {
-
-            var idePaths = await this.getIDEPaths!.ExecuteAsync();
-
-            if (this.getVsCodePath == null) return;
-
-            foreach (var item in idePaths.Select((value, index) => (value, index)))
-            {
-                var (value, index) = item;
-                index++;
-
-                this.mainWindowViewModel!.IdePathsModels?.Add(new() { Id = value.Id, Path = value.Path });
-            }
-        }
-
-        private void ProjectPathsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            if (lvProjectPaths.SelectedIndex == -1) return;
-
-            var projectPath = (ProjectPathsViewModel)lvProjectPaths.SelectedItem;
-
-            try
-            {
-                this.mainWindowViewModel!.SelectedIdePath = this.mainWindowViewModel!.IdePathsModels!.Single(x => x.Id == projectPath.IDEPathId);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-
-            this.mainWindowViewModel!.SelectedProjectPath = ProjectPathViewModel.Transform(projectPath);
-        }
-
-        private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
-        {
-            var openFolderDialog = new OpenFolderDialog();
-            var result = openFolderDialog.ShowDialog() ?? false;
-
-            if (result)
-            {
-                string filePath = openFolderDialog.FolderName;
-                string name = openFolderDialog.SafeFolderName;
-
-                this.mainWindowViewModel!.SelectedProjectPath = new() { Id = this.mainWindowViewModel!.SelectedProjectPath!.Id, Path = filePath!, Name = name! };
-
-            }
-        }
-
-        private async void btnSaveProjectPath_Click(object sender, RoutedEventArgs e)
-        {
-            bool result;
-
-            this.mainWindowViewModel!.SelectedProjectPath!.IDEPathId = this.mainWindowViewModel!.SelectedIdePath!.Id;
-
-            if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0)
-            {
-                result = await this.addProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!);
-                this.mainWindowViewModel.SelectedProjectPath.Id = (await this.getLastProjectPath!.ExecuteAsync()).Id;
-            }
-            else
-            {
-                result = await this.editProjectPath!.ExecuteAsync(this.mainWindowViewModel.SelectedProjectPath);
-            }
-
-            if (result)
-            {
-                this.mainWindowViewModel!.ProjectPathModels!.Clear();
-                await this.FetchProjectPaths();
-
-                MessageBox.Show("Project path saved!");
-            }
-        }
-
-        private void ProjectPathsList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            try
-            {
-                if (!Directory.Exists(this.mainWindowViewModel!.SelectedProjectPath!.Path))
-                {
-                    MessageBox.Show("Directory not found!", "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-                ProcessStartInfo startInfo = new()
-                {
-                    FileName = this.mainWindowViewModel!.SelectedIdePath!.Path,
-                    Arguments = this.mainWindowViewModel.SelectedProjectPath.Path,
-                    UseShellExecute = true,
-                };
-                Process.Start(startInfo);
-
-            }
-            catch (Exception ex)
-            {
-
-                MessageBox.Show(ex.Message, "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-        }
-
-        private async void btnDeleteIdePath_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.mainWindowViewModel!.SelectedIdePath!.Id == 0) return;
-
-            try
-            {
-                var result = await this.deleteIdePath!.ExecuteAsync(this.mainWindowViewModel!.SelectedIdePath!.Id);
-
-                if (result)
-                {
-                    this.mainWindowViewModel!.IdePathsModels!.Clear();
-                    await this.FetchIDEPaths();
-                    this.mainWindowViewModel!.SelectedIdePath = new();
-                }
-            }
-            catch (Exception ex)
-            {
-
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private void btnNewProjectPath_Click(object sender, RoutedEventArgs e)
-        {
-            this.mainWindowViewModel!.SelectedProjectPath = new();
-            this.mainWindowViewModel!.SelectedIdePath = new();
-
-        }
-
-        private void comboIDEPaths_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-
-        }
-
-        private async void btnDeleteProjectPath_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0) return;
-
-            var result = await this.deleteProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!.Id);
-
-            if (result)
-            {
-                this.mainWindowViewModel!.ProjectPathModels!.Clear();
-                await this.FetchProjectPaths();
-                this.mainWindowViewModel!.SelectedProjectPath = new();
                 this.mainWindowViewModel!.SelectedIdePath = new();
             }
         }
-
-        private async void mnuMoveUp_Click(object sender, RoutedEventArgs e)
+        catch (Exception ex)
         {
-            await this.sortUpProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!.SortId);
-            this.mainWindowViewModel.ProjectPathModels?.Clear();
-            await this.FetchProjectPaths();
-        }
 
-        private async void mnuMoveDown_Click(object sender, RoutedEventArgs e)
-        {
-            await this.sortDownProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!.SortId);
-            this.mainWindowViewModel.ProjectPathModels?.Clear();
-            await this.FetchProjectPaths();
+            MessageBox.Show(ex.Message);
         }
     }
+
+    private void btnNewProjectPath_Click(object sender, RoutedEventArgs e)
+    {
+        this.mainWindowViewModel!.SelectedProjectPath = new();
+        this.mainWindowViewModel!.SelectedIdePath = new();
+
+    }
+
+    private void comboIDEPaths_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+
+    }
+
+    private async void btnDeleteProjectPath_Click(object sender, RoutedEventArgs e)
+    {
+        if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0) return;
+
+        var result = await this.deleteProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!.Id);
+
+        if (result)
+        {
+            this.mainWindowViewModel!.ProjectPathModels!.Clear();
+            await this.FetchProjectPaths();
+            this.mainWindowViewModel!.SelectedProjectPath = new();
+            this.mainWindowViewModel!.SelectedIdePath = new();
+        }
+    }
+
+    private async void mnuMoveUp_Click(object sender, RoutedEventArgs e)
+    {
+        await this.sortUpProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!.SortId);
+        this.mainWindowViewModel.ProjectPathModels?.Clear();
+        await this.FetchProjectPaths();
+    }
+
+    private async void mnuMoveDown_Click(object sender, RoutedEventArgs e)
+    {
+        await this.sortDownProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!.SortId);
+        this.mainWindowViewModel.ProjectPathModels?.Clear();
+        await this.FetchProjectPaths();
+    }
+
+    private void TxtSearch_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        var filteredPaths = this.projectPaths.Where(x => x.Name.ToLower().Contains(this.mainWindowViewModel!.Search.ToLower()));
+        this.mainWindowViewModel!.ProjectPathModels!.Clear();
+        foreach (var item in filteredPaths!)
+        {
+            this.mainWindowViewModel!.ProjectPathModels.Add(item);
+        }
+    }
+
+    private void MnuOpenFolderWindow_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (!Directory.Exists(this.mainWindowViewModel!.SelectedProjectPath!.Path))
+            {
+                MessageBox.Show("Directory not found!", "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            ProcessStartInfo startInfo = new()
+            {
+                FileName = "explorer.exe",
+                Arguments = this.mainWindowViewModel.SelectedProjectPath.Path,
+                UseShellExecute = true,
+
+            };
+            Process.Start(startInfo);
+
+        }
+        catch (Exception ex)
+        {
+
+            MessageBox.Show(ex.Message, "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+}
 
 public class MainWindowViewModel : INotifyPropertyChanged
 {
@@ -296,6 +335,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
         this.IdePathsModels = [];
         this.SelectedProjectPath = new();
         this.SelectedIdePath = new();
+        this.search = "";
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -345,6 +385,17 @@ public class MainWindowViewModel : INotifyPropertyChanged
         {
             selectedIdePath = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.SelectedIdePath)));
+        }
+    }
+
+    private string search;
+    public string Search
+    {
+        get { return search; }
+        set
+        {
+            search = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.Search)));
         }
     }
 }
