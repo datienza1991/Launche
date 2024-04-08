@@ -216,7 +216,10 @@ public partial class MainWindow : Window
                 Arguments = this.mainWindowViewModel.SelectedProjectPath.Path,
                 UseShellExecute = true,
             };
-            Process.Start(startInfo);
+
+            using Process process = new();
+            process.StartInfo = startInfo;
+            process.Start();
 
         }
         catch (Exception ex)
