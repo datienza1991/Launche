@@ -22,11 +22,13 @@ internal class GetLastProjectPath(ICreateSqliteConnection createSqliteConnection
             var path = reader[nameof(ProjectPath.Path)]?.ToString() ?? "";
             var name = reader[nameof(ProjectPath.Name)]?.ToString() ?? "";
             var idePathId = int.Parse(reader[nameof(ProjectPath.IDEPathId)]?.ToString() ?? "0");
+            var filename = reader[nameof(ProjectPath.Filename)]?.ToString() ?? "";
 
             projectPath.Id = id;
             projectPath.Path = path;
             projectPath.Name = name;
             projectPath.IDEPathId = idePathId;
+            projectPath.Filename = filename;
         }
 
         return projectPath;

@@ -1,5 +1,4 @@
 ﻿using System.Data.SQLite;
-using UI.ProjectPath;
 
 namespace UI.Database
 {
@@ -41,6 +40,22 @@ namespace UI.Database
             this.SetIDEPathIdToNotNull(13);
             this.AddSortIdToProjectPaths(14);
             await this.UpdateSortIdToIncrement(15);
+            this.AddFileNameField(16);
+        }
+
+        private void AddFileNameField(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string query = "ALTER TABLE ProjectPaths ADD Filename TEXT;";
+            using var command = new SQLiteCommand(query, connection);
+            command.ExecuteNonQuery();
+
+            this.addTableSchemaVersion.Execute(version);
         }
 
         private async Task UpdateSortIdToIncrement(int version)

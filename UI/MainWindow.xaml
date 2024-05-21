@@ -20,6 +20,7 @@
             <RowDefinition Height="28" />
             <RowDefinition Height="28" />
             <RowDefinition Height="28" />
+            <RowDefinition Height="28" />
             <RowDefinition />
 
         </Grid.RowDefinitions>
@@ -216,27 +217,55 @@
         </Grid>
         <Grid Grid.Row="5">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="50" />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Label
                 Grid.Column="0"
-                Padding="5,0"
                 VerticalAlignment="Top"
+                Content="File Name:"
+                ForceCursor="True" />
+            <TextBox
+                Grid.Column="1"
+                Grid.ColumnSpan="8"
+                Height="20"
+                Margin="0,0,0,0"
+                VerticalAlignment="Center"
+                Text="{Binding SelectedProjectPath.Filename}"
+                TextWrapping="NoWrap" />
+        </Grid>
+        <Grid Grid.Row="6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50" />
+                <ColumnDefinition Width="107*" />
+                <ColumnDefinition Width="483*" />
+            </Grid.ColumnDefinitions>
+            <Label
+                Grid.Column="0"
+                Padding="5,0"
+                VerticalAlignment="Center"
                 Content="Search:"
                 ForceCursor="True" />
             <TextBox
                 x:Name="txtSearch"
                 Grid.Column="1"
+                Grid.ColumnSpan="2"
                 Height="20"
-                VerticalAlignment="Top"
+                VerticalAlignment="Center"
                 Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"
                 TextChanged="TxtSearch_TextChanged"
                 TextWrapping="NoWrap" />
         </Grid>
         <ListView
             x:Name="lvProjectPaths"
-            Grid.Row="6"
+            Grid.Row="7"
             Margin="0,0,0,5"
             ItemsSource="{Binding ProjectPathModels, UpdateSourceTrigger=PropertyChanged}"
             MouseDoubleClick="ProjectPathsList_MouseDoubleClick"
@@ -263,7 +292,10 @@
                         Click="mnuMoveDown_Click"
                         Header="Move down"
                         IsEnabled="{Binding EnableMoveDown}" />
-                    <MenuItem x:Name="MnuOpenFolderWindow" Header="Open Folder Window" Click="MnuOpenFolderWindow_Click" />
+                    <MenuItem
+                        x:Name="MnuOpenFolderWindow"
+                        Click="MnuOpenFolderWindow_Click"
+                        Header="Open Folder Window" />
                 </ContextMenu>
                 <ToolTip x:Key="ItemToolTip">
                     <Label Content="Double click to lunch your IDE" />
@@ -296,7 +328,6 @@
                 </GridView>
             </ListView.View>
         </ListView>
-
     </Grid>
 
 </Window>

@@ -120,10 +120,11 @@ public partial class MainWindow : Window
                     IDEPathId = value.IDEPathId,
                     SortId = value.SortId,
                     EnableMoveUp = index != 1,
-                    EnableMoveDown = index != projectPaths.Count
+                    EnableMoveDown = index != projectPaths.Count,
+                    Filename = value.Filename
                 }
             );
-            this.projectPaths = this.mainWindowViewModel!.ProjectPathModels!.ToImmutableList();
+            this.projectPaths = [.. this.mainWindowViewModel!.ProjectPathModels!];
         }
     }
 
@@ -203,6 +204,11 @@ public partial class MainWindow : Window
 
     private void ProjectPathsList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
+        this.DoubleClickListItem();
+    }
+
+    private void DoubleClickListItem()
+    {
         try
         {
             if (!Directory.Exists(this.mainWindowViewModel!.SelectedProjectPath!.Path))
@@ -210,25 +216,57 @@ public partial class MainWindow : Window
                 MessageBox.Show("Directory not found!", "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            ProcessStartInfo startInfo = new()
+
+            if (this.mainWindowViewModel.SelectedProjectPath.Filename is not "")
             {
-                FileName = this.mainWindowViewModel!.SelectedIdePath!.Path,
-                Arguments = this.mainWindowViewModel.SelectedProjectPath.Path,
-                UseShellExecute = true,
-            };
+                this.OpenIDEWithFileName();
+                return;
+            }
 
-            using Process process = new();
-            process.StartInfo = startInfo;
-            process.Start();
-
+            this.OpenIDE
+            (
+                new()
+                {
+                    FileName = this.mainWindowViewModel!.SelectedIdePath!.Path,
+                    Arguments = $"{this.mainWindowViewModel.SelectedProjectPath.Path}",
+                    UseShellExecute = true,
+                }
+            );
         }
         catch (Exception ex)
         {
-
             MessageBox.Show(ex.Message, "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
-
     }
+
+    private void OpenIDEWithFileName()
+    {
+        var file = $"{this.mainWindowViewModel?.SelectedProjectPath?.Path}\\{this.mainWindowViewModel?.SelectedProjectPath?.Filename}";
+
+        if (File.Exists(file) is false)
+        {
+            MessageBox.Show("File not found!", "Open Project Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        this.OpenIDE
+        (
+            new()
+            {
+                FileName = this.mainWindowViewModel!.SelectedIdePath!.Path,
+                Arguments = $"{file}",
+                UseShellExecute = true,
+            }
+        );
+    }
+
+    private void OpenIDE(ProcessStartInfo processInfo)
+    {
+        using Process process = new();
+        process.StartInfo = processInfo;
+        process.Start();
+    }
+
 
     private async void btnDeleteIdePath_Click(object sender, RoutedEventArgs e)
     {
@@ -421,6 +459,7 @@ public class ProjectPathViewModel : ProjectPath.ProjectPath
             Name = from.Name,
             Path = from.Path,
             SortId = from.SortId,
+            Filename = from.Filename
         };
     }
 
@@ -431,7 +470,8 @@ public class ProjectPathViewModel : ProjectPath.ProjectPath
             Id = from.Id,
             IDEPathId = from.IDEPathId,
             Name = from.Name,
-            Path = from.Path
+            Path = from.Path,
+            Filename = from.Filename
         };
     }
 }
