@@ -23,8 +23,20 @@ public class GetProjectPaths(ICreateSqliteConnection createSqliteConnection) : I
             var name = reader[nameof(ProjectPath.Name)]?.ToString() ?? "";
             var idePathId = reader[nameof(ProjectPath.IDEPathId)]?.ToString() ?? "";
             var sortId = reader[nameof(ProjectPath.SortId)]?.ToString() ?? "";
+            var fileName = reader[nameof(ProjectPath.Filename)]?.ToString() ?? "";
 
-            projectPaths.Add(new() { Id = id, Path = path, Name = name, IDEPathId= int.Parse(idePathId), SortId=int.Parse(sortId) });
+            projectPaths.Add
+            (
+                new()
+                {
+                    Id = id,
+                    Path = path,
+                    Name = name,
+                    IDEPathId = int.Parse(idePathId),
+                    SortId = int.Parse(sortId),
+                    Filename = fileName,
+                }
+            );
         }
 
         return projectPaths;

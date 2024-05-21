@@ -238,7 +238,7 @@
                 Height="20"
                 Margin="0,0,0,0"
                 VerticalAlignment="Center"
-                Text="{Binding SelectedProjectPath.Name}"
+                Text="{Binding SelectedProjectPath.Filename}"
                 TextWrapping="NoWrap" />
         </Grid>
         <Grid Grid.Row="6">

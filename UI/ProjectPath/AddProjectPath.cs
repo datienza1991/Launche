@@ -17,14 +17,15 @@ namespace UI.ProjectPath
 
             string createTableSql = @"
                 PRAGMA foreign_keys = ON; 
-                INSERT INTO ProjectPaths( Path , Name, IDEPathId, SortId ) 
-                    VALUES ( @path , @name, @idePath, (select max( SortId ) from ProjectPaths) + 1 );";
+                INSERT INTO ProjectPaths( Path , Name, IDEPathId, SortId, Filename ) 
+                    VALUES ( @path , @name, @idePath, (select max( SortId ), @fileName from ProjectPaths) + 1 );";
 
             using var command = new SQLiteCommand(createTableSql, connection);
 
             command.Parameters.AddWithValue("@path", param.Path);
             command.Parameters.AddWithValue("@name", param.Name);
             command.Parameters.AddWithValue("@idePath", param.IDEPathId);
+            command.Parameters.AddWithValue("@fileName", param.Filename);
 
             var rows = await command.ExecuteNonQueryAsync();
 
