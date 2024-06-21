@@ -205,10 +205,10 @@ public partial class MainWindow : Window
 
     private void ProjectPathsList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
-        this.DoubleClickListItem();
+        this.OpenProject();
     }
 
-    private void DoubleClickListItem()
+    private void OpenProject()
     {
         try
         {
@@ -298,11 +298,6 @@ public partial class MainWindow : Window
 
     }
 
-    private void comboIDEPaths_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-    {
-
-    }
-
     private async void btnDeleteProjectPath_Click(object sender, RoutedEventArgs e)
     {
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0) return;
@@ -385,6 +380,16 @@ public partial class MainWindow : Window
         lvProjectPaths.SelectedItem = item;
         ListViewItem? firstListViewItem = lvProjectPaths.ItemContainerGenerator.ContainerFromIndex(0) as ListViewItem;
         firstListViewItem?.Focus();
+    }
+
+    private void lvProjectPaths_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key != System.Windows.Input.Key.Enter)
+        {
+            return;
+        }
+
+        OpenProject();
     }
 }
 
