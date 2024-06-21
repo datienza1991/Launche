@@ -259,6 +259,7 @@
                 Grid.ColumnSpan="2"
                 Height="20"
                 VerticalAlignment="Center"
+                KeyUp="txtSearch_KeyUp"
                 Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"
                 TextChanged="TxtSearch_TextChanged"
                 TextWrapping="NoWrap" />

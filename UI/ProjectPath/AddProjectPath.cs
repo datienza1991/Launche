@@ -17,8 +17,8 @@ namespace UI.ProjectPath
 
             string createTableSql = @"
                 PRAGMA foreign_keys = ON; 
-                INSERT INTO ProjectPaths( Path , Name, IDEPathId, SortId, Filename ) 
-                    VALUES ( @path , @name, @idePath, (select max( SortId ), @fileName from ProjectPaths) + 1 );";
+                INSERT INTO ProjectPaths( Path , Name , IDEPathId , SortId,  Filename ) 
+                    VALUES ( @path , @name , @idePath , (select max( SortId ) from ProjectPaths) + 1 , @fileName );";
 
             using var command = new SQLiteCommand(createTableSql, connection);
 

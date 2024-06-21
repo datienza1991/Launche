@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using UI.Database;
 using UI.IDEPath;
 using UI.ProjectPath;
@@ -365,6 +366,25 @@ public partial class MainWindow : Window
 
             MessageBox.Show(ex.Message, "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private void txtSearch_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key != System.Windows.Input.Key.Down)
+        {
+            return;
+        }
+
+        if (lvProjectPaths.Items.Count == 0)
+        {
+            return;
+        }
+
+        lvProjectPaths.Focus();
+        var item = lvProjectPaths.Items[0];
+        lvProjectPaths.SelectedItem = item;
+        ListViewItem? firstListViewItem = lvProjectPaths.ItemContainerGenerator.ContainerFromIndex(0) as ListViewItem;
+        firstListViewItem?.Focus();
     }
 }
 
