@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using LibGit2Sharp;
+using Microsoft.Win32;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -147,6 +148,7 @@ public partial class MainWindow : Window
 
     private void ProjectPathsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
+        string branchName = "";
         if (lvProjectPaths.SelectedIndex == -1) return;
 
         var projectPath = (ProjectPathsViewModel)lvProjectPaths.SelectedItem;
@@ -160,7 +162,26 @@ public partial class MainWindow : Window
             MessageBox.Show(ex.Message);
         }
 
-        this.mainWindowViewModel!.SelectedProjectPath = ProjectPathViewModel.Transform(projectPath);
+        try
+        {
+            using var repo = new Repository(projectPath.Path);
+
+            if (repo == null) { return; }
+
+            var branch = repo.Branches.FirstOrDefault(branch => branch.IsCurrentRepositoryHead);
+
+            branchName = branch?.FriendlyName ?? "";
+        }
+        catch (RepositoryNotFoundException)
+        {
+            branchName = "No Git Repository for this project!";
+        }
+        catch (Exception ex)
+        {
+            branchName = $"Other errors thrown: {ex.Message}";
+        }
+
+        this.mainWindowViewModel!.SelectedProjectPath = ProjectPathViewModel.Transform(projectPath, branchName);
     }
 
     private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
@@ -475,7 +496,10 @@ public class ProjectPathsViewModel : ProjectPath.ProjectPath
 
 public class ProjectPathViewModel : ProjectPath.ProjectPath
 {
-    public static ProjectPathViewModel Transform(ProjectPath.ProjectPath from)
+    private string _currentGitBranch = "";
+
+    public string CurrentGitBranch { get { return $"Current Git Branch: {_currentGitBranch}"; } set { _currentGitBranch = value; } }
+    public static ProjectPathViewModel Transform(ProjectPath.ProjectPath from, string repoName)
     {
         return new()
         {
@@ -484,7 +508,8 @@ public class ProjectPathViewModel : ProjectPath.ProjectPath
             Name = from.Name,
             Path = from.Path,
             SortId = from.SortId,
-            Filename = from.Filename
+            Filename = from.Filename,
+            CurrentGitBranch = repoName,
         };
     }
 
