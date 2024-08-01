@@ -30,7 +30,7 @@ public partial class MainWindow : Window
     private readonly ISortUpProjectPath? sortUpProjectPath;
     private readonly ISortDownProjectPath? sortDownProjectPath;
     private readonly MainWindowViewModel? mainWindowViewModel;
-    private ImmutableList<ProjectPathsViewModel> projectPaths;
+    private ImmutableList<ProjectPathsViewModel> projectPaths = [];
 
     public ObservableCollection<ProjectPath.ProjectPath> Entries { get; private set; } = [];
 
