@@ -350,8 +350,46 @@ public partial class MainWindow : Window
 
     private void TxtSearch_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
-        var filteredPaths = this.projectPaths.Where(x => x.Name.ToLower().Contains(this.mainWindowViewModel!.Search.ToLower()));
+        var filteredPaths = this.projectPaths.Where(projectPath => projectPath.Name.ToLower().Contains(this.mainWindowViewModel!.Search.ToLower()));
         this.mainWindowViewModel!.ProjectPathModels!.Clear();
+
+        if (txtSearch.Text is not "")
+        {
+            filteredPaths = filteredPaths.Select
+            (
+                projectPath => new ProjectPathsViewModel
+                {
+                    EnableMoveDown = false,
+                    EnableMoveUp = false,
+                    Filename = projectPath.Filename,
+                    Id = projectPath.Id,
+                    IDEPathId = projectPath.IDEPathId,
+                    Index = projectPath.Index,
+                    Name = projectPath.Name,
+                    Path = projectPath.Path,
+                    SortId = projectPath.SortId,
+                }
+            );
+        }
+        else
+        {
+            filteredPaths = filteredPaths.Select
+            (
+                projectPath => new ProjectPathsViewModel
+                {
+                    EnableMoveUp = projectPath.Index != 1,
+                    EnableMoveDown = projectPath.Index != projectPaths.Count,
+                    Filename = projectPath.Filename,
+                    Id = projectPath.Id,
+                    IDEPathId = projectPath.IDEPathId,
+                    Index = projectPath.Index,
+                    Name = projectPath.Name,
+                    Path = projectPath.Path,
+                    SortId = projectPath.SortId,
+                }
+            );
+        }
+
         foreach (var item in filteredPaths!)
         {
             this.mainWindowViewModel!.ProjectPathModels.Add(item);
