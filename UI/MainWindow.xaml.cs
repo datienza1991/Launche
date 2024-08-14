@@ -355,6 +355,7 @@ public partial class MainWindow : Window
 
         if (txtSearch.Text is not "")
         {
+            btnNewProjectPath.IsEnabled = false;
             filteredPaths = filteredPaths.Select
             (
                 projectPath => new ProjectPathsViewModel
@@ -373,6 +374,7 @@ public partial class MainWindow : Window
         }
         else
         {
+            btnNewProjectPath.IsEnabled = true;
             filteredPaths = filteredPaths.Select
             (
                 projectPath => new ProjectPathsViewModel
