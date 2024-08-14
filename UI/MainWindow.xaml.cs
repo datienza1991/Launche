@@ -97,6 +97,8 @@ public partial class MainWindow : Window
     {
         await this.FetchProjectPaths();
         await this.FetchIDEPaths();
+
+
     }
 
     private async Task FetchProjectPaths()
@@ -123,7 +125,8 @@ public partial class MainWindow : Window
                     SortId = value.SortId,
                     EnableMoveUp = index != 1,
                     EnableMoveDown = index != projectPaths.Count,
-                    Filename = value.Filename
+                    Filename = value.Filename,
+
                 }
             );
             this.projectPaths = [.. this.mainWindowViewModel!.ProjectPathModels!];
@@ -182,6 +185,7 @@ public partial class MainWindow : Window
         }
 
         this.mainWindowViewModel!.SelectedProjectPath = ProjectPathViewModel.Transform(projectPath, branchName);
+
     }
 
     private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
@@ -209,19 +213,42 @@ public partial class MainWindow : Window
         {
             result = await this.addProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!);
             this.mainWindowViewModel.SelectedProjectPath.Id = (await this.getLastProjectPath!.ExecuteAsync()).Id;
+            this.mainWindowViewModel!.ProjectPathModels!.Clear();
+            await this.FetchProjectPaths();
+            this.Search();
+            SelectNewlyAddedItem();
         }
         else
         {
             result = await this.editProjectPath!.ExecuteAsync(this.mainWindowViewModel.SelectedProjectPath);
-        }
-
-        if (result)
-        {
             this.mainWindowViewModel!.ProjectPathModels!.Clear();
             await this.FetchProjectPaths();
-
-            MessageBox.Show("Project path saved!");
+            this.Search();
+            SelectEditedItem();
         }
+
+        if (!result)
+        {
+            return;
+        }
+
+        MessageBox.Show("Project path saved!");
+
+    }
+
+    private void SelectEditedItem()
+    {
+        lvProjectPaths.SelectedItem = lvProjectPaths.Items.SourceCollection
+                 .Cast<ProjectPathsViewModel>()
+                 .FirstOrDefault(projectPathsViewModel => projectPathsViewModel.Id == this.mainWindowViewModel?.SelectedProjectPath?.Id);
+
+        lvProjectPaths.ScrollIntoView(this.lvProjectPaths.SelectedItem);
+    }
+
+    private void SelectNewlyAddedItem()
+    {
+        lvProjectPaths.SelectedItem = lvProjectPaths.Items[^1];
+        lvProjectPaths.ScrollIntoView(this.lvProjectPaths.SelectedItem);
     }
 
     private void ProjectPathsList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -350,6 +377,11 @@ public partial class MainWindow : Window
 
     private void TxtSearch_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
+        Search();
+    }
+
+    private void Search()
+    {
         var filteredPaths = this.projectPaths.Where(projectPath => projectPath.Name.ToLower().Contains(this.mainWindowViewModel!.Search.ToLower()));
         this.mainWindowViewModel!.ProjectPathModels!.Clear();
 
@@ -397,7 +429,6 @@ public partial class MainWindow : Window
             this.mainWindowViewModel!.ProjectPathModels.Add(item);
         }
     }
-
     private void MnuOpenFolderWindow_Click(object sender, RoutedEventArgs e)
     {
         try
