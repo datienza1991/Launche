@@ -233,7 +233,6 @@ public partial class MainWindow : Window
         }
 
         MessageBox.Show("Project path saved!");
-
     }
 
     private void SelectEditedItem()
