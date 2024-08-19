@@ -42,6 +42,38 @@ namespace UI.Database
             await this.UpdateSortIdToIncrement(15);
             this.AddFileNameField(16);
             await this.AddGroupTable(17);
+            await this.AddGroupIdToProjectsTable(18);
+            await this.RenameGroupTableToGroups(19);
+        }
+
+        private async Task RenameGroupTableToGroups(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string query = "ALTER TABLE \"Group\" RENAME TO Groups;\r\n";
+            using var command = new SQLiteCommand(query, connection);
+            await command.ExecuteNonQueryAsync();
+
+            this.addTableSchemaVersion.Execute(version);
+        }
+
+        private async Task AddGroupIdToProjectsTable(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string query = "ALTER TABLE ProjectPaths ADD GroupId INTEGER;\r\n";
+            using var command = new SQLiteCommand(query, connection);
+            await command.ExecuteNonQueryAsync();
+
+            this.addTableSchemaVersion.Execute(version);
         }
 
         private async Task AddGroupTable(int version)
