@@ -44,6 +44,39 @@ namespace UI.Database
             await this.AddGroupTable(17);
             await this.AddGroupIdToProjectsTable(18);
             await this.RenameGroupTableToGroups(19);
+            await this.AddForeignKeyReferenceToGroupIdInProjectPaths(20);
+
+        }
+
+        private async Task AddForeignKeyReferenceToGroupIdInProjectPaths(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string query = "-- Create foreign key ProjectPaths_FK\r\n\r\n" +
+                "CREATE TEMPORARY TABLE temp AS\r\nSELECT *\r\nFROM ProjectPaths;\r\n\r\n" +
+                "DROP TABLE ProjectPaths;\r\n\r\n" +
+                "CREATE TABLE ProjectPaths " +
+                "(\r\n\tId INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "\r\n\t\"Path\" TEXT," +
+                "\r\n\tName TEXT," +
+                "\r\n\tIDEPathId INTEGER," +
+                "\r\n\tSortId INTEGER DEFAULT (0)," +
+                "\r\n\tFilename TEXT," +
+                "\r\n\tGroupId INTEGER," +
+                "\r\n\tCONSTRAINT FK_ProjectPaths_IDEPaths FOREIGN KEY (IDEPathId) " +
+                "REFERENCES IDEPaths(Id) ON DELETE RESTRICT ON UPDATE RESTRICT," +
+                "\r\n\tCONSTRAINT ProjectPaths_FK FOREIGN KEY (GroupId) " +
+                "REFERENCES Groups(Id) ON DELETE RESTRICT\r\n);\r\n\r\n" +
+                "INSERT INTO ProjectPaths\r\nSELECT *\r\nFROM temp;\r\n\r\n" +
+                "DROP TABLE temp;\r\n";
+            using var command = new SQLiteCommand(query, connection);
+            await command.ExecuteNonQueryAsync();
+
+            this.addTableSchemaVersion.Execute(version);
         }
 
         private async Task RenameGroupTableToGroups(int version)
