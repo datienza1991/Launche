@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SQLite;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using System.Data.SQLite;
 
 namespace UI.Database
 {
-    public interface IAddTableSchemaVersion : IExecute<int,int>;
+    public interface IAddTableSchemaVersion : IExecute<int, int>;
 
     public class AddTableSchemaVersion(ICreateSqliteConnection createSqliteConnection) : IAddTableSchemaVersion
     {
