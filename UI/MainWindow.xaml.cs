@@ -97,8 +97,6 @@ public partial class MainWindow : Window
     {
         await this.FetchProjectPaths();
         await this.FetchIDEPaths();
-
-
     }
 
     private async Task FetchProjectPaths()
@@ -126,7 +124,7 @@ public partial class MainWindow : Window
                     EnableMoveUp = index != 1,
                     EnableMoveDown = index != projectPaths.Count,
                     Filename = value.Filename,
-
+                    EnableAddToGroup = value.GroupId is null,
                 }
             );
             this.projectPaths = [.. this.mainWindowViewModel!.ProjectPathModels!];
@@ -562,6 +560,7 @@ public class ProjectPathsViewModel : ProjectPath.ProjectPath
     public int Index { get; set; }
     public bool EnableMoveUp { get; set; }
     public bool EnableMoveDown { get; set; }
+    public bool EnableAddToGroup { get; set; }
 }
 
 public class ProjectPathViewModel : ProjectPath.ProjectPath

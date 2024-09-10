@@ -1,8 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using UI.Database;
-using UI.ProjectPath;
+using UI.Group;
 using UI.IDEPath;
+using UI.ProjectPath;
 
 namespace UI
 {
@@ -14,9 +15,10 @@ namespace UI
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            var services = new ServiceCollection();
+            var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
 
             var serviceProvider = services
+                .AddGroupServiceCollection()
                 .AddSingleton<IAddTableSchemaVersion, AddTableSchemaVersion>()
                 .AddSingleton<ICheckVersionIfExists, CheckVersionIfExists>()
                 .AddSingleton<ICheckVersionTableIfExists, CheckVersionTableIfExists>()
