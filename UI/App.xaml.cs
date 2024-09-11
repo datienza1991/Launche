@@ -15,32 +15,36 @@ namespace UI
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            var mainWindow = GetCurrentServiceProvider().GetService<MainWindow>();
+            mainWindow?.Show();
+        }
+
+        public static ServiceProvider GetCurrentServiceProvider()
+        {
             var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
 
-            var serviceProvider = services
-                .AddGroupServiceCollection()
-                .AddSingleton<IAddTableSchemaVersion, AddTableSchemaVersion>()
-                .AddSingleton<ICheckVersionIfExists, CheckVersionIfExists>()
-                .AddSingleton<ICheckVersionTableIfExists, CheckVersionTableIfExists>()
-                .AddSingleton<ICreateSqliteConnection, CreateSqliteConnection>()
-                .AddSingleton<ICreateVersionsDbTable, CreateVersionsDbTable>()
-                .AddSingleton<IInitializedDatabaseMigration, InitializedDatabaseMigration>()
-                .AddSingleton<ISaveIDEPath, SaveIDEPath>()
-                .AddSingleton<IGetIDEPath, GetIDEPath>()
-                .AddSingleton<IGetProjectPaths, GetProjectPaths>()
-                .AddSingleton<IAddProjectPath, AddProjectPath>()
-                .AddSingleton<IEditProjectPath, EditProjectPath>()
-                .AddSingleton<IGetIDEPaths, GetIDEPaths>()
-                .AddSingleton<IGetLastProjectPath, GetLastProjectPath>()
-                .AddSingleton<IDeleteProjectPath, DeleteProjectPath>()
-                .AddSingleton<IDeleteIdePath, DeleteIdePath>()
-                .AddSingleton<ISortUpProjectPath, SortUpProjectPath>()
-                .AddSingleton<ISortDownProjectPath, SortDownProjectPath>()
-                .AddSingleton<MainWindow>()
-                .BuildServiceProvider();
-
-            var mainWindow = serviceProvider.GetService<MainWindow>();
-            mainWindow?.Show();
+            return services
+                 .AddGroupServiceCollection()
+                 .AddSingleton<IAddTableSchemaVersion, AddTableSchemaVersion>()
+                 .AddSingleton<ICheckVersionIfExists, CheckVersionIfExists>()
+                 .AddSingleton<ICheckVersionTableIfExists, CheckVersionTableIfExists>()
+                 .AddSingleton<ICreateSqliteConnection, CreateSqliteConnection>()
+                 .AddSingleton<ICreateVersionsDbTable, CreateVersionsDbTable>()
+                 .AddSingleton<IInitializedDatabaseMigration, InitializedDatabaseMigration>()
+                 .AddSingleton<ISaveIDEPath, SaveIDEPath>()
+                 .AddSingleton<IGetIDEPath, GetIDEPath>()
+                 .AddSingleton<IGetProjectPaths, GetProjectPaths>()
+                 .AddSingleton<IAddProjectPath, AddProjectPath>()
+                 .AddSingleton<IEditProjectPath, EditProjectPath>()
+                 .AddSingleton<IGetIDEPaths, GetIDEPaths>()
+                 .AddSingleton<IGetLastProjectPath, GetLastProjectPath>()
+                 .AddSingleton<IDeleteProjectPath, DeleteProjectPath>()
+                 .AddSingleton<IDeleteIdePath, DeleteIdePath>()
+                 .AddSingleton<ISortUpProjectPath, SortUpProjectPath>()
+                 .AddSingleton<ISortDownProjectPath, SortDownProjectPath>()
+                 .AddSingleton<MainWindow>()
+                 .AddSingleton<GroupModalWindow>()
+                 .BuildServiceProvider();
         }
     }
 
