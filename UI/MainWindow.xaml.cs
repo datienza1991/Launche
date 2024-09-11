@@ -1,4 +1,5 @@
 ﻿using LibGit2Sharp;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -479,6 +480,12 @@ public partial class MainWindow : Window
         }
 
         OpenProject();
+    }
+
+    private void mnuAddToGroup_Click(object sender, RoutedEventArgs e)
+    {
+        GroupModalWindow? groupModalWindow = App.GetCurrentServiceProvider().GetService<GroupModalWindow>();
+        groupModalWindow?.ShowDialog();
     }
 }
 

@@ -287,9 +287,8 @@
                 <ContextMenu x:Key="ItemContextMenu">
                     <MenuItem
                         x:Name="mnuAddToGroup"
-                        Click="mnuMoveUp_Click"
                         Header="Add to Group"
-                        IsEnabled="{Binding EnableAddToGroup}" />
+                        IsEnabled="{Binding EnableAddToGroup}" Click="mnuAddToGroup_Click" />
                     <MenuItem
                         x:Name="mnuMoveUp"
                         Click="mnuMoveUp_Click"
