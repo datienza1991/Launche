@@ -32,6 +32,7 @@ public partial class MainWindow : Window
     private readonly ISortDownProjectPath? sortDownProjectPath;
     private readonly MainWindowViewModel? mainWindowViewModel;
     private ImmutableList<ProjectPathsViewModel> projectPaths = [];
+    private GroupModalWindow? groupModalWindow;
 
     public ObservableCollection<ProjectPath.ProjectPath> Entries { get; private set; } = [];
 
@@ -484,8 +485,15 @@ public partial class MainWindow : Window
 
     private void mnuAddToGroup_Click(object sender, RoutedEventArgs e)
     {
-        GroupModalWindow? groupModalWindow = App.GetCurrentServiceProvider().GetService<GroupModalWindow>();
+        this.groupModalWindow = App.GetCurrentServiceProvider().GetService<GroupModalWindow>();
+        groupModalWindow!.OnSave += GroupModalWindow_OnSave;
         groupModalWindow?.ShowDialog();
+    }
+
+    private void GroupModalWindow_OnSave(object? sender, GroupModalEventArgs e)
+    {
+        MessageBox.Show($"{e.GroupId}");
+        groupModalWindow!.Close();
     }
 }
 

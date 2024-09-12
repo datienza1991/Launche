@@ -37,10 +37,10 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <Button
+            x:Name="btnSave"
             Grid.Row="2"
             Margin="0,5,0,0"
-            Click="Button_Click"
-            Content="Save">
+            Content="Save" Click="BtnSave_Click">
             <Button.Resources>
                 <Style TargetType="Border">
                     <Setter Property="CornerRadius" Value="3" />
