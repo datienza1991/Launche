@@ -126,7 +126,6 @@ public partial class MainWindow : Window
                     EnableMoveUp = index != 1,
                     EnableMoveDown = index != projectPaths.Count,
                     Filename = value.Filename,
-                    EnableAddToGroup = value.GroupId is null,
                 }
             );
             this.projectPaths = [.. this.mainWindowViewModel!.ProjectPathModels!];
@@ -486,13 +485,16 @@ public partial class MainWindow : Window
     private void mnuAddToGroup_Click(object sender, RoutedEventArgs e)
     {
         this.groupModalWindow = App.GetCurrentServiceProvider().GetService<GroupModalWindow>();
+        this.groupModalWindow!.ProjectPath = this.mainWindowViewModel!.SelectedProjectPath;
         groupModalWindow!.OnSave += GroupModalWindow_OnSave;
         groupModalWindow?.ShowDialog();
     }
 
-    private void GroupModalWindow_OnSave(object? sender, GroupModalEventArgs e)
+    private async void GroupModalWindow_OnSave(object? sender, EventArgs e)
     {
-        MessageBox.Show($"{e.GroupId}");
+        this.mainWindowViewModel!.ProjectPathModels!.Clear();
+        await this.FetchProjectPaths();
+        this.Search();
         groupModalWindow!.Close();
     }
 }
