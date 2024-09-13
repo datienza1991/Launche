@@ -126,6 +126,7 @@ public partial class MainWindow : Window
                     EnableMoveUp = index != 1,
                     EnableMoveDown = index != projectPaths.Count,
                     Filename = value.Filename,
+                    GroupId = value.GroupId,
                 }
             );
             this.projectPaths = [.. this.mainWindowViewModel!.ProjectPathModels!];
@@ -399,6 +400,7 @@ public partial class MainWindow : Window
                     Name = projectPath.Name,
                     Path = projectPath.Path,
                     SortId = projectPath.SortId,
+                    GroupId = projectPath.GroupId,
                 }
             );
         }
@@ -418,6 +420,7 @@ public partial class MainWindow : Window
                     Name = projectPath.Name,
                     Path = projectPath.Path,
                     SortId = projectPath.SortId,
+                    GroupId = projectPath.GroupId,
                 }
             );
         }
@@ -495,6 +498,7 @@ public partial class MainWindow : Window
         this.mainWindowViewModel!.ProjectPathModels!.Clear();
         await this.FetchProjectPaths();
         this.Search();
+        SelectEditedItem();
         groupModalWindow!.Close();
     }
 }
@@ -596,6 +600,7 @@ public class ProjectPathViewModel : ProjectPath.ProjectPath
             SortId = from.SortId,
             Filename = from.Filename,
             CurrentGitBranch = repoName,
+            GroupId = from.GroupId,
         };
     }
 
@@ -607,7 +612,8 @@ public class ProjectPathViewModel : ProjectPath.ProjectPath
             IDEPathId = from.IDEPathId,
             Name = from.Name,
             Path = from.Path,
-            Filename = from.Filename
+            Filename = from.Filename,
+            GroupId = from.GroupId,
         };
     }
 }

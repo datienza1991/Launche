@@ -19,9 +19,9 @@ namespace UI.Windows.Group.ViewModels
             }
         }
 
-        private GroupViewModel selectedOption = new();
+        private GroupViewModel? selectedOption = new();
 
-        public GroupViewModel SelectedOption
+        public GroupViewModel? SelectedOption
         {
             get { return selectedOption; }
             set
