@@ -40,6 +40,9 @@ public partial class GroupModalWindow : Window
                 group => new GroupViewModel() { Id = group.Id, Name = group.Name }
             )
         ];
+        this.ListBoxGroup.SelectedItem = this.ListBoxGroup.Items.SourceCollection
+                 .Cast<GroupViewModel>()
+                 .FirstOrDefault(groupViewModel => groupViewModel.Id == ProjectPath?.GroupId);
     }
 
     private async void BtnSave_Click(object sender, RoutedEventArgs e)

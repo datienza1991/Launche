@@ -24,6 +24,7 @@ public class GetProjectPaths(ICreateSqliteConnection createSqliteConnection) : I
             var idePathId = reader[nameof(ProjectPath.IDEPathId)]?.ToString() ?? "";
             var sortId = reader[nameof(ProjectPath.SortId)]?.ToString() ?? "";
             var fileName = reader[nameof(ProjectPath.Filename)]?.ToString() ?? "";
+            var groupId = reader[nameof(ProjectPath.GroupId)]?.ToString() ?? null;
 
             projectPaths.Add
             (
@@ -35,6 +36,7 @@ public class GetProjectPaths(ICreateSqliteConnection createSqliteConnection) : I
                     IDEPathId = int.Parse(idePathId),
                     SortId = int.Parse(sortId),
                     Filename = fileName,
+                    GroupId = groupId is not null ? int.Parse(groupId) : null,
                 }
             );
         }
