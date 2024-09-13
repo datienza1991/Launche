@@ -19,7 +19,8 @@ namespace UI.ProjectPath
                 $"Path = @path, " +
                 $"Name = @name, " +
                 $"IDEPathId = @idePathId," +
-                $"Filename = @fileName " +
+                $"Filename = @fileName," +
+                $"GroupId = @groupId " +
                 $"WHERE Id = @id;";
 
             using var command = new SQLiteCommand(createTableSql, connection);
@@ -29,6 +30,7 @@ namespace UI.ProjectPath
             command.Parameters.AddWithValue("@idePathId", param.IDEPathId);
             command.Parameters.AddWithValue("@fileName", param.Filename);
             command.Parameters.AddWithValue("@id", param.Id);
+            command.Parameters.AddWithValue("@groupId", param.GroupId);
 
             var rows = await command.ExecuteNonQueryAsync();
             return rows != 0;
