@@ -14,19 +14,38 @@
     <Window.Resources />
     <Grid Margin="5,0,5,5">
         <Grid.RowDefinitions>
-            <RowDefinition Height="28" />
+            <RowDefinition Height="36" />
             <RowDefinition />
             <RowDefinition Height="36" />
         </Grid.RowDefinitions>
-        <Label
-            HorizontalAlignment="Left"
-            VerticalAlignment="Center"
-            Content="Groups" />
+        <Grid Grid.Row="0" Margin="0,5,0,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Content="Groups" />
+            <Button
+                x:Name="BtnReset"
+                Grid.Column="1"
+                Width="60"
+                HorizontalAlignment="Right"
+                Click="BtnReset_Click"
+                Content="Reset">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="3" />
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </Grid>
         <ListBox
             x:Name="ListBoxGroup"
             Grid.Row="1"
             ItemsSource="{Binding Groups}"
-            SelectedItem="{Binding SelectedOption}">
+            SelectedItem="{Binding SelectedOption}" SelectionChanged="ListBoxGroup_SelectionChanged">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <RadioButton
@@ -42,7 +61,8 @@
             Grid.Row="2"
             Margin="0,5,0,0"
             Click="BtnSave_Click"
-            Content="Save">
+            Content="Save"
+            IsEnabled="{Binding EnableSave}">
             <Button.Resources>
                 <Style TargetType="Border">
                     <Setter Property="CornerRadius" Value="3" />

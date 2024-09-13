@@ -43,6 +43,8 @@ public partial class GroupModalWindow : Window
         this.ListBoxGroup.SelectedItem = this.ListBoxGroup.Items.SourceCollection
                  .Cast<GroupViewModel>()
                  .FirstOrDefault(groupViewModel => groupViewModel.Id == ProjectPath?.GroupId);
+
+        this.dataContext.EnableSave = ProjectPath!.GroupId is not null;
     }
 
     private async void BtnSave_Click(object sender, RoutedEventArgs e)
@@ -62,6 +64,24 @@ public partial class GroupModalWindow : Window
         await this.editProjectPath!.ExecuteAsync(this.ProjectPath);
 
         this.OnSave?.Invoke(this, EventArgs.Empty);
+    }
+
+    private async void BtnReset_Click(object sender, RoutedEventArgs e)
+    {
+        if (this.ProjectPath == null)
+        {
+            return;
+        }
+
+        this.ProjectPath.GroupId = null;
+        await this.editProjectPath!.ExecuteAsync(this.ProjectPath);
+        this.ListBoxGroup.SelectedItem = null;
+        this.dataContext.EnableSave = false;
+    }
+
+    private void ListBoxGroup_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        this.dataContext.EnableSave = true;
     }
 }
 
