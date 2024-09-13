@@ -30,5 +30,17 @@ namespace UI.Windows.Group.ViewModels
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.SelectedOption)));
             }
         }
+
+        private bool enableSave = true;
+
+        public bool EnableSave
+        {
+            get { return enableSave; }
+            set
+            {
+                enableSave = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.EnableSave)));
+            }
+        }
     }
 }
