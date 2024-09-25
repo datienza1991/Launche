@@ -291,7 +291,8 @@
                     <MenuItem
                         x:Name="mnuAddToGroup"
                         Click="mnuAddToGroup_Click"
-                        Header="Add to Group" />
+                        Header="Add to Group"
+                        IsEnabled="False" />
                     <MenuItem
                         x:Name="mnuMoveUp"
                         Click="mnuMoveUp_Click"
