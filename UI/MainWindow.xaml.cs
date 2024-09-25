@@ -12,6 +12,7 @@ using UI.Database;
 using UI.Group;
 using UI.IDEPath;
 using UI.ProjectPath;
+using Project = UI.Basic.Project;
 
 namespace UI;
 
@@ -22,16 +23,13 @@ public partial class MainWindow : Window
 {
     private readonly IGetIDEPath? getVsCodePath;
     private readonly ISaveIDEPath? saveVsCodePath;
-    private readonly IGetProjectPaths? getProjectPaths;
-    private readonly IAddProjectPath? addProjectPath;
-    private readonly IEditProjectPath? editProjectPath;
-    private readonly IGetLastProjectPath? getLastProjectPath;
     private readonly IGetIDEPaths? getIDEPaths;
-    private readonly IDeleteProjectPath? deleteProjectPath;
     private readonly IDeleteIdePath? deleteIdePath;
     private readonly ISortUpProjectPath? sortUpProjectPath;
     private readonly ISortDownProjectPath? sortDownProjectPath;
     private readonly IGetAll? groupGetAll;
+    private readonly Project.Data.IPersistence? projectPersistence;
+    private readonly Project.Data.IQuery? projectQuery;
     private readonly MainWindowViewModel? mainWindowViewModel;
     private ImmutableList<ProjectPathsViewModel> projectPaths = [];
     private GroupModalWindow? groupModalWindow;
@@ -45,37 +43,36 @@ public partial class MainWindow : Window
         IInitializedDatabaseMigration initializedDatabaseMigration,
         IGetIDEPath getVsCodePath,
         ISaveIDEPath saveIdePath,
-        IGetProjectPaths getProjectPaths,
-        IAddProjectPath addProjectPath,
-        IEditProjectPath editProjectPath,
-        IGetLastProjectPath getLastProjectPath,
         IGetIDEPaths getIDEPaths,
-        IDeleteProjectPath deleteProjectPath,
         IDeleteIdePath deleteIdePath,
         ISortUpProjectPath sortUpProjectPath,
         ISortDownProjectPath sortDownProjectPath,
-        IGetAll groupGetAll
+        IGetAll groupGetAll,
+        Project.Data.IPersistence projectPersistence,
+        Project.Data.IQuery projectQuery
     )
     {
         initializedDatabaseMigration.Execute();
         this.getVsCodePath = getVsCodePath;
         this.saveVsCodePath = saveIdePath;
-        this.getProjectPaths = getProjectPaths;
-        this.addProjectPath = addProjectPath;
-        this.editProjectPath = editProjectPath;
-        this.getLastProjectPath = getLastProjectPath;
         this.getIDEPaths = getIDEPaths;
-        this.deleteProjectPath = deleteProjectPath;
         this.deleteIdePath = deleteIdePath;
         this.sortUpProjectPath = sortUpProjectPath;
         this.sortDownProjectPath = sortDownProjectPath;
         this.groupGetAll = groupGetAll;
+        this.projectPersistence = projectPersistence;
+        this.projectQuery = projectQuery;
         this.mainWindowViewModel = new MainWindowViewModel();
         DataContext = this.mainWindowViewModel;
         InitializeComponent();
 
     }
 
+    private async void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        await this.FetchProjectPaths();
+        await this.FetchIDEPaths();
+    }
 
     private async void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
     {
@@ -100,12 +97,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private async void Window_Loaded(object sender, RoutedEventArgs e)
-    {
-        await this.FetchProjectPaths();
-        await this.FetchIDEPaths();
-    }
-
     private async Task FetchGroups()
     {
         this.groups = await this.groupGetAll!.ExecuteAsync();
@@ -118,7 +109,7 @@ public partial class MainWindow : Window
             await this.FetchGroups();
         }
 
-        var projectPaths = await this.getProjectPaths!.ExecuteAsync();
+        var projectPaths = await this.projectQuery!.GetAll();
 
         if (this.getVsCodePath == null) return;
 
@@ -226,8 +217,8 @@ public partial class MainWindow : Window
 
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0)
         {
-            result = await this.addProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!);
-            this.mainWindowViewModel.SelectedProjectPath.Id = (await this.getLastProjectPath!.ExecuteAsync()).Id;
+            result = await this.projectPersistence!.Add(this.mainWindowViewModel!.SelectedProjectPath!);
+            this.mainWindowViewModel.SelectedProjectPath.Id = (await this.projectQuery!.GetLast()).Id;
             this.mainWindowViewModel!.ProjectPathModels!.Clear();
             await this.FetchProjectPaths();
             this.Search();
@@ -235,7 +226,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            result = await this.editProjectPath!.ExecuteAsync(this.mainWindowViewModel.SelectedProjectPath);
+            result = await this.projectPersistence!.Edit(this.mainWindowViewModel.SelectedProjectPath);
             this.mainWindowViewModel!.ProjectPathModels!.Clear();
             await this.FetchProjectPaths();
             this.Search();
@@ -364,7 +355,7 @@ public partial class MainWindow : Window
     {
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0) return;
 
-        var result = await this.deleteProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!.Id);
+        var result = await this.projectPersistence!.Delete(this.mainWindowViewModel!.SelectedProjectPath!.Id);
 
         if (result)
         {
