@@ -18,13 +18,13 @@ public class GetProjectPaths(ICreateSqliteConnection createSqliteConnection) : I
         using var reader = await command.ExecuteReaderAsync();
         while (reader.Read())
         {
-            _ = int.TryParse(reader[nameof(ProjectPath.Id)]?.ToString(), out int id);
+            var id = int.Parse(reader[nameof(ProjectPath.Id)]?.ToString() ?? "0");
             var path = reader[nameof(ProjectPath.Path)]?.ToString() ?? "";
             var name = reader[nameof(ProjectPath.Name)]?.ToString() ?? "";
             var idePathId = reader[nameof(ProjectPath.IDEPathId)]?.ToString() ?? "";
             var sortId = reader[nameof(ProjectPath.SortId)]?.ToString() ?? "";
             var fileName = reader[nameof(ProjectPath.Filename)]?.ToString() ?? "";
-            var groupId = reader[nameof(ProjectPath.GroupId)]?.ToString() ?? null;
+            var isGroupId = int.TryParse(reader[nameof(ProjectPath.GroupId)]?.ToString(), out int groupId);
 
             projectPaths.Add
             (
@@ -36,7 +36,7 @@ public class GetProjectPaths(ICreateSqliteConnection createSqliteConnection) : I
                     IDEPathId = int.Parse(idePathId),
                     SortId = int.Parse(sortId),
                     Filename = fileName,
-                    GroupId = groupId is not null ? int.Parse(groupId) : null,
+                    GroupId = isGroupId ? groupId : null,
                 }
             );
         }

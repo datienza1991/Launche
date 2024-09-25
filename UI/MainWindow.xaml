@@ -280,6 +280,9 @@
                 <DataTemplate x:Key="pathTemplate">
                     <TextBlock HorizontalAlignment="Left" Text="Path" />
                 </DataTemplate>
+                <DataTemplate x:Key="GroupTemplate">
+                    <TextBlock HorizontalAlignment="Left" Text="Group" />
+                </DataTemplate>
                 <Style x:Key="HeaderStyle" TargetType="GridViewColumnHeader">
                     <Setter Property="HorizontalContentAlignment" Value="Left" />
                     <Setter Property="Padding" Value="5,2,2,2" />
@@ -331,6 +334,11 @@
                             DisplayMemberBinding="{Binding Path=Path}"
                             HeaderContainerStyle="{StaticResource HeaderStyle}"
                             HeaderTemplate="{StaticResource pathTemplate}" />
+                        <GridViewColumn
+                            Width="Auto"
+                            DisplayMemberBinding="{Binding Path=GroupName}"
+                            HeaderContainerStyle="{StaticResource HeaderStyle}"
+                            HeaderTemplate="{StaticResource GroupTemplate}" />
                     </GridView.Columns>
                 </GridView>
             </ListView.View>
