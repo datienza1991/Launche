@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
+using UI.Basic.Project;
 using UI.Database;
 using UI.Group;
 using UI.IDEPath;
@@ -25,6 +26,7 @@ namespace UI
 
             return services
                  .AddGroupServiceCollection()
+                 .AddProjectServiceCollection()
                  .AddSingleton<IAddTableSchemaVersion, AddTableSchemaVersion>()
                  .AddSingleton<ICheckVersionIfExists, CheckVersionIfExists>()
                  .AddSingleton<ICheckVersionTableIfExists, CheckVersionTableIfExists>()
