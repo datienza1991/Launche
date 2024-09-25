@@ -9,6 +9,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using UI.Database;
+using UI.Group;
 using UI.IDEPath;
 using UI.ProjectPath;
 
@@ -30,9 +31,11 @@ public partial class MainWindow : Window
     private readonly IDeleteIdePath? deleteIdePath;
     private readonly ISortUpProjectPath? sortUpProjectPath;
     private readonly ISortDownProjectPath? sortDownProjectPath;
+    private readonly IGetAll? groupGetAll;
     private readonly MainWindowViewModel? mainWindowViewModel;
     private ImmutableList<ProjectPathsViewModel> projectPaths = [];
     private GroupModalWindow? groupModalWindow;
+    private List<Group.Group> groups = [];
 
     public ObservableCollection<ProjectPath.ProjectPath> Entries { get; private set; } = [];
 
@@ -50,7 +53,8 @@ public partial class MainWindow : Window
         IDeleteProjectPath deleteProjectPath,
         IDeleteIdePath deleteIdePath,
         ISortUpProjectPath sortUpProjectPath,
-        ISortDownProjectPath sortDownProjectPath
+        ISortDownProjectPath sortDownProjectPath,
+        IGetAll groupGetAll
     )
     {
         initializedDatabaseMigration.Execute();
@@ -65,6 +69,7 @@ public partial class MainWindow : Window
         this.deleteIdePath = deleteIdePath;
         this.sortUpProjectPath = sortUpProjectPath;
         this.sortDownProjectPath = sortDownProjectPath;
+        this.groupGetAll = groupGetAll;
         this.mainWindowViewModel = new MainWindowViewModel();
         DataContext = this.mainWindowViewModel;
         InitializeComponent();
@@ -101,8 +106,17 @@ public partial class MainWindow : Window
         await this.FetchIDEPaths();
     }
 
+    private async Task FetchGroups()
+    {
+        this.groups = await this.groupGetAll!.ExecuteAsync();
+    }
+
     private async Task FetchProjectPaths()
     {
+        if (this.groups.Count is 0)
+        {
+            await this.FetchGroups();
+        }
 
         var projectPaths = await this.getProjectPaths!.ExecuteAsync();
 
@@ -127,6 +141,7 @@ public partial class MainWindow : Window
                     EnableMoveDown = index != projectPaths.Count,
                     Filename = value.Filename,
                     GroupId = value.GroupId,
+                    GroupName = this.groups.Find(group => group.Id == value.GroupId)?.Name
                 }
             );
             this.projectPaths = [.. this.mainWindowViewModel!.ProjectPathModels!];
@@ -401,6 +416,7 @@ public partial class MainWindow : Window
                     Path = projectPath.Path,
                     SortId = projectPath.SortId,
                     GroupId = projectPath.GroupId,
+                    GroupName = projectPath.GroupName,
                 }
             );
         }
@@ -421,6 +437,7 @@ public partial class MainWindow : Window
                     Path = projectPath.Path,
                     SortId = projectPath.SortId,
                     GroupId = projectPath.GroupId,
+                    GroupName = projectPath.GroupName,
                 }
             );
         }
@@ -582,6 +599,7 @@ public class ProjectPathsViewModel : ProjectPath.ProjectPath
     public bool EnableMoveUp { get; set; }
     public bool EnableMoveDown { get; set; }
     public bool EnableAddToGroup { get; set; }
+    public string? GroupName { get; set; }
 }
 
 public class ProjectPathViewModel : ProjectPath.ProjectPath
