@@ -2,15 +2,15 @@
 
 namespace UI.ProjectPath;
 
-public interface IGetLastProjectPath : IExecuteAsync<ProjectPath>;
+public interface IGetLastProjectPath : IExecuteAsync<Project>;
 internal class GetLastProjectPath(ICreateSqliteConnection createSqliteConnection) : IGetLastProjectPath
 {
     private readonly ICreateSqliteConnection createSqliteConnection = createSqliteConnection;
 
-    public async Task<ProjectPath> ExecuteAsync()
+    public async Task<Project> ExecuteAsync()
     {
-        var tableName = $"{nameof(ProjectPath)}s";
-        var projectPath = new ProjectPath();
+        var tableName = $"{nameof(Project)}s";
+        var projectPath = new Project();
         var connection = this.createSqliteConnection.Execute();
         connection.Open();
         using var command = connection.CreateCommand();
@@ -18,11 +18,11 @@ internal class GetLastProjectPath(ICreateSqliteConnection createSqliteConnection
         using var reader = await command.ExecuteReaderAsync();
         while (reader.Read())
         {
-            _ = int.TryParse(reader[nameof(ProjectPath.Id)]?.ToString(), out int id);
-            var path = reader[nameof(ProjectPath.Path)]?.ToString() ?? "";
-            var name = reader[nameof(ProjectPath.Name)]?.ToString() ?? "";
-            var idePathId = int.Parse(reader[nameof(ProjectPath.IDEPathId)]?.ToString() ?? "0");
-            var filename = reader[nameof(ProjectPath.Filename)]?.ToString() ?? "";
+            _ = int.TryParse(reader[nameof(Project.Id)]?.ToString(), out int id);
+            var path = reader[nameof(Project.Path)]?.ToString() ?? "";
+            var name = reader[nameof(Project.Name)]?.ToString() ?? "";
+            var idePathId = int.Parse(reader[nameof(Project.IDEPathId)]?.ToString() ?? "0");
+            var filename = reader[nameof(Project.Filename)]?.ToString() ?? "";
 
             projectPath.Id = id;
             projectPath.Path = path;

@@ -10,7 +10,7 @@ namespace UI;
 /// </summary>
 public partial class GroupModalWindow : Window
 {
-    public ProjectPath.ProjectPath? ProjectPath { get; set; }
+    public ProjectPath.Project? ProjectPath { get; set; }
     private readonly GroupWindowDataContext dataContext = new();
     private readonly IGetAll? getAll;
     private readonly IEditProjectPath? editProjectPath;

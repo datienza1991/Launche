@@ -1,20 +1,20 @@
 ﻿using System.Data.SQLite;
 using UI.Database;
 
-namespace UI.Basic.Project.Data;
+namespace UI.Basic.Project;
 
-public interface IPersistence
+public interface IProjectCommand
 {
-    Task<bool> Add(ProjectPath.ProjectPath param);
-    Task<bool> Edit(ProjectPath.ProjectPath param);
+    Task<bool> Add(ProjectPath.Project param);
+    Task<bool> Edit(ProjectPath.Project param);
     Task<bool> Delete(int id);
 }
 
-public class Persistence(ICreateSqliteConnection createSqliteConnection) : IPersistence
+public class ProjectCommand(ICreateSqliteConnection createSqliteConnection) : IProjectCommand
 {
     private readonly ICreateSqliteConnection createSqliteConnection = createSqliteConnection;
 
-    public async Task<bool> Add(ProjectPath.ProjectPath param)
+    public async Task<bool> Add(ProjectPath.Project param)
     {
         using var connection = createSqliteConnection.Execute();
 
@@ -37,7 +37,7 @@ public class Persistence(ICreateSqliteConnection createSqliteConnection) : IPers
         return rows != 0;
     }
 
-    public async Task<bool> Edit(ProjectPath.ProjectPath param)
+    public async Task<bool> Edit(ProjectPath.Project param)
     {
         using var connection = createSqliteConnection.Execute();
 
