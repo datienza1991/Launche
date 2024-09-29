@@ -8,11 +8,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using UI.Basic.Project;
 using UI.Database;
 using UI.Group;
 using UI.IDEPath;
 using UI.ProjectPath;
-using Project = UI.Basic.Project;
 
 namespace UI;
 
@@ -28,14 +28,14 @@ public partial class MainWindow : Window
     private readonly ISortUpProjectPath? sortUpProjectPath;
     private readonly ISortDownProjectPath? sortDownProjectPath;
     private readonly IGetAll? groupGetAll;
-    private readonly Project.Data.IPersistence? projectPersistence;
-    private readonly Project.Data.IQuery? projectQuery;
+    private readonly IProjectCommand? projectCommand;
+    private readonly IProjectQuery? projectQuery;
     private readonly MainWindowViewModel? mainWindowViewModel;
     private ImmutableList<ProjectPathsViewModel> projectPaths = [];
     private GroupModalWindow? groupModalWindow;
     private List<Group.Group> groups = [];
 
-    public ObservableCollection<ProjectPath.ProjectPath> Entries { get; private set; } = [];
+    public ObservableCollection<ProjectPath.Project> Entries { get; private set; } = [];
 
     public MainWindow() => InitializeComponent();
 
@@ -48,8 +48,8 @@ public partial class MainWindow : Window
         ISortUpProjectPath sortUpProjectPath,
         ISortDownProjectPath sortDownProjectPath,
         IGetAll groupGetAll,
-        Project.Data.IPersistence projectPersistence,
-        Project.Data.IQuery projectQuery
+        IProjectCommand projectPersistence,
+        IProjectQuery projectQuery
     )
     {
         initializedDatabaseMigration.Execute();
@@ -60,7 +60,7 @@ public partial class MainWindow : Window
         this.sortUpProjectPath = sortUpProjectPath;
         this.sortDownProjectPath = sortDownProjectPath;
         this.groupGetAll = groupGetAll;
-        this.projectPersistence = projectPersistence;
+        this.projectCommand = projectPersistence;
         this.projectQuery = projectQuery;
         this.mainWindowViewModel = new MainWindowViewModel();
         DataContext = this.mainWindowViewModel;
@@ -217,7 +217,7 @@ public partial class MainWindow : Window
 
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0)
         {
-            result = await this.projectPersistence!.Add(this.mainWindowViewModel!.SelectedProjectPath!);
+            result = await this.projectCommand!.Add(this.mainWindowViewModel!.SelectedProjectPath!);
             this.mainWindowViewModel.SelectedProjectPath.Id = (await this.projectQuery!.GetLast()).Id;
             this.mainWindowViewModel!.ProjectPathModels!.Clear();
             await this.FetchProjectPaths();
@@ -226,7 +226,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            result = await this.projectPersistence!.Edit(this.mainWindowViewModel.SelectedProjectPath);
+            result = await this.projectCommand!.Edit(this.mainWindowViewModel.SelectedProjectPath);
             this.mainWindowViewModel!.ProjectPathModels!.Clear();
             await this.FetchProjectPaths();
             this.Search();
@@ -355,7 +355,7 @@ public partial class MainWindow : Window
     {
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0) return;
 
-        var result = await this.projectPersistence!.Delete(this.mainWindowViewModel!.SelectedProjectPath!.Id);
+        var result = await this.projectCommand!.Delete(this.mainWindowViewModel!.SelectedProjectPath!.Id);
 
         if (result)
         {
@@ -584,7 +584,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
     }
 }
 
-public class ProjectPathsViewModel : ProjectPath.ProjectPath
+public class ProjectPathsViewModel : ProjectPath.Project
 {
     public int Index { get; set; }
     public bool EnableMoveUp { get; set; }
@@ -593,12 +593,12 @@ public class ProjectPathsViewModel : ProjectPath.ProjectPath
     public string? GroupName { get; set; }
 }
 
-public class ProjectPathViewModel : ProjectPath.ProjectPath
+public class ProjectPathViewModel : ProjectPath.Project
 {
     private string _currentGitBranch = "";
 
     public string CurrentGitBranch { get { return $"Current Git Branch: {_currentGitBranch}"; } set { _currentGitBranch = value; } }
-    public static ProjectPathViewModel Transform(ProjectPath.ProjectPath from, string repoName)
+    public static ProjectPathViewModel Transform(ProjectPath.Project from, string repoName)
     {
         return new()
         {
@@ -613,7 +613,7 @@ public class ProjectPathViewModel : ProjectPath.ProjectPath
         };
     }
 
-    public static ProjectPath.ProjectPath Transform(ProjectPathViewModel from)
+    public static ProjectPath.Project Transform(ProjectPathViewModel from)
     {
         return new()
         {

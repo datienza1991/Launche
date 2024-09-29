@@ -3,13 +3,13 @@ using UI.Database;
 
 namespace UI.ProjectPath
 {
-    public interface IEditProjectPath : IExecuteAsync<ProjectPath, bool>;
+    public interface IEditProjectPath : IExecuteAsync<Project, bool>;
 
     public class EditProjectPath(ICreateSqliteConnection createSqliteConnection) : IEditProjectPath
     {
         private readonly ICreateSqliteConnection createSqliteConnection = createSqliteConnection;
 
-        public async Task<bool> ExecuteAsync(ProjectPath param)
+        public async Task<bool> ExecuteAsync(Project param)
         {
             using var connection = this.createSqliteConnection.Execute();
 

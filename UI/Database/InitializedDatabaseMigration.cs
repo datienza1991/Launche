@@ -45,7 +45,23 @@ namespace UI.Database
             await this.AddGroupIdToProjectsTable(18);
             await this.RenameGroupTableToGroups(19);
             await this.AddForeignKeyReferenceToGroupIdInProjectPaths(20);
+            await this.RenameProjectPathsTable(21);
 
+        }
+
+        private async Task RenameProjectPathsTable(int version)
+        {
+            var isVersionExists = this.checkVersionIfExists.Execute(version);
+            if (isVersionExists) { return; }
+
+            using var connection = this.createSqliteConnection.Execute();
+            connection.Open();
+
+            string query = "ALTER TABLE ProjectPaths RENAME TO Projects;\r\n";
+            using var command = new SQLiteCommand(query, connection);
+            await command.ExecuteNonQueryAsync();
+
+            this.addTableSchemaVersion.Execute(version);
         }
 
         private async Task AddForeignKeyReferenceToGroupIdInProjectPaths(int version)
