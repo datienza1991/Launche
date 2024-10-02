@@ -8,7 +8,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using UI.Basic.Project;
+using UI.Basic.Project.Command;
+using UI.Basic.Project.Queries;
 using UI.Database;
 using UI.Group;
 using UI.IDEPath;
@@ -35,7 +36,7 @@ public partial class MainWindow : Window
     private GroupModalWindow? groupModalWindow;
     private List<Group.Group> groups = [];
 
-    public ObservableCollection<ProjectPath.Project> Entries { get; private set; } = [];
+    public ObservableCollection<Project> Entries { get; private set; } = [];
 
     public MainWindow() => InitializeComponent();
 
@@ -76,8 +77,10 @@ public partial class MainWindow : Window
 
     private async void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
     {
-        var openFolderDialog = new OpenFileDialog();
-        openFolderDialog.Filter = "Executable Files | *.exe";
+        var openFolderDialog = new OpenFileDialog
+        {
+            Filter = "Executable Files | *.exe"
+        };
         var result = openFolderDialog.ShowDialog() ?? false;
 
         if (!result)
@@ -584,7 +587,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
     }
 }
 
-public class ProjectPathsViewModel : ProjectPath.Project
+public class ProjectPathsViewModel : Project
 {
     public int Index { get; set; }
     public bool EnableMoveUp { get; set; }
@@ -593,12 +596,12 @@ public class ProjectPathsViewModel : ProjectPath.Project
     public string? GroupName { get; set; }
 }
 
-public class ProjectPathViewModel : ProjectPath.Project
+public class ProjectPathViewModel : Project
 {
     private string _currentGitBranch = "";
 
     public string CurrentGitBranch { get { return $"Current Git Branch: {_currentGitBranch}"; } set { _currentGitBranch = value; } }
-    public static ProjectPathViewModel Transform(ProjectPath.Project from, string repoName)
+    public static ProjectPathViewModel Transform(Project from, string repoName)
     {
         return new()
         {
@@ -613,7 +616,7 @@ public class ProjectPathViewModel : ProjectPath.Project
         };
     }
 
-    public static ProjectPath.Project Transform(ProjectPathViewModel from)
+    public static Project Transform(ProjectPathViewModel from)
     {
         return new()
         {
