@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -14,6 +13,7 @@ using UI.Database;
 using UI.Group;
 using UI.IDEPath;
 using UI.ProjectPath;
+using UI.ViewModels;
 
 namespace UI;
 
@@ -512,125 +512,5 @@ public partial class MainWindow : Window
         SelectEditedItem();
         groupModalWindow!.Close();
     }
-}
-
-public class MainWindowViewModel : INotifyPropertyChanged
-{
-    public MainWindowViewModel()
-    {
-        this.ProjectPathModels = [];
-        this.IdePathsModels = [];
-        this.SelectedProjectPath = new();
-        this.SelectedIdePath = new();
-        this.search = "";
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private ObservableCollection<ProjectPathsViewModel>? projectPathModels;
-
-    public ObservableCollection<ProjectPathsViewModel>? ProjectPathModels
-    {
-        get { return projectPathModels; }
-        set
-        {
-            projectPathModels = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.ProjectPathModels)));
-        }
-    }
-
-    private ObservableCollection<IDEPathsViewModel>? idePathsModels;
-
-    public ObservableCollection<IDEPathsViewModel>? IdePathsModels
-    {
-        get { return idePathsModels; }
-        set
-        {
-            idePathsModels = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.IdePathsModels)));
-        }
-    }
-
-    private ProjectPathViewModel? selectedProjectPath;
-
-    public ProjectPathViewModel? SelectedProjectPath
-    {
-        get { return selectedProjectPath; }
-        set
-        {
-            selectedProjectPath = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.SelectedProjectPath)));
-        }
-    }
-
-    private IDEPathsViewModel? selectedIdePath;
-
-    public IDEPathsViewModel? SelectedIdePath
-    {
-        get { return selectedIdePath; }
-        set
-        {
-            selectedIdePath = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.SelectedIdePath)));
-        }
-    }
-
-    private string search;
-    public string Search
-    {
-        get { return search; }
-        set
-        {
-            search = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.Search)));
-        }
-    }
-}
-
-public class ProjectPathsViewModel : Project
-{
-    public int Index { get; set; }
-    public bool EnableMoveUp { get; set; }
-    public bool EnableMoveDown { get; set; }
-    public bool EnableAddToGroup { get; set; }
-    public string? GroupName { get; set; }
-}
-
-public class ProjectPathViewModel : Project
-{
-    private string _currentGitBranch = "";
-
-    public string CurrentGitBranch { get { return $"Current Git Branch: {_currentGitBranch}"; } set { _currentGitBranch = value; } }
-    public static ProjectPathViewModel Transform(Project from, string repoName)
-    {
-        return new()
-        {
-            Id = from.Id,
-            IDEPathId = from.IDEPathId,
-            Name = from.Name,
-            Path = from.Path,
-            SortId = from.SortId,
-            Filename = from.Filename,
-            CurrentGitBranch = repoName,
-            GroupId = from.GroupId,
-        };
-    }
-
-    public static Project Transform(ProjectPathViewModel from)
-    {
-        return new()
-        {
-            Id = from.Id,
-            IDEPathId = from.IDEPathId,
-            Name = from.Name,
-            Path = from.Path,
-            Filename = from.Filename,
-            GroupId = from.GroupId,
-        };
-    }
-}
-
-public class IDEPathsViewModel : IDEPath.IDEPath
-{
 }
 
