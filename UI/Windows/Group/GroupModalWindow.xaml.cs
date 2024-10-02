@@ -1,6 +1,6 @@
 ﻿using System.Windows;
+using UI.Basic.Project.Command;
 using UI.Group;
-using UI.ProjectPath;
 using UI.Windows.Group.ViewModels;
 
 namespace UI;
@@ -10,10 +10,10 @@ namespace UI;
 /// </summary>
 public partial class GroupModalWindow : Window
 {
-    public ProjectPath.Project? ProjectPath { get; set; }
+    public Project? ProjectPath { get; set; }
     private readonly GroupWindowDataContext dataContext = new();
     private readonly IGetAll? getAll;
-    private readonly IEditProjectPath? editProjectPath;
+    private readonly IProjectCommand? editProjectPath;
 
     public event EventHandler? OnSave;
     public GroupModalWindow()
@@ -22,7 +22,7 @@ public partial class GroupModalWindow : Window
         DataContext = dataContext;
     }
 
-    public GroupModalWindow(IGetAll getAll, IEditProjectPath editProjectPath)
+    public GroupModalWindow(IGetAll getAll, IProjectCommand editProjectPath)
     {
         InitializeComponent();
         DataContext = dataContext;
@@ -61,7 +61,7 @@ public partial class GroupModalWindow : Window
 
         this.ProjectPath.GroupId = dataContext.SelectedOption.Id;
 
-        await this.editProjectPath!.ExecuteAsync(this.ProjectPath);
+        await this.editProjectPath!.Edit(this.ProjectPath);
 
         this.OnSave?.Invoke(this, EventArgs.Empty);
     }
@@ -74,7 +74,7 @@ public partial class GroupModalWindow : Window
         }
 
         this.ProjectPath.GroupId = null;
-        await this.editProjectPath!.ExecuteAsync(this.ProjectPath);
+        await this.editProjectPath!.Edit(this.ProjectPath);
         this.ListBoxGroup.SelectedItem = null;
         this.dataContext.EnableSave = false;
     }

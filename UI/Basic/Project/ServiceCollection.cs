@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using UI.Basic.Project.Command;
+using UI.Basic.Project.Queries;
 
 namespace UI.Basic.Project;
 

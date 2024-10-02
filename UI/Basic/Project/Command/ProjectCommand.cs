@@ -1,49 +1,50 @@
 ﻿using System.Data.SQLite;
 using UI.Database;
 
-namespace UI.Basic.Project;
+namespace UI.Basic.Project.Command;
 
 public interface IProjectCommand
 {
-    Task<bool> Add(ProjectPath.Project param);
-    Task<bool> Edit(ProjectPath.Project param);
+    Task<bool> Add(Project param);
+    Task<bool> Edit(Project param);
     Task<bool> Delete(int id);
 }
 
 public class ProjectCommand(ICreateSqliteConnection createSqliteConnection) : IProjectCommand
 {
     private readonly ICreateSqliteConnection createSqliteConnection = createSqliteConnection;
+    private const string TABLE = $"{nameof(Project)}s";
 
-    public async Task<bool> Add(ProjectPath.Project param)
+    public async Task<bool> Add(Project param)
     {
         using var connection = createSqliteConnection.Execute();
 
         connection.Open();
 
-        string createTableSql = @"
+        string createTableSql = @$"
                 PRAGMA foreign_keys = ON; 
-                INSERT INTO ProjectPaths( Path , Name , IDEPathId , SortId,  Filename ) 
-                    VALUES ( @path , @name , @idePath , (select max( SortId ) from ProjectPaths) + 1 , @fileName );";
+                INSERT INTO {TABLE}( Path , Name , IDEPathId , SortId,  Filename ) 
+                    VALUES ( @path , @name , @idePath , (select max( SortId ) from {TABLE}) + 1 , @fileName );";
 
         using var command = new SQLiteCommand(createTableSql, connection);
 
-        command.Parameters.AddWithValue("@path", param.Path);
-        command.Parameters.AddWithValue("@name", param.Name);
-        command.Parameters.AddWithValue("@idePath", param.IDEPathId);
-        command.Parameters.AddWithValue("@fileName", param.Filename);
+        command.Parameters.AddWithValue("@path", param?.Path);
+        command.Parameters.AddWithValue("@name", param?.Name);
+        command.Parameters.AddWithValue("@idePath", param?.IDEPathId);
+        command.Parameters.AddWithValue("@fileName", param?.Filename);
 
         var rows = await command.ExecuteNonQueryAsync();
 
         return rows != 0;
     }
 
-    public async Task<bool> Edit(ProjectPath.Project param)
+    public async Task<bool> Edit(Project param)
     {
         using var connection = createSqliteConnection.Execute();
 
         connection.Open();
 
-        string createTableSql = $"UPDATE ProjectPaths SET  " +
+        string createTableSql = $"UPDATE {TABLE} SET  " +
             $"Path = @path, " +
             $"Name = @name, " +
             $"IDEPathId = @idePathId," +
@@ -70,7 +71,7 @@ public class ProjectCommand(ICreateSqliteConnection createSqliteConnection) : IP
 
         connection.Open();
 
-        string createTableSql = $"DELETE FROM ProjectPaths WHERE Id = @id;";
+        string createTableSql = $"DELETE FROM {TABLE} WHERE Id = @id;";
 
         using var command = new SQLiteCommand(createTableSql, connection);
 
