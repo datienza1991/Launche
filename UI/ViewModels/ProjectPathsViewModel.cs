@@ -1,4 +1,4 @@
-﻿using UI.Basic.Project.Command;
+﻿using UI.Commands.Basic.Project;
 
 namespace UI.ViewModels
 {

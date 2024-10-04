@@ -7,12 +7,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using UI.Basic.Project.Command;
-using UI.Basic.Project.Queries;
+using UI.Commands.Basic.Project;
 using UI.Database;
-using UI.Group;
 using UI.IDEPath;
-using UI.ProjectPath;
+using UI.Queries.Group;
+using UI.Queries.Project;
 using UI.ViewModels;
 
 namespace UI;
@@ -26,15 +25,14 @@ public partial class MainWindow : Window
     private readonly ISaveIDEPath? saveVsCodePath;
     private readonly IGetIDEPaths? getIDEPaths;
     private readonly IDeleteIdePath? deleteIdePath;
-    private readonly ISortUpProjectPath? sortUpProjectPath;
-    private readonly ISortDownProjectPath? sortDownProjectPath;
-    private readonly IGetAll? groupGetAll;
-    private readonly IProjectCommand? projectCommand;
+    private readonly Commands.Sorting.IProjectCommand? projectSorting;
+    private readonly IGroupQuery? groupQuery;
+    private readonly Commands.Basic.Project.IProjectCommand? projectCommand;
     private readonly IProjectQuery? projectQuery;
     private readonly MainWindowViewModel? mainWindowViewModel;
     private ImmutableList<ProjectPathsViewModel> projectPaths = [];
     private GroupModalWindow? groupModalWindow;
-    private List<Group.Group> groups = [];
+    private List<GroupDetail> groups = [];
 
     public ObservableCollection<Project> Entries { get; private set; } = [];
 
@@ -46,9 +44,8 @@ public partial class MainWindow : Window
         ISaveIDEPath saveIdePath,
         IGetIDEPaths getIDEPaths,
         IDeleteIdePath deleteIdePath,
-        ISortUpProjectPath sortUpProjectPath,
-        ISortDownProjectPath sortDownProjectPath,
-        IGetAll groupGetAll,
+        Commands.Sorting.IProjectCommand? projectSorting,
+        IGroupQuery groupQuery,
         IProjectCommand projectPersistence,
         IProjectQuery projectQuery
     )
@@ -58,9 +55,8 @@ public partial class MainWindow : Window
         this.saveVsCodePath = saveIdePath;
         this.getIDEPaths = getIDEPaths;
         this.deleteIdePath = deleteIdePath;
-        this.sortUpProjectPath = sortUpProjectPath;
-        this.sortDownProjectPath = sortDownProjectPath;
-        this.groupGetAll = groupGetAll;
+        this.projectSorting = projectSorting;
+        this.groupQuery = groupQuery;
         this.projectCommand = projectPersistence;
         this.projectQuery = projectQuery;
         this.mainWindowViewModel = new MainWindowViewModel();
@@ -102,7 +98,7 @@ public partial class MainWindow : Window
 
     private async Task FetchGroups()
     {
-        this.groups = await this.groupGetAll!.ExecuteAsync();
+        this.groups = await this.groupQuery!.GetAll();
     }
 
     private async Task FetchProjectPaths()
@@ -371,14 +367,14 @@ public partial class MainWindow : Window
 
     private async void mnuMoveUp_Click(object sender, RoutedEventArgs e)
     {
-        await this.sortUpProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!.SortId);
+        await this.projectSorting!.SortUp(this.mainWindowViewModel!.SelectedProjectPath!.SortId);
         this.mainWindowViewModel.ProjectPathModels?.Clear();
         await this.FetchProjectPaths();
     }
 
     private async void mnuMoveDown_Click(object sender, RoutedEventArgs e)
     {
-        await this.sortDownProjectPath!.ExecuteAsync(this.mainWindowViewModel!.SelectedProjectPath!.SortId);
+        await this.projectSorting!.SortDown(this.mainWindowViewModel!.SelectedProjectPath!.SortId);
         this.mainWindowViewModel.ProjectPathModels?.Clear();
         await this.FetchProjectPaths();
     }

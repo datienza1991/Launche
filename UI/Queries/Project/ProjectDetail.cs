@@ -1,6 +1,6 @@
-﻿namespace UI.Basic.Project.Command;
+﻿namespace UI.Queries.Project;
 
-public class Project
+public class ProjectDetail
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

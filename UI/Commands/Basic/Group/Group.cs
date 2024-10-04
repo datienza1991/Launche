@@ -1,4 +1,4 @@
-﻿namespace UI.Group
+﻿namespace UI.Commands.Basic.Group
 {
     public class Group
     {
