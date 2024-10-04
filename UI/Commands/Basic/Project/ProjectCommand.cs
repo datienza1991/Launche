@@ -1,7 +1,7 @@
 ﻿using System.Data.SQLite;
 using UI.Database;
 
-namespace UI.Basic.Project.Command;
+namespace UI.Commands.Basic.Project;
 
 public interface IProjectCommand
 {

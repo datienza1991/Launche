@@ -1,6 +1,6 @@
 ﻿using UI.Database;
 
-namespace UI.Basic.Project.Queries;
+namespace UI.Queries.Project;
 
 public interface IProjectQuery
 {
@@ -14,7 +14,7 @@ public class ProjectQuery(ICreateSqliteConnection createSqliteConnection) : IPro
 
     public async Task<ProjectDetail> GetLast()
     {
-        var tableName = $"{nameof(ProjectPath)}s";
+        var tableName = $"{nameof(ProjectDetail)}s";
         var projectPath = new ProjectDetail();
         var connection = createSqliteConnection.Execute();
         connection.Open();

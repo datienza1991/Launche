@@ -1,10 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
-using UI.Basic.Project;
+using UI.Commands;
 using UI.Database;
-using UI.Group;
 using UI.IDEPath;
-using UI.ProjectPath;
+using UI.Queries.Project;
 
 namespace UI
 {
@@ -25,8 +24,8 @@ namespace UI
             var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
 
             return services
-                 .AddGroupServiceCollection()
-                 .AddProjectServiceCollection()
+                 .AddQueriesServiceCollection()
+                 .AddCommandsServiceCollection()
                  .AddSingleton<IAddTableSchemaVersion, AddTableSchemaVersion>()
                  .AddSingleton<ICheckVersionIfExists, CheckVersionIfExists>()
                  .AddSingleton<ICheckVersionTableIfExists, CheckVersionTableIfExists>()
@@ -37,8 +36,6 @@ namespace UI
                  .AddSingleton<IGetIDEPath, GetIDEPath>()
                  .AddSingleton<IGetIDEPaths, GetIDEPaths>()
                  .AddSingleton<IDeleteIdePath, DeleteIdePath>()
-                 .AddSingleton<ISortUpProjectPath, SortUpProjectPath>()
-                 .AddSingleton<ISortDownProjectPath, SortDownProjectPath>()
                  .AddSingleton<MainWindow>()
                  .AddSingleton<GroupModalWindow>()
                  .BuildServiceProvider();

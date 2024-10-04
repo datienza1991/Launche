@@ -1,6 +1,6 @@
 ﻿using System.Windows;
-using UI.Basic.Project.Command;
-using UI.Group;
+using UI.Commands.Basic.Project;
+using UI.Queries.Group;
 using UI.Windows.Group.ViewModels;
 
 namespace UI;
@@ -12,8 +12,8 @@ public partial class GroupModalWindow : Window
 {
     public Project? ProjectPath { get; set; }
     private readonly GroupWindowDataContext dataContext = new();
-    private readonly IGetAll? getAll;
-    private readonly IProjectCommand? editProjectPath;
+    private readonly GroupQuery? groupQuery;
+    private readonly Commands.Grouping.IProjectCommand? projectGrouping;
 
     public event EventHandler? OnSave;
     public GroupModalWindow()
@@ -22,17 +22,17 @@ public partial class GroupModalWindow : Window
         DataContext = dataContext;
     }
 
-    public GroupModalWindow(IGetAll getAll, IProjectCommand editProjectPath)
+    public GroupModalWindow(Queries.Group.GroupQuery groupQuery, UI.Commands.Grouping.IProjectCommand projectGrouping)
     {
         InitializeComponent();
         DataContext = dataContext;
-        this.getAll = getAll;
-        this.editProjectPath = editProjectPath;
+        this.groupQuery = groupQuery;
+        this.projectGrouping = projectGrouping;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        var groups = await getAll!.ExecuteAsync();
+        var groups = await groupQuery!.GetAll();
         dataContext.Groups =
         [..
             groups.Select
@@ -61,7 +61,7 @@ public partial class GroupModalWindow : Window
 
         this.ProjectPath.GroupId = dataContext.SelectedOption.Id;
 
-        await this.editProjectPath!.Edit(this.ProjectPath);
+        await this.projectGrouping!.Group(this.ProjectPath.Id, this.ProjectPath.GroupId);
 
         this.OnSave?.Invoke(this, EventArgs.Empty);
     }
@@ -74,7 +74,7 @@ public partial class GroupModalWindow : Window
         }
 
         this.ProjectPath.GroupId = null;
-        await this.editProjectPath!.Edit(this.ProjectPath);
+        await this.projectGrouping!.Group(this.ProjectPath.Id, this.ProjectPath.GroupId);
         this.ListBoxGroup.SelectedItem = null;
         this.dataContext.EnableSave = false;
     }
