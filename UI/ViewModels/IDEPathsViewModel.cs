@@ -1,4 +1,4 @@
-﻿namespace UI.ViewModels
+﻿namespace Infrastructure.ViewModels
 {
     public class IDEPathsViewModel : IDEPath.IDEPath
     {

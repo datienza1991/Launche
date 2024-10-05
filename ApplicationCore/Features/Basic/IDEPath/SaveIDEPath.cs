@@ -1,7 +1,7 @@
 ﻿using Infrastructure.Database;
 using System.Data.SQLite;
 
-namespace Infrastructure.IDEPath;
+namespace ApplicationCore.Features.Basic.IDEPath;
 
 public interface ISaveIDEPath : IExecuteAsync<string, bool>;
 
@@ -12,7 +12,7 @@ public class SaveIDEPath(ICreateSqliteConnection createSqliteConnection) : ISave
     public async Task<bool> ExecuteAsync(string path)
     {
         var tableName = $"{nameof(IDEPath)}s";
-        using var connection = this.createSqliteConnection.Execute();
+        using var connection = createSqliteConnection.Execute();
         connection.Open();
 
         string createTableSql = $"INSERT INTO IDEPaths ( Path ) VALUES ( @path );";

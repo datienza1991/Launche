@@ -1,13 +1,11 @@
-﻿using UI.Commands.Basic.Project;
-
-namespace UI.ViewModels
+﻿namespace Infrastructure.ViewModels
 {
-    public class ProjectPathViewModel : Project
+    public class ProjectPathViewModel : Infrastructure.Models.Project
     {
         private string _currentGitBranch = "";
 
         public string CurrentGitBranch { get { return $"Current Git Branch: {_currentGitBranch}"; } set { _currentGitBranch = value; } }
-        public static ProjectPathViewModel Transform(Project from, string repoName)
+        public static ProjectPathViewModel Transform(Infrastructure.Models.Project from, string repoName)
         {
             return new()
             {
@@ -22,7 +20,7 @@ namespace UI.ViewModels
             };
         }
 
-        public static Project Transform(ProjectPathViewModel from)
+        public static Infrastructure.Models.Project Transform(ProjectPathViewModel from)
         {
             return new()
             {

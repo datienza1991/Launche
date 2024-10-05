@@ -15,7 +15,7 @@ namespace UI.Windows.Group.ViewModels
             set
             {
                 groups = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.Groups)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Groups)));
             }
         }
 
@@ -27,7 +27,7 @@ namespace UI.Windows.Group.ViewModels
             set
             {
                 selectedOption = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.SelectedOption)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedOption)));
             }
         }
 
@@ -39,7 +39,7 @@ namespace UI.Windows.Group.ViewModels
             set
             {
                 enableSave = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.EnableSave)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(EnableSave)));
             }
         }
     }

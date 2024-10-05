@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.IDEPath;
+﻿namespace Infrastructure.Models;
 
 public class IDEPath
 {
