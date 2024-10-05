@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using ApplicationCore.Features;
+using Infrastructure.Database;
+using Infrastructure.IDEPath;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
-using UI.Commands;
-using UI.Database;
-using UI.IDEPath;
-using UI.Queries.Project;
+using UI.Windows.Group;
 
 namespace UI
 {
@@ -24,8 +24,7 @@ namespace UI
             var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
 
             return services
-                 .AddQueriesServiceCollection()
-                 .AddCommandsServiceCollection()
+                 .AddFeaturesServiceCollection()
                  .AddSingleton<IAddTableSchemaVersion, AddTableSchemaVersion>()
                  .AddSingleton<ICheckVersionIfExists, CheckVersionIfExists>()
                  .AddSingleton<ICheckVersionTableIfExists, CheckVersionTableIfExists>()

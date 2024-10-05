@@ -1,19 +1,19 @@
-﻿using System.Windows;
-using UI.Commands.Basic.Project;
-using UI.Queries.Group;
+﻿using ApplicationCore.Features.Basic.Group;
+using ApplicationCore.Features.Grouping;
+using System.Windows;
 using UI.Windows.Group.ViewModels;
 
-namespace UI;
+namespace UI.Windows.Group;
 
 /// <summary>
 /// Interaction logic for GroupModalWindow.xaml
 /// </summary>
 public partial class GroupModalWindow : Window
 {
-    public Project? ProjectPath { get; set; }
+    public Infrastructure.Models.Project? ProjectPath { get; set; }
     private readonly GroupWindowDataContext dataContext = new();
-    private readonly GroupQuery? groupQuery;
-    private readonly Commands.Grouping.IProjectCommand? projectGrouping;
+    private readonly GroupDataService? groupDataService;
+    private readonly IGroupProject? projectGrouping;
 
     public event EventHandler? OnSave;
     public GroupModalWindow()
@@ -22,17 +22,17 @@ public partial class GroupModalWindow : Window
         DataContext = dataContext;
     }
 
-    public GroupModalWindow(Queries.Group.GroupQuery groupQuery, UI.Commands.Grouping.IProjectCommand projectGrouping)
+    public GroupModalWindow(GroupDataService groupQuery, IGroupProject projectGrouping)
     {
         InitializeComponent();
         DataContext = dataContext;
-        this.groupQuery = groupQuery;
+        groupDataService = groupQuery;
         this.projectGrouping = projectGrouping;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        var groups = await groupQuery!.GetAll();
+        var groups = await groupDataService!.GetAll();
         dataContext.Groups =
         [..
             groups.Select
@@ -44,7 +44,7 @@ public partial class GroupModalWindow : Window
                  .Cast<GroupViewModel>()
                  .FirstOrDefault(groupViewModel => groupViewModel.Id == ProjectPath?.GroupId);
 
-        this.dataContext.EnableSave = ProjectPath!.GroupId is not null;
+        dataContext.EnableSave = ProjectPath!.GroupId is not null;
     }
 
     private async void BtnSave_Click(object sender, RoutedEventArgs e)
@@ -54,34 +54,34 @@ public partial class GroupModalWindow : Window
             return;
         }
 
-        if (this.ProjectPath == null)
+        if (ProjectPath == null)
         {
             return;
         }
 
-        this.ProjectPath.GroupId = dataContext.SelectedOption.Id;
+        ProjectPath.GroupId = dataContext.SelectedOption.Id;
 
-        await this.projectGrouping!.Group(this.ProjectPath.Id, this.ProjectPath.GroupId);
+        await projectGrouping!.Group(ProjectPath.Id, ProjectPath.GroupId);
 
-        this.OnSave?.Invoke(this, EventArgs.Empty);
+        OnSave?.Invoke(this, EventArgs.Empty);
     }
 
     private async void BtnReset_Click(object sender, RoutedEventArgs e)
     {
-        if (this.ProjectPath == null)
+        if (ProjectPath == null)
         {
             return;
         }
 
-        this.ProjectPath.GroupId = null;
-        await this.projectGrouping!.Group(this.ProjectPath.Id, this.ProjectPath.GroupId);
+        ProjectPath.GroupId = null;
+        await projectGrouping!.Group(ProjectPath.Id, ProjectPath.GroupId);
         this.ListBoxGroup.SelectedItem = null;
-        this.dataContext.EnableSave = false;
+        dataContext.EnableSave = false;
     }
 
     private void ListBoxGroup_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
-        this.dataContext.EnableSave = true;
+        dataContext.EnableSave = true;
     }
 }
 
