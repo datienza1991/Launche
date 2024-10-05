@@ -5,7 +5,7 @@ namespace ApplicationCore.Features.Basic.Project;
 
 public interface IProjectDataService
 {
-    Task<ProjectDetail> GetLast();
+    Task<Infrastructure.Models.Project> GetLast();
     Task<IEnumerable<ProjectPathsViewModel>> GetAll();
     Task<bool> Add(Infrastructure.Models.Project param);
     Task<bool> Edit(Infrastructure.Models.Project param);
@@ -83,10 +83,10 @@ public class ProjectDataService(ICreateSqliteConnection createSqliteConnection) 
         return rows != 0;
     }
 
-    public async Task<ProjectDetail> GetLast()
+    public async Task<Infrastructure.Models.Project> GetLast()
     {
-        var tableName = $"{nameof(ProjectDetail)}s";
-        var projectPath = new ProjectDetail();
+        var tableName = $"{nameof(Infrastructure.Models.Project)}s";
+        var projectPath = new Infrastructure.Models.Project();
         var connection = createSqliteConnection.Execute();
         connection.Open();
         using var command = connection.CreateCommand();
@@ -94,11 +94,11 @@ public class ProjectDataService(ICreateSqliteConnection createSqliteConnection) 
         using var reader = await command.ExecuteReaderAsync();
         while (reader.Read())
         {
-            _ = int.TryParse(reader[nameof(ProjectDetail.Id)]?.ToString(), out int id);
-            var path = reader[nameof(ProjectDetail.Path)]?.ToString() ?? "";
-            var name = reader[nameof(ProjectDetail.Name)]?.ToString() ?? "";
-            var idePathId = int.Parse(reader[nameof(ProjectDetail.IDEPathId)]?.ToString() ?? "0");
-            var filename = reader[nameof(ProjectDetail.Filename)]?.ToString() ?? "";
+            _ = int.TryParse(reader[nameof(Infrastructure.Models.Project.Id)]?.ToString(), out int id);
+            var path = reader[nameof(Infrastructure.Models.Project.Path)]?.ToString() ?? "";
+            var name = reader[nameof(Infrastructure.Models.Project.Name)]?.ToString() ?? "";
+            var idePathId = int.Parse(reader[nameof(Infrastructure.Models.Project.IDEPathId)]?.ToString() ?? "0");
+            var filename = reader[nameof(Infrastructure.Models.Project.Filename)]?.ToString() ?? "";
 
             projectPath.Id = id;
             projectPath.Path = path;
@@ -112,7 +112,7 @@ public class ProjectDataService(ICreateSqliteConnection createSqliteConnection) 
 
     public async Task<IEnumerable<ProjectPathsViewModel>> GetAll()
     {
-        var projectPaths = new List<ProjectDetail>();
+        var projectPaths = new List<Infrastructure.Models.Project>();
         var connection = createSqliteConnection.Execute();
         connection.Open();
         using var command = connection.CreateCommand();
@@ -120,13 +120,13 @@ public class ProjectDataService(ICreateSqliteConnection createSqliteConnection) 
         using var reader = await command.ExecuteReaderAsync();
         while (reader.Read())
         {
-            var id = int.Parse(reader[nameof(ProjectDetail.Id)]?.ToString() ?? "0");
-            var path = reader[nameof(ProjectDetail.Path)]?.ToString() ?? "";
-            var name = reader[nameof(ProjectDetail.Name)]?.ToString() ?? "";
-            var idePathId = reader[nameof(ProjectDetail.IDEPathId)]?.ToString() ?? "";
-            var sortId = reader[nameof(ProjectDetail.SortId)]?.ToString() ?? "";
-            var fileName = reader[nameof(ProjectDetail.Filename)]?.ToString() ?? "";
-            var isGroupId = int.TryParse(reader[nameof(ProjectDetail.GroupId)]?.ToString(), out int groupId);
+            var id = int.Parse(reader[nameof(Infrastructure.Models.Project.Id)]?.ToString() ?? "0");
+            var path = reader[nameof(Infrastructure.Models.Project.Path)]?.ToString() ?? "";
+            var name = reader[nameof(Infrastructure.Models.Project.Name)]?.ToString() ?? "";
+            var idePathId = reader[nameof(Infrastructure.Models.Project.IDEPathId)]?.ToString() ?? "";
+            var sortId = reader[nameof(Infrastructure.Models.Project.SortId)]?.ToString() ?? "";
+            var fileName = reader[nameof(Infrastructure.Models.Project.Filename)]?.ToString() ?? "";
+            var isGroupId = int.TryParse(reader[nameof(Infrastructure.Models.Project.GroupId)]?.ToString(), out int groupId);
 
             projectPaths.Add
             (
