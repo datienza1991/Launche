@@ -1,7 +1,8 @@
-﻿using System.Collections.ObjectModel;
+﻿using ApplicationCore.Features.Basic.Project;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 
-namespace UI.ViewModels
+namespace Infrastructure.ViewModels
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {

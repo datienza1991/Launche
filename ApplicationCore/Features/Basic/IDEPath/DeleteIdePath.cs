@@ -1,7 +1,7 @@
 ﻿using Infrastructure.Database;
 using System.Data.SQLite;
 
-namespace Infrastructure.IDEPath
+namespace ApplicationCore.Features.Basic.IDEPath
 {
     public interface IDeleteIdePath : IExecuteAsync<int, bool>;
 

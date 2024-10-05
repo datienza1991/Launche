@@ -1,4 +1,10 @@
-﻿using LibGit2Sharp;
+﻿using ApplicationCore.Features.Basic.Group;
+using ApplicationCore.Features.Basic.Project;
+using ApplicationCore.Features.Sorting;
+using Infrastructure.Database;
+using Infrastructure.IDEPath;
+using Infrastructure.ViewModels;
+using LibGit2Sharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Collections.Immutable;
@@ -7,12 +13,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using UI.Commands.Basic.Project;
-using UI.Database;
-using UI.IDEPath;
-using UI.Queries.Group;
-using UI.Queries.Project;
-using UI.ViewModels;
+using UI.Windows.Group;
 
 namespace UI;
 
@@ -25,16 +26,15 @@ public partial class MainWindow : Window
     private readonly ISaveIDEPath? saveVsCodePath;
     private readonly IGetIDEPaths? getIDEPaths;
     private readonly IDeleteIdePath? deleteIdePath;
-    private readonly Commands.Sorting.IProjectCommand? projectSorting;
-    private readonly IGroupQuery? groupQuery;
-    private readonly Commands.Basic.Project.IProjectCommand? projectCommand;
-    private readonly IProjectQuery? projectQuery;
+    private readonly ISortProject? projectSorting;
+    private readonly IGroupDataService? groupQuery;
+    private readonly IProjectDataService? projectDataService;
     private readonly MainWindowViewModel? mainWindowViewModel;
     private ImmutableList<ProjectPathsViewModel> projectPaths = [];
     private GroupModalWindow? groupModalWindow;
     private List<GroupDetail> groups = [];
 
-    public ObservableCollection<Project> Entries { get; private set; } = [];
+    public ObservableCollection<Infrastructure.Models.Project> Entries { get; private set; } = [];
 
     public MainWindow() => InitializeComponent();
 
@@ -44,10 +44,9 @@ public partial class MainWindow : Window
         ISaveIDEPath saveIdePath,
         IGetIDEPaths getIDEPaths,
         IDeleteIdePath deleteIdePath,
-        Commands.Sorting.IProjectCommand? projectSorting,
-        IGroupQuery groupQuery,
-        IProjectCommand projectPersistence,
-        IProjectQuery projectQuery
+        ISortProject? projectSorting,
+        IGroupDataService groupQuery,
+        IProjectDataService projectPersistence
     )
     {
         initializedDatabaseMigration.Execute();
@@ -57,8 +56,8 @@ public partial class MainWindow : Window
         this.deleteIdePath = deleteIdePath;
         this.projectSorting = projectSorting;
         this.groupQuery = groupQuery;
-        this.projectCommand = projectPersistence;
-        this.projectQuery = projectQuery;
+        this.projectDataService = projectPersistence;
+
         this.mainWindowViewModel = new MainWindowViewModel();
         DataContext = this.mainWindowViewModel;
         InitializeComponent();
@@ -108,34 +107,14 @@ public partial class MainWindow : Window
             await this.FetchGroups();
         }
 
-        var projectPaths = await this.projectQuery!.GetAll();
+        var projectPaths = await this.projectDataService!.GetAll();
+
 
         if (this.getVsCodePath == null) return;
 
-        foreach (var item in projectPaths.Select((value, index) => (value, index)))
-        {
-            var (value, index) = item;
-            index++;
+        this.projectPaths = [.. projectPaths];
+        this.mainWindowViewModel!.ProjectPathModels = [.. projectPaths];
 
-            this.mainWindowViewModel!.ProjectPathModels?.Add
-             (
-                new()
-                {
-                    Index = index,
-                    Id = value.Id,
-                    Name = value.Name,
-                    Path = value.Path,
-                    IDEPathId = value.IDEPathId,
-                    SortId = value.SortId,
-                    EnableMoveUp = index != 1,
-                    EnableMoveDown = index != projectPaths.Count,
-                    Filename = value.Filename,
-                    GroupId = value.GroupId,
-                    GroupName = this.groups.Find(group => group.Id == value.GroupId)?.Name
-                }
-            );
-            this.projectPaths = [.. this.mainWindowViewModel!.ProjectPathModels!];
-        }
     }
 
     private async Task FetchIDEPaths()
@@ -216,8 +195,8 @@ public partial class MainWindow : Window
 
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0)
         {
-            result = await this.projectCommand!.Add(this.mainWindowViewModel!.SelectedProjectPath!);
-            this.mainWindowViewModel.SelectedProjectPath.Id = (await this.projectQuery!.GetLast()).Id;
+            result = await this.projectDataService!.Add(this.mainWindowViewModel!.SelectedProjectPath!);
+            this.mainWindowViewModel.SelectedProjectPath.Id = (await this.projectDataService!.GetLast()).Id;
             this.mainWindowViewModel!.ProjectPathModels!.Clear();
             await this.FetchProjectPaths();
             this.Search();
@@ -225,7 +204,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            result = await this.projectCommand!.Edit(this.mainWindowViewModel.SelectedProjectPath);
+            result = await this.projectDataService!.Edit(this.mainWindowViewModel.SelectedProjectPath);
             this.mainWindowViewModel!.ProjectPathModels!.Clear();
             await this.FetchProjectPaths();
             this.Search();
@@ -354,7 +333,7 @@ public partial class MainWindow : Window
     {
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0) return;
 
-        var result = await this.projectCommand!.Delete(this.mainWindowViewModel!.SelectedProjectPath!.Id);
+        var result = await this.projectDataService!.Delete(this.mainWindowViewModel!.SelectedProjectPath!.Id);
 
         if (result)
         {

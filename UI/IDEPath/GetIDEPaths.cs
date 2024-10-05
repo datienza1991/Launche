@@ -1,6 +1,6 @@
-﻿using UI.Database;
+﻿using Infrastructure.Database;
 
-namespace UI.IDEPath;
+namespace Infrastructure.IDEPath;
 
 public interface IGetIDEPaths : IExecuteAsync<List<IDEPath>>;
 
