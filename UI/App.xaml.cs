@@ -1,6 +1,4 @@
-﻿using ApplicationCore.Features;
-using Infrastructure.Database;
-using Infrastructure.IDEPath;
+﻿using ApplicationCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using UI.Windows.Group;
@@ -21,20 +19,10 @@ namespace UI
 
         public static ServiceProvider GetCurrentServiceProvider()
         {
-            var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+            var services = new ServiceCollection();
 
             return services
-                 .AddFeaturesServiceCollection()
-                 .AddSingleton<IAddTableSchemaVersion, AddTableSchemaVersion>()
-                 .AddSingleton<ICheckVersionIfExists, CheckVersionIfExists>()
-                 .AddSingleton<ICheckVersionTableIfExists, CheckVersionTableIfExists>()
-                 .AddSingleton<ICreateSqliteConnection, CreateSqliteConnection>()
-                 .AddSingleton<ICreateVersionsDbTable, CreateVersionsDbTable>()
-                 .AddSingleton<IInitializedDatabaseMigration, InitializedDatabaseMigration>()
-                 .AddSingleton<ISaveIDEPath, SaveIDEPath>()
-                 .AddSingleton<IGetIDEPath, GetIDEPath>()
-                 .AddSingleton<IGetIDEPaths, GetIDEPaths>()
-                 .AddSingleton<IDeleteIdePath, DeleteIdePath>()
+                 .AddApplicationCoreServiceCollection()
                  .AddSingleton<MainWindow>()
                  .AddSingleton<GroupModalWindow>()
                  .BuildServiceProvider();

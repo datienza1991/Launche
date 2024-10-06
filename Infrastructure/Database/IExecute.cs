@@ -23,4 +23,9 @@
     {
         void Execute();
     }
+
+    public interface IExecuteAsync
+    {
+        Task Execute();
+    }
 }

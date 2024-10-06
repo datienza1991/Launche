@@ -1,6 +1,6 @@
-﻿namespace ApplicationCore.Features.Basic.Group
+﻿namespace ApplicationCore.Features.Groups
 {
-    public class GroupDetail
+    public class GroupViewModel
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;

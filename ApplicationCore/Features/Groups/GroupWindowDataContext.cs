@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using ApplicationCore.Features.Groups;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 
 namespace UI.Windows.Group.ViewModels

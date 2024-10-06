@@ -1,18 +1,19 @@
 ﻿using Infrastructure.Database;
+using Infrastructure.Models;
 using System.Data.SQLite;
 
-namespace ApplicationCore.Features.Basic.Group;
+namespace ApplicationCore.Features.Groups;
 
-public interface IGroupDataService
+public interface IGroupRepository
 {
-    Task<GroupDetail> GetOne(int id);
-    Task<List<GroupDetail>> GetAll();
+    Task<Group> GetOne(int id);
+    Task<List<Group>> GetAll();
     Task<bool> Add(Infrastructure.Models.Group param);
     Task<bool> Edit(Infrastructure.Models.Group param);
     Task<bool> Delete(int id);
 }
 
-public class GroupDataService(ICreateSqliteConnection createSqliteConnection) : IGroupDataService
+public class GroupRepository(ICreateSqliteConnection createSqliteConnection) : IGroupRepository
 {
     private readonly ICreateSqliteConnection createSqliteConnection = createSqliteConnection;
     private const string TABLE = $"{nameof(Group)}s";
@@ -70,10 +71,10 @@ public class GroupDataService(ICreateSqliteConnection createSqliteConnection) : 
         return rows != 0;
     }
 
-    public async Task<List<GroupDetail>> GetAll()
+    public async Task<List<Group>> GetAll()
     {
         var tableName = $"{nameof(Group)}s";
-        var groups = new List<GroupDetail>();
+        var groups = new List<Group>();
         var connection = createSqliteConnection.Execute();
         connection.Open();
         using var command = connection.CreateCommand();
@@ -81,8 +82,8 @@ public class GroupDataService(ICreateSqliteConnection createSqliteConnection) : 
         using var reader = await command.ExecuteReaderAsync();
         while (reader.Read())
         {
-            _ = int.TryParse(reader[nameof(GroupDetail.Id)]?.ToString(), out int id);
-            var path = reader[nameof(GroupDetail.Name)]?.ToString() ?? "";
+            _ = int.TryParse(reader[nameof(Group.Id)]?.ToString(), out int id);
+            var path = reader[nameof(Group.Name)]?.ToString() ?? "";
 
             groups.Add(new() { Id = id, Name = path });
         }
@@ -90,10 +91,10 @@ public class GroupDataService(ICreateSqliteConnection createSqliteConnection) : 
         return groups;
     }
 
-    public async Task<GroupDetail> GetOne(int id)
+    public async Task<Group> GetOne(int id)
     {
         var tableName = $"{nameof(Group)}s";
-        var group = new GroupDetail();
+        var group = new Group();
         var connection = createSqliteConnection.Execute();
         connection.Open();
         using var command = connection.CreateCommand();
@@ -102,7 +103,7 @@ public class GroupDataService(ICreateSqliteConnection createSqliteConnection) : 
         using var reader = await command.ExecuteReaderAsync();
         while (reader.Read())
         {
-            var path = reader[nameof(GroupDetail.Name)]?.ToString() ?? "";
+            var path = reader[nameof(Group.Name)]?.ToString() ?? "";
 
             group.Id = id;
             group.Name = path;
