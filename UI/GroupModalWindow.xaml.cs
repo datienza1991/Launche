@@ -1,5 +1,5 @@
-﻿using ApplicationCore.Features.Basic.Group;
-using ApplicationCore.Features.Grouping;
+﻿using ApplicationCore.Features.Grouping;
+using ApplicationCore.Features.Groups;
 using System.Windows;
 using UI.Windows.Group.ViewModels;
 
@@ -12,7 +12,7 @@ public partial class GroupModalWindow : Window
 {
     public Infrastructure.Models.Project? ProjectPath { get; set; }
     private readonly GroupWindowDataContext dataContext = new();
-    private readonly GroupDataService? groupDataService;
+    private readonly GroupQuery? groupDataService;
     private readonly IGroupProject? projectGrouping;
 
     public event EventHandler? OnSave;
@@ -22,7 +22,7 @@ public partial class GroupModalWindow : Window
         DataContext = dataContext;
     }
 
-    public GroupModalWindow(GroupDataService groupQuery, IGroupProject projectGrouping)
+    public GroupModalWindow(GroupQuery groupQuery, IGroupProject projectGrouping)
     {
         InitializeComponent();
         DataContext = dataContext;
@@ -37,11 +37,11 @@ public partial class GroupModalWindow : Window
         [..
             groups.Select
             (
-                group => new GroupViewModel() { Id = group.Id, Name = group.Name }
+                (group) => new GroupViewModel() { Id = group.Id, Name = group.Name }
             )
         ];
         this.ListBoxGroup.SelectedItem = this.ListBoxGroup.Items.SourceCollection
-                 .Cast<GroupViewModel>()
+                 .Cast<ApplicationCore.Features.Groups.GroupViewModel>()
                  .FirstOrDefault(groupViewModel => groupViewModel.Id == ProjectPath?.GroupId);
 
         dataContext.EnableSave = ProjectPath!.GroupId is not null;

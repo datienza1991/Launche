@@ -1,4 +1,4 @@
-﻿using ApplicationCore.Features.Basic.Project;
+﻿using ApplicationCore.Features.Projects;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 
@@ -17,9 +17,9 @@ namespace Infrastructure.ViewModels
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private ObservableCollection<ProjectPathsViewModel>? projectPathModels;
+        private ObservableCollection<ProjectPathViewModel>? projectPathModels;
 
-        public ObservableCollection<ProjectPathsViewModel>? ProjectPathModels
+        public ObservableCollection<ProjectPathViewModel>? ProjectPathModels
         {
             get { return projectPathModels; }
             set

@@ -1,18 +1,19 @@
 ﻿using Infrastructure.Database;
+using Infrastructure.Models;
 using System.Data.SQLite;
 
-namespace ApplicationCore.Features.Basic.Project;
+namespace ApplicationCore.Features.Projects;
 
-public interface IProjectDataService
+public interface IProjectRepository
 {
-    Task<Infrastructure.Models.Project> GetLast();
-    Task<IEnumerable<ProjectPathsViewModel>> GetAll();
+    Task<Project> GetLast();
+    Task<IEnumerable<Project>> GetAll();
     Task<bool> Add(Infrastructure.Models.Project param);
     Task<bool> Edit(Infrastructure.Models.Project param);
     Task<bool> Delete(int id);
 }
 
-public class ProjectDataService(ICreateSqliteConnection createSqliteConnection) : IProjectDataService
+public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) : IProjectRepository
 {
     private readonly ICreateSqliteConnection createSqliteConnection = createSqliteConnection;
     private const string TABLE = $"{nameof(Project)}s";
@@ -110,7 +111,7 @@ public class ProjectDataService(ICreateSqliteConnection createSqliteConnection) 
         return projectPath;
     }
 
-    public async Task<IEnumerable<ProjectPathsViewModel>> GetAll()
+    public async Task<IEnumerable<Project>> GetAll()
     {
         var projectPaths = new List<Infrastructure.Models.Project>();
         var connection = createSqliteConnection.Execute();
@@ -143,23 +144,9 @@ public class ProjectDataService(ICreateSqliteConnection createSqliteConnection) 
             );
         }
 
-        return projectPaths.Select
-        (
-            (value, index) => new ProjectPathsViewModel
-            {
-                Index = index + 1,
-                Id = value.Id,
-                Name = value.Name,
-                Path = value.Path,
-                IDEPathId = value.IDEPathId,
-                SortId = value.SortId,
-                EnableMoveUp = index != 1,
-                EnableMoveDown = index != projectPaths.Count,
-                Filename = value.Filename,
-                GroupId = value.GroupId,
-                GroupName = ""
-            }
-        );
+        return projectPaths;
+
+
     }
 }
 

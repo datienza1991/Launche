@@ -2,7 +2,7 @@
 
 namespace Infrastructure.Database
 {
-    public interface IInitializedDatabaseMigration : IExecute;
+    public interface IInitializedDatabaseMigration : IExecuteAsync;
 
     public class InitializedDatabaseMigration(
         ICreateSqliteConnection createSqliteConnection,
@@ -18,7 +18,7 @@ namespace Infrastructure.Database
         private readonly ICheckVersionIfExists checkVersionIfExists = checkVersionIfExists;
         private readonly IAddTableSchemaVersion addTableSchemaVersion = addTableSchemaVersion;
 
-        public async void Execute()
+        public async Task Execute()
         {
             var isVersionTableExists = this.checkVersionTableIfExists.Execute();
             if (!isVersionTableExists)
