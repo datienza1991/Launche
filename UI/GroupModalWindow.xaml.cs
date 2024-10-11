@@ -1,5 +1,6 @@
 ﻿using ApplicationCore.Features.Grouping;
 using ApplicationCore.Features.Groups;
+using ApplicationCore.Features.Projects;
 using System.Windows;
 using UI.Windows.Group.ViewModels;
 
@@ -10,7 +11,7 @@ namespace UI.Windows.Group;
 /// </summary>
 public partial class GroupModalWindow : Window
 {
-    public Infrastructure.Models.Project? ProjectPath { get; set; }
+    public ProjectViewModel? ProjectPath { get; set; }
     private readonly GroupWindowDataContext dataContext = new();
     private readonly GroupQuery? groupDataService;
     private readonly IGroupProject? projectGrouping;

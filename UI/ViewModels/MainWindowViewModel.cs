@@ -10,16 +10,16 @@ namespace Infrastructure.ViewModels
         {
             this.ProjectPathModels = [];
             this.IdePathsModels = [];
-            this.SelectedProjectPath = new();
+            this.SelectedProjectPath = null;
             this.SelectedIdePath = new();
             this.search = "";
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private ObservableCollection<ProjectPathViewModel>? projectPathModels;
+        private ObservableCollection<ProjectViewModel>? projectPathModels;
 
-        public ObservableCollection<ProjectPathViewModel>? ProjectPathModels
+        public ObservableCollection<ProjectViewModel>? ProjectPathModels
         {
             get { return projectPathModels; }
             set
@@ -41,9 +41,9 @@ namespace Infrastructure.ViewModels
             }
         }
 
-        private ProjectPathViewModel? selectedProjectPath;
+        private ProjectViewModel? selectedProjectPath;
 
-        public ProjectPathViewModel? SelectedProjectPath
+        public ProjectViewModel? SelectedProjectPath
         {
             get { return selectedProjectPath; }
             set
