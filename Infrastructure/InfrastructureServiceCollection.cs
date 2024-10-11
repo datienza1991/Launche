@@ -17,6 +17,7 @@ public static class InfrastructureServiceCollection
             .AddSingleton<ICreateSqliteConnection, CreateSqliteConnection>()
             .AddSingleton<ICreateVersionsDbTable, CreateVersionsDbTable>()
             .AddSingleton<IInitializedDatabaseMigration, InitializedDatabaseMigration>()
+            .AddSingleton<IGitService, GitService>()
             .AddSingleton<IGroupRepository, GroupRepository>()
             .AddSingleton<IDevAppRepository, DevAppRepository>()
             .AddSingleton<IProjectRepository, ProjectRepository>();

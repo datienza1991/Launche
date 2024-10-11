@@ -17,8 +17,8 @@ public static class CoreServiceCollection
             .AddSingleton<IDevAppCommand, DevAppCommand>()
             .AddSingleton<IDevAppQuery, DevAppQuery>()
             .AddSingleton<IGroupQuery, GroupQuery>()
-            .AddSingleton<IProjectCommand, ProjectCommand>()
-            .AddSingleton<IProjectQuery, ProjectQuery>();
+            .AddSingleton<IProjectFeaturesCreator, ProjectFeaturesCreator>()
+            .AddSingleton<IGetAllProjectService, GetAllProjectService>();
     }
 }
 

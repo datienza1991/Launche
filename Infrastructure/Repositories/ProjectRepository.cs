@@ -7,10 +7,11 @@ namespace ApplicationCore.Features.Projects;
 public interface IProjectRepository
 {
     Task<Project> GetLast();
+    Task<Project> GetOne(long id);
     Task<IEnumerable<Project>> GetAll();
-    Task<bool> Add(Infrastructure.Models.Project param);
-    Task<bool> Edit(Infrastructure.Models.Project param);
-    Task<bool> Delete(int id);
+    Task<bool> Add(Project param);
+    Task<bool> Edit(Project param);
+    Task<bool> Delete(long id);
 }
 
 public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) : IProjectRepository
@@ -18,7 +19,7 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
     private readonly ICreateSqliteConnection createSqliteConnection = createSqliteConnection;
     private const string TABLE = $"{nameof(Project)}s";
 
-    public async Task<bool> Add(Infrastructure.Models.Project param)
+    public async Task<bool> Add(Project param)
     {
         using var connection = createSqliteConnection.Execute();
 
@@ -27,7 +28,8 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
         string createTableSql = @$"
                 PRAGMA foreign_keys = ON; 
                 INSERT INTO {TABLE}( Path , Name , IDEPathId , SortId,  Filename ) 
-                    VALUES ( @path , @name , @idePath , (select max( SortId ) from {TABLE}) + 1 , @fileName );";
+                    VALUES ( @path , @name , @idePath , (select max( SortId ) from {TABLE}) + 1 , @fileName );
+                SELECT last_insert_rowid();";
 
         using var command = new SQLiteCommand(createTableSql, connection);
 
@@ -41,7 +43,7 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
         return rows != 0;
     }
 
-    public async Task<bool> Edit(Infrastructure.Models.Project param)
+    public async Task<bool> Edit(Project param)
     {
         using var connection = createSqliteConnection.Execute();
 
@@ -65,10 +67,11 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
         command.Parameters.AddWithValue("@groupId", param.GroupId);
 
         var rows = await command.ExecuteNonQueryAsync();
+
         return rows != 0;
     }
 
-    public async Task<bool> Delete(int id)
+    public async Task<bool> Delete(long id)
     {
         using var connection = createSqliteConnection.Execute();
 
@@ -84,7 +87,7 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
         return rows != 0;
     }
 
-    public async Task<Infrastructure.Models.Project> GetLast()
+    public async Task<Project> GetLast()
     {
         var tableName = $"{nameof(Infrastructure.Models.Project)}s";
         var projectPath = new Infrastructure.Models.Project();
@@ -145,8 +148,33 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
         }
 
         return projectPaths;
+    }
 
+    public async Task<Project> GetOne(long id)
+    {
+        var projectPath = new Project();
+        var connection = createSqliteConnection.Execute();
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = $"SELECT * FROM {TABLE} WHERE ID = @id;";
+        command.Parameters.AddWithValue("@id", id);
+        using var reader = await command.ExecuteReaderAsync();
+        while (reader.Read())
+        {
 
+            var path = reader[nameof(Project.Path)]?.ToString() ?? "";
+            var name = reader[nameof(Project.Name)]?.ToString() ?? "";
+            var idePathId = int.Parse(reader[nameof(Project.IDEPathId)]?.ToString() ?? "0");
+            var filename = reader[nameof(Project.Filename)]?.ToString() ?? "";
+
+            projectPath.Id = id;
+            projectPath.Path = path;
+            projectPath.Name = name;
+            projectPath.IDEPathId = idePathId;
+            projectPath.Filename = filename;
+        }
+
+        return projectPath;
     }
 }
 

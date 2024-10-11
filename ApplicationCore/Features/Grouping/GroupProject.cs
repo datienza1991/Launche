@@ -6,7 +6,7 @@ namespace ApplicationCore.Features.Grouping;
 
 public interface IGroupProject
 {
-    Task<bool> Group(int projectId, int? groupId);
+    Task<bool> Group(long projectId, int? groupId);
 }
 
 public class GroupProject(ICreateSqliteConnection createSqliteConnection) : IGroupProject
@@ -14,7 +14,7 @@ public class GroupProject(ICreateSqliteConnection createSqliteConnection) : IGro
     private readonly ICreateSqliteConnection createSqliteConnection = createSqliteConnection;
     private const string TABLE = $"{nameof(Project)}s";
 
-    public async Task<bool> Group(int projectId, int? groupId)
+    public async Task<bool> Group(long projectId, int? groupId)
     {
         using var connection = createSqliteConnection.Execute();
 

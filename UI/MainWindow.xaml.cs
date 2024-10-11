@@ -27,10 +27,10 @@ public partial class MainWindow : Window
     private readonly IDevAppQuery? devAppQuery;
     private readonly ISortProject? projectSorting;
     private readonly IGroupQuery? groupQuery;
-    private readonly IProjectCommand? projectCommand;
-    private readonly IProjectQuery? projectQuery;
+    private readonly IProjectFeaturesCreator? projectFeaturesCreator;
+
     private readonly MainWindowViewModel? mainWindowViewModel;
-    private ImmutableList<ProjectPathViewModel> projectPaths = [];
+    private ImmutableList<ProjectViewModel> projectPaths = [];
     private GroupModalWindow? groupModalWindow;
     private List<Group> groups = [];
 
@@ -44,8 +44,7 @@ public partial class MainWindow : Window
         IDevAppQuery devAppQuery,
         ISortProject? projectSorting,
         IGroupQuery groupQuery,
-        IProjectCommand projectPersistence,
-        IProjectQuery projectQuery
+        IProjectFeaturesCreator projectFeaturesCreator
     )
     {
         this.startup = startup;
@@ -53,8 +52,7 @@ public partial class MainWindow : Window
         this.devAppQuery = devAppQuery;
         this.projectSorting = projectSorting;
         this.groupQuery = groupQuery;
-        this.projectCommand = projectPersistence;
-        this.projectQuery = projectQuery;
+        this.projectFeaturesCreator = projectFeaturesCreator;
         this.mainWindowViewModel = new MainWindowViewModel();
         DataContext = this.mainWindowViewModel;
         InitializeComponent();
@@ -88,7 +86,7 @@ public partial class MainWindow : Window
             this.mainWindowViewModel!.IdePathsModels!.Clear();
             await this.FetchIDEPaths();
             this.mainWindowViewModel.SelectedIdePath = new();
-            this.mainWindowViewModel.SelectedProjectPath = new();
+            this.mainWindowViewModel.SelectedProjectPath = null;
             MessageBox.Show("IDE path saved!");
         }
     }
@@ -105,10 +103,10 @@ public partial class MainWindow : Window
             await this.FetchGroups();
         }
 
-        var projectPaths = await this.projectQuery.GetAll();
+        var projectVm = await this.projectFeaturesCreator!.CreateGetAllProjectService().GetAll();
 
-        this.projectPaths = [.. projectPaths];
-        this.mainWindowViewModel!.ProjectPathModels = [.. projectPaths];
+        this.projectPaths = [.. projectVm.Projects];
+        this.mainWindowViewModel!.ProjectPathModels = [.. projectVm.Projects];
 
     }
 
@@ -132,11 +130,11 @@ public partial class MainWindow : Window
         string branchName = "";
         if (lvProjectPaths.SelectedIndex == -1) return;
 
-        var projectPath = (ProjectPathViewModel)lvProjectPaths.SelectedItem;
+        var project = (ProjectViewModel)lvProjectPaths.SelectedItem;
 
         try
         {
-            this.mainWindowViewModel!.SelectedIdePath = this.mainWindowViewModel!.IdePathsModels!.Single(x => x.Id == projectPath.IDEPathId);
+            this.mainWindowViewModel!.SelectedIdePath = this.mainWindowViewModel!.IdePathsModels!.Single(x => x.Id == project.IDEPathId);
         }
         catch (Exception ex)
         {
@@ -145,7 +143,7 @@ public partial class MainWindow : Window
 
         try
         {
-            using var repo = new Repository(projectPath.Path);
+            using var repo = new Repository(project.Path);
 
             if (repo == null) { return; }
 
@@ -162,7 +160,7 @@ public partial class MainWindow : Window
             branchName = $"Other errors thrown: {ex.Message}";
         }
 
-        this.mainWindowViewModel!.SelectedProjectPath = ProjectPathTransformer.Transform(projectPath, branchName);
+        this.mainWindowViewModel!.SelectedProjectPath = project;
 
     }
 
@@ -189,8 +187,18 @@ public partial class MainWindow : Window
 
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0)
         {
-            result = await this.projectCommand!.Add(this.mainWindowViewModel!.SelectedProjectPath!);
-            this.mainWindowViewModel.SelectedProjectPath.Id = (await this.projectQuery!.GetLast()).Id;
+            result = await this.projectFeaturesCreator!.CreateAddProjectService().AddAsync
+            (
+                new
+                (
+                    this.mainWindowViewModel!.SelectedProjectPath!.Name,
+                    this.mainWindowViewModel!.SelectedProjectPath!.Path,
+                    this.mainWindowViewModel!.SelectedProjectPath!.IDEPathId,
+                    this.mainWindowViewModel!.SelectedProjectPath!.Filename
+                )
+            );
+
+            this.mainWindowViewModel.SelectedProjectPath.Id = (await this.projectFeaturesCreator.CreateGetLastProjectService().GetLast()).Id;
             this.mainWindowViewModel!.ProjectPathModels!.Clear();
             await this.FetchProjectPaths();
             this.Search();
@@ -198,7 +206,17 @@ public partial class MainWindow : Window
         }
         else
         {
-            result = await this.projectCommand!.Edit(this.mainWindowViewModel.SelectedProjectPath);
+            result = await this.projectFeaturesCreator!.CreateEditAddProjectService().Edit
+            (
+                new
+                (
+                    this.mainWindowViewModel!.SelectedProjectPath!.Id,
+                    this.mainWindowViewModel!.SelectedProjectPath!.Name,
+                    this.mainWindowViewModel!.SelectedProjectPath!.Path,
+                    this.mainWindowViewModel!.SelectedProjectPath!.IDEPathId,
+                    this.mainWindowViewModel!.SelectedProjectPath!.Filename
+                )
+            );
             this.mainWindowViewModel!.ProjectPathModels!.Clear();
             await this.FetchProjectPaths();
             this.Search();
@@ -216,7 +234,7 @@ public partial class MainWindow : Window
     private void SelectEditedItem()
     {
         lvProjectPaths.SelectedItem = lvProjectPaths.Items.SourceCollection
-                 .Cast<ProjectPathViewModel>()
+                 .Cast<ProjectViewModel>()
                  .FirstOrDefault(projectPathsViewModel => projectPathsViewModel.Id == this.mainWindowViewModel?.SelectedProjectPath?.Id);
 
         lvProjectPaths.ScrollIntoView(this.lvProjectPaths.SelectedItem);
@@ -327,7 +345,7 @@ public partial class MainWindow : Window
     {
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0) return;
 
-        var result = await this.projectCommand!.Delete(this.mainWindowViewModel!.SelectedProjectPath!.Id);
+        var result = await this.projectFeaturesCreator!.CreateDeleteAddProjectService().Delete(this.mainWindowViewModel!.SelectedProjectPath!.Id);
 
         if (result)
         {
@@ -367,7 +385,7 @@ public partial class MainWindow : Window
             btnNewProjectPath.IsEnabled = false;
             filteredPaths = filteredPaths.Select
             (
-                projectPath => new ProjectPathViewModel
+                projectPath => new ProjectViewModel
                 {
                     EnableMoveDown = false,
                     EnableMoveUp = false,
@@ -388,7 +406,7 @@ public partial class MainWindow : Window
             btnNewProjectPath.IsEnabled = true;
             filteredPaths = filteredPaths.Select
             (
-                projectPath => new ProjectPathViewModel
+                projectPath => new ProjectViewModel
                 {
                     EnableMoveUp = projectPath.Index != 1,
                     EnableMoveDown = projectPath.Index != projectPaths.Count,
