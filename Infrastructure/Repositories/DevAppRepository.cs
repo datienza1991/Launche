@@ -8,7 +8,7 @@ namespace Infrastructure.Repositories
     {
         Task<bool> Add(IDEPath param);
         Task<bool> Edit(IDEPath param);
-        Task<bool> Delete(int id);
+        Task<bool> Delete(long id);
         Task<IDEPath> GetById(int id);
         Task<IEnumerable<IDEPath>> GetAll();
     }
@@ -30,7 +30,7 @@ namespace Infrastructure.Repositories
             return rows != 0;
         }
 
-        public async Task<bool> Delete(int id)
+        public async Task<bool> Delete(long id)
         {
             using var connection = createSqliteConnection.Execute();
 

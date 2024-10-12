@@ -14,7 +14,7 @@
         Task<bool> Edit(EditProjectCommand param);
     }
 
-    public class EditProjectService(IProjectRepository projectRepository) : IEditProjectService
+    internal class EditProjectService(IProjectRepository projectRepository) : IEditProjectService
     {
         private readonly IProjectRepository projectRepository = projectRepository;
 

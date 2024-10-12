@@ -9,6 +9,7 @@ namespace ApplicationCore.Features.Projects
         IDeleteProjectService CreateDeleteAddProjectService();
         IGetAllProjectService CreateGetAllProjectService();
         IGetLastProjectService CreateGetLastProjectService();
+        ISearchProjectService CreateSearchProjectService();
     }
 
     public class ProjectFeaturesCreator(IProjectRepository projectRepository, IGitService gitService) : IProjectFeaturesCreator
@@ -37,6 +38,11 @@ namespace ApplicationCore.Features.Projects
         public IGetLastProjectService CreateGetLastProjectService()
         {
             return new GetLastProject(projectRepository);
+        }
+
+        public ISearchProjectService CreateSearchProjectService()
+        {
+            return new SearchProjectService(projectRepository);
         }
     }
 }

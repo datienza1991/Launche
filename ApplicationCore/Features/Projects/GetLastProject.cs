@@ -5,7 +5,7 @@ public interface IGetLastProjectService
     Task<ProjectViewModel> GetLast();
 }
 
-public class GetLastProject(IProjectRepository projectRepository) : IGetLastProjectService
+internal class GetLastProject(IProjectRepository projectRepository) : IGetLastProjectService
 {
     private readonly IProjectRepository projectRepository = projectRepository;
 

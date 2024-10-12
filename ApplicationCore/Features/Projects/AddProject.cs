@@ -12,7 +12,7 @@
     {
         Task<bool> AddAsync(AddProjectCommand command);
     }
-    public class AddProjectService(IProjectRepository projectRepository) : IAddProjectService
+    internal class AddProjectService(IProjectRepository projectRepository) : IAddProjectService
     {
         private readonly IProjectRepository projectRepository = projectRepository;
 
