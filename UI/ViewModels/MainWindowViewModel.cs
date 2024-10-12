@@ -29,9 +29,9 @@ namespace Infrastructure.ViewModels
             }
         }
 
-        private ObservableCollection<IDEPathsViewModel>? idePathsModels;
+        private ObservableCollection<IDEPathViewModel>? idePathsModels;
 
-        public ObservableCollection<IDEPathsViewModel>? IdePathsModels
+        public ObservableCollection<IDEPathViewModel>? IdePathsModels
         {
             get { return idePathsModels; }
             set
@@ -53,9 +53,9 @@ namespace Infrastructure.ViewModels
             }
         }
 
-        private IDEPathsViewModel? selectedIdePath;
+        private IDEPathViewModel? selectedIdePath;
 
-        public IDEPathsViewModel? SelectedIdePath
+        public IDEPathViewModel? SelectedIdePath
         {
             get { return selectedIdePath; }
             set

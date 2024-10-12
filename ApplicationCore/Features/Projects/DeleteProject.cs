@@ -4,7 +4,7 @@ public interface IDeleteProjectService
 {
     Task<bool> Delete(long id);
 }
-public class DeleteProjectService(IProjectRepository projectRepository) : IDeleteProjectService
+internal class DeleteProjectService(IProjectRepository projectRepository) : IDeleteProjectService
 {
     private readonly IProjectRepository projectRepository = projectRepository;
 

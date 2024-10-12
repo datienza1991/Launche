@@ -8,7 +8,6 @@ using Infrastructure.ViewModels;
 using LibGit2Sharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -23,14 +22,20 @@ namespace UI;
 public partial class MainWindow : Window
 {
     private readonly IStartup? startup;
-    private readonly IDevAppCommand? devAppCommand;
-    private readonly IDevAppQuery? devAppQuery;
+    private readonly IAddDevAppService? addDevAppService;
+    private readonly IEditDevAppService? editDevAppService;
+    private readonly IDeleteDevAppService? deleteDevAppService;
+    private readonly IGetAllDevAppService? getAllDevAppService;
+    private readonly IGetOneDevAppService? getOneDevAppService;
     private readonly ISortProject? projectSorting;
     private readonly IGroupQuery? groupQuery;
-    private readonly IProjectFeaturesCreator? projectFeaturesCreator;
-
+    private readonly IAddProjectService? addProjectService;
+    private readonly IGetLastProjectService? getLastProjectService;
+    private readonly IGetAllProjectService? getAllProjectService;
+    private readonly IDeleteProjectService? deleteProjectService;
+    private readonly IEditProjectService? editProjectService;
+    private readonly ISearchProjectService searchProductService;
     private readonly MainWindowViewModel? mainWindowViewModel;
-    private ImmutableList<ProjectViewModel> projectPaths = [];
     private GroupModalWindow? groupModalWindow;
     private List<Group> groups = [];
 
@@ -40,19 +45,26 @@ public partial class MainWindow : Window
 
     public MainWindow(
         IStartup startup,
-        IDevAppCommand devAppCommand,
-        IDevAppQuery devAppQuery,
+        IDevAppFeaturesCreator devAppFeaturesCreator,
         ISortProject? projectSorting,
         IGroupQuery groupQuery,
         IProjectFeaturesCreator projectFeaturesCreator
     )
     {
         this.startup = startup;
-        this.devAppCommand = devAppCommand;
-        this.devAppQuery = devAppQuery;
+        this.addDevAppService = devAppFeaturesCreator.CreateAddDevAppService();
+        this.editDevAppService = devAppFeaturesCreator.CreateEditDevAppService();
+        this.deleteDevAppService = devAppFeaturesCreator.CreateDeleteDevAppService();
+        this.getAllDevAppService = devAppFeaturesCreator.CreateGetAllDevAppService();
+        this.getOneDevAppService = devAppFeaturesCreator.CreateGetOneDevAppService();
         this.projectSorting = projectSorting;
         this.groupQuery = groupQuery;
-        this.projectFeaturesCreator = projectFeaturesCreator;
+        this.addProjectService = projectFeaturesCreator.CreateAddProjectService();
+        this.getLastProjectService = projectFeaturesCreator.CreateGetLastProjectService();
+        this.getAllProjectService = projectFeaturesCreator.CreateGetAllProjectService();
+        this.deleteProjectService = projectFeaturesCreator.CreateDeleteAddProjectService();
+        this.editProjectService = projectFeaturesCreator.CreateEditAddProjectService();
+        this.searchProductService = projectFeaturesCreator.CreateSearchProjectService();
         this.mainWindowViewModel = new MainWindowViewModel();
         DataContext = this.mainWindowViewModel;
         InitializeComponent();
@@ -80,7 +92,7 @@ public partial class MainWindow : Window
         }
 
         string filePath = openFolderDialog.FileName;
-        var resultSave = await this.devAppCommand!.Add(new() { Path = filePath });
+        var resultSave = await this.addDevAppService!.Add(new() { Path = filePath });
         if (resultSave)
         {
             this.mainWindowViewModel!.IdePathsModels!.Clear();
@@ -98,25 +110,18 @@ public partial class MainWindow : Window
 
     private async Task FetchProjectPaths()
     {
-        if (this.groups.Count is 0)
-        {
-            await this.FetchGroups();
-        }
-
-        var projectVm = await this.projectFeaturesCreator!.CreateGetAllProjectService().GetAll();
-
-        this.projectPaths = [.. projectVm.Projects];
-        this.mainWindowViewModel!.ProjectPathModels = [.. projectVm.Projects];
+        var getAllProjectVm = await this.getAllProjectService!.Handle();
+        this.mainWindowViewModel!.ProjectPathModels = [.. getAllProjectVm.Projects];
 
     }
 
     private async Task FetchIDEPaths()
     {
 
-        var idePaths = await this.devAppQuery!.GetAll();
+        var getAllDevAppVm = await this.getAllDevAppService!.Handle();
 
 
-        foreach (var item in idePaths.Select((value, index) => (value, index)))
+        foreach (var item in getAllDevAppVm.DevApps.Select((value, index) => (value, index)))
         {
             var (value, index) = item;
             index++;
@@ -187,7 +192,7 @@ public partial class MainWindow : Window
 
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0)
         {
-            result = await this.projectFeaturesCreator!.CreateAddProjectService().AddAsync
+            result = await this.addProjectService.AddAsync
             (
                 new
                 (
@@ -198,15 +203,15 @@ public partial class MainWindow : Window
                 )
             );
 
-            this.mainWindowViewModel.SelectedProjectPath.Id = (await this.projectFeaturesCreator.CreateGetLastProjectService().GetLast()).Id;
+            this.mainWindowViewModel.SelectedProjectPath.Id = (await this.getLastProjectService.GetLast()).Id;
             this.mainWindowViewModel!.ProjectPathModels!.Clear();
             await this.FetchProjectPaths();
-            this.Search();
+            await this.Search();
             SelectNewlyAddedItem();
         }
         else
         {
-            result = await this.projectFeaturesCreator!.CreateEditAddProjectService().Edit
+            result = await this.editProjectService.Edit
             (
                 new
                 (
@@ -219,7 +224,7 @@ public partial class MainWindow : Window
             );
             this.mainWindowViewModel!.ProjectPathModels!.Clear();
             await this.FetchProjectPaths();
-            this.Search();
+            await this.Search();
             SelectEditedItem();
         }
 
@@ -318,7 +323,7 @@ public partial class MainWindow : Window
 
         try
         {
-            var result = await this.devAppCommand!.Delete(this.mainWindowViewModel!.SelectedIdePath!.Id);
+            var result = await this.deleteDevAppService!.Delete(new() { Id = this.mainWindowViewModel!.SelectedIdePath!.Id });
 
             if (result)
             {
@@ -345,7 +350,7 @@ public partial class MainWindow : Window
     {
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0) return;
 
-        var result = await this.projectFeaturesCreator!.CreateDeleteAddProjectService().Delete(this.mainWindowViewModel!.SelectedProjectPath!.Id);
+        var result = await this.deleteProjectService.Delete(this.mainWindowViewModel!.SelectedProjectPath!.Id);
 
         if (result)
         {
@@ -370,63 +375,17 @@ public partial class MainWindow : Window
         await this.FetchProjectPaths();
     }
 
-    private void TxtSearch_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    private async void TxtSearch_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
-        Search();
+        await Search();
     }
 
-    private void Search()
+    private async Task Search()
     {
-        var filteredPaths = this.projectPaths.Where(projectPath => projectPath.Name.ToLower().Contains(this.mainWindowViewModel!.Search.ToLower()));
-        this.mainWindowViewModel!.ProjectPathModels!.Clear();
 
-        if (txtSearch.Text is not "")
-        {
-            btnNewProjectPath.IsEnabled = false;
-            filteredPaths = filteredPaths.Select
-            (
-                projectPath => new ProjectViewModel
-                {
-                    EnableMoveDown = false,
-                    EnableMoveUp = false,
-                    Filename = projectPath.Filename,
-                    Id = projectPath.Id,
-                    IDEPathId = projectPath.IDEPathId,
-                    Index = projectPath.Index,
-                    Name = projectPath.Name,
-                    Path = projectPath.Path,
-                    SortId = projectPath.SortId,
-                    GroupId = projectPath.GroupId,
-                    GroupName = projectPath.GroupName,
-                }
-            );
-        }
-        else
-        {
-            btnNewProjectPath.IsEnabled = true;
-            filteredPaths = filteredPaths.Select
-            (
-                projectPath => new ProjectViewModel
-                {
-                    EnableMoveUp = projectPath.Index != 1,
-                    EnableMoveDown = projectPath.Index != projectPaths.Count,
-                    Filename = projectPath.Filename,
-                    Id = projectPath.Id,
-                    IDEPathId = projectPath.IDEPathId,
-                    Index = projectPath.Index,
-                    Name = projectPath.Name,
-                    Path = projectPath.Path,
-                    SortId = projectPath.SortId,
-                    GroupId = projectPath.GroupId,
-                    GroupName = projectPath.GroupName,
-                }
-            );
-        }
+        var searchViewModel = await this.searchProductService.Handle(new() { Search = this.mainWindowViewModel!.Search });
+        this.mainWindowViewModel!.ProjectPathModels = [.. searchViewModel.Projects];
 
-        foreach (var item in filteredPaths!)
-        {
-            this.mainWindowViewModel!.ProjectPathModels.Add(item);
-        }
     }
     private void MnuOpenFolderWindow_Click(object sender, RoutedEventArgs e)
     {

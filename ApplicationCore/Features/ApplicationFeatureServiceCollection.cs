@@ -14,11 +14,9 @@ public static class CoreServiceCollection
         return services
             .AddSingleton<ISortProject, SortProject>()
             .AddSingleton<IGroupProject, GroupProject>()
-            .AddSingleton<IDevAppCommand, DevAppCommand>()
-            .AddSingleton<IDevAppQuery, DevAppQuery>()
             .AddSingleton<IGroupQuery, GroupQuery>()
-            .AddSingleton<IProjectFeaturesCreator, ProjectFeaturesCreator>()
-            .AddSingleton<IGetAllProjectService, GetAllProjectService>();
+            .AddSingleton<IDevAppFeaturesCreator, DevAppFeaturesCreator>()
+            .AddSingleton<IProjectFeaturesCreator, ProjectFeaturesCreator>();
     }
 }
 

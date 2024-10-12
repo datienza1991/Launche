@@ -10,4 +10,3 @@ public class Project
     public string Filename { get; set; } = string.Empty;
     public int? GroupId { get; set; }
 }
-
