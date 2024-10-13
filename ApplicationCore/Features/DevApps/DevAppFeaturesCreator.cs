@@ -1,4 +1,5 @@
-﻿using Infrastructure.Repositories;
+﻿using ApplicationCore.Common;
+using Infrastructure.Repositories;
 
 namespace ApplicationCore.Features.DevApps
 {
@@ -11,13 +12,14 @@ namespace ApplicationCore.Features.DevApps
         IDeleteDevAppService CreateDeleteDevAppService();
     }
 
-    public class DevAppFeaturesCreator(IDevAppRepository devAppRepository) : IDevAppFeaturesCreator
+    public class DevAppFeaturesCreator(IDevAppRepository devAppRepository, INotificationMessageService notificationMessageService) : IDevAppFeaturesCreator
     {
         private readonly IDevAppRepository devAppRepository = devAppRepository;
+        private readonly INotificationMessageService notificationMessageService = notificationMessageService;
 
         public IAddDevAppService CreateAddDevAppService()
         {
-            return new AddDevAppService(devAppRepository);
+            return new AddDevAppService(devAppRepository, notificationMessageService);
         }
 
         public IDeleteDevAppService CreateDeleteDevAppService()

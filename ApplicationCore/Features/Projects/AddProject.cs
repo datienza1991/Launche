@@ -32,7 +32,10 @@ namespace ApplicationCore.Features.Projects
                 }
             );
 
-            notificationMessageService.Create("New Project has been save!", "Add Project", NotificationType.Information);
+            if (result)
+            {
+                notificationMessageService.Create("New Project has been save!", "Add Project", NotificationType.Information);
+            }
 
             return result;
         }

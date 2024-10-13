@@ -1,5 +1,4 @@
 ﻿using Infrastructure.Repositories;
-using Infrastructure.ViewModels;
 
 namespace ApplicationCore.Features.DevApps
 {

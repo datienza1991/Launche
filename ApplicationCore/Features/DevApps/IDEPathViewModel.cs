@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.ViewModels
+﻿namespace ApplicationCore.Features.DevApps
 {
     public class IDEPathViewModel
     {
