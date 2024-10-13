@@ -22,17 +22,25 @@ namespace ApplicationCore.Features.Projects
 
         public async Task<bool> Edit(EditProjectCommand command)
         {
-            var result = await this.projectRepository.Edit
-            (
-                new()
-                {
-                    Id = command.Id,
-                    Name = command.Name,
-                    Path = command.Path,
-                    IDEPathId = command.IDEPathId,
-                    Filename = command.FileName,
-                }
-            );
+            var project = await projectRepository.GetOne(command.Id);
+
+            if (project == null)
+            {
+                notificationMessageService.Create
+                (
+                    "Project to edit not found!",
+                    "Edit Project",
+                    NotificationType.Error
+                );
+                return false;
+            }
+
+            project.Name = command.Name;
+            project.Path = command.Path;
+            project.IDEPathId = command.IDEPathId;
+            project.Filename = command.FileName;
+
+            var result = await this.projectRepository.Edit(project);
             if (result)
             {
                 notificationMessageService.Create("Record has been updated!", "Edit Project", NotificationType.Success);

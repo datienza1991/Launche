@@ -1,4 +1,6 @@
-﻿namespace ApplicationCore.Features.Projects;
+﻿using Infrastructure.Repositories;
+
+namespace ApplicationCore.Features.Projects;
 
 public class SearchProjectViewModel
 {
@@ -16,13 +18,20 @@ public interface ISearchProjectService
     Task<SearchProjectViewModel> Handle(SearchProjectQuery query);
 }
 
-internal class SearchProjectService(IProjectRepository projectRepository) : ISearchProjectService
+internal class SearchProjectService
+(
+    IProjectRepository projectRepository,
+    IGroupRepository groupRepository
+)
+    : ISearchProjectService
 {
     private readonly IProjectRepository projectRepository = projectRepository;
+    private readonly IGroupRepository groupRepository = groupRepository;
 
     public async Task<SearchProjectViewModel> Handle(SearchProjectQuery query)
     {
         var projects = await projectRepository.GetAll();
+        var groups = await groupRepository.GetAll();
         var filteredPaths = projects.Where(projectPath => projectPath.Name.ToLower().Contains(query.Search.ToLower()));
         SearchProjectViewModel vm = new();
 
@@ -45,7 +54,7 @@ internal class SearchProjectService(IProjectRepository projectRepository) : ISea
                         Path = project.Path,
                         SortId = project.SortId,
                         GroupId = project.GroupId,
-                        GroupName = "",
+                        GroupName = groups.FirstOrDefault(group => group.Id == project.GroupId)?.Name,
                         EnableAddToGroup = true,
 
                     };
@@ -69,7 +78,7 @@ internal class SearchProjectService(IProjectRepository projectRepository) : ISea
                     Path = project.Path,
                     SortId = project.SortId,
                     GroupId = project.GroupId,
-                    GroupName = "",
+                    GroupName = groups.FirstOrDefault(group => group.Id == project.GroupId)?.Name,
                     EnableAddToGroup = true,
                 }
             );

@@ -33,7 +33,8 @@
                 Width="60"
                 HorizontalAlignment="Right"
                 Click="BtnReset_Click"
-                Content="Reset">
+                Content="Reset"
+                IsEnabled="{Binding EnableReset}">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="3" />
@@ -45,7 +46,8 @@
             x:Name="ListBoxGroup"
             Grid.Row="1"
             ItemsSource="{Binding Groups}"
-            SelectedItem="{Binding SelectedOption}" SelectionChanged="ListBoxGroup_SelectionChanged">
+            SelectedItem="{Binding SelectedOption}"
+            SelectionChanged="ListBoxGroup_SelectionChanged">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <RadioButton

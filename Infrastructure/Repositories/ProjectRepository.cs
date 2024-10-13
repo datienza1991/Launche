@@ -166,12 +166,14 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
             var name = reader[nameof(Project.Name)]?.ToString() ?? "";
             var idePathId = int.Parse(reader[nameof(Project.IDEPathId)]?.ToString() ?? "0");
             var filename = reader[nameof(Project.Filename)]?.ToString() ?? "";
+            var isGroupId = int.TryParse(reader[nameof(Infrastructure.Models.Project.GroupId)]?.ToString(), out int groupId);
 
             projectPath.Id = id;
             projectPath.Path = path;
             projectPath.Name = name;
             projectPath.IDEPathId = idePathId;
             projectPath.Filename = filename;
+            projectPath.GroupId = isGroupId ? groupId : null;
         }
 
         return projectPath;

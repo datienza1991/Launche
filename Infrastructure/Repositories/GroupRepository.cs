@@ -7,7 +7,7 @@ namespace Infrastructure.Repositories;
 public interface IGroupRepository
 {
     Task<Group> GetOne(long id);
-    Task<List<Group>> GetAll();
+    Task<IEnumerable<Group>> GetAll();
     Task<bool> Add(Group param);
     Task<bool> Edit(Group param);
     Task<bool> Delete(long id);
@@ -71,7 +71,7 @@ public class GroupRepository(ICreateSqliteConnection createSqliteConnection) : I
         return rows != 0;
     }
 
-    public async Task<List<Group>> GetAll()
+    public async Task<IEnumerable<Group>> GetAll()
     {
         var tableName = $"{nameof(Group)}s";
         var groups = new List<Group>();
