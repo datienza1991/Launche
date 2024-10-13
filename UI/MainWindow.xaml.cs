@@ -161,7 +161,6 @@ public partial class MainWindow : Window
                 )
             );
 
-            await this.FetchProjectPaths();
             await this.Search();
             SelectNewlyAddedItem();
             return;
@@ -174,12 +173,11 @@ public partial class MainWindow : Window
                 this.mainWindowViewModel!.SelectedProjectPath!.Id,
                 this.mainWindowViewModel!.SelectedProjectPath!.Name,
                 this.mainWindowViewModel!.SelectedProjectPath!.Path,
-                this.mainWindowViewModel!.SelectedProjectPath!.IDEPathId,
+                this.mainWindowViewModel!.SelectedIdePath!.Id,
                 this.mainWindowViewModel!.SelectedProjectPath!.Filename
             )
         );
 
-        await this.FetchProjectPaths();
         await this.Search();
         SelectEditedItem();
     }

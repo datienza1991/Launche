@@ -48,7 +48,13 @@ namespace ApplicationCore.Features.Projects
 
         public IGetAllProjectService CreateGetAllProjectService()
         {
-            return new GetAllProjectService(projectRepository, devAppRepository, gitService);
+            return new GetAllProjectService
+            (
+                projectRepository,
+                devAppRepository,
+                gitService,
+                groupRepository
+            );
         }
 
         public IGetLastProjectService CreateGetLastProjectService()
@@ -58,7 +64,7 @@ namespace ApplicationCore.Features.Projects
 
         public ISearchProjectService CreateSearchProjectService()
         {
-            return new SearchProjectService(projectRepository);
+            return new SearchProjectService(projectRepository, groupRepository);
         }
 
         public IOpenProjectFolderWindowService CreateOpenProjectFolderWindowAppService()

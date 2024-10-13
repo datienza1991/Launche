@@ -43,5 +43,17 @@ namespace UI.Windows.Group.ViewModels
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(EnableSave)));
             }
         }
+
+        private bool enableReset = true;
+
+        public bool EnableReset
+        {
+            get { return enableReset; }
+            set
+            {
+                enableReset = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(EnableReset)));
+            }
+        }
     }
 }

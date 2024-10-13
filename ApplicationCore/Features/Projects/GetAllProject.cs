@@ -14,17 +14,25 @@ public interface IGetAllProjectService
     Task<GetAllProjectViewModel> Handle();
 }
 
-internal class GetAllProjectService(IProjectRepository projectRepository, IDevAppRepository devAppRepository, IGitService gitService) : IGetAllProjectService
+internal class GetAllProjectService
+(
+    IProjectRepository projectRepository,
+    IDevAppRepository devAppRepository,
+    IGitService gitService,
+    IGroupRepository groupRepository
+)
+    : IGetAllProjectService
 {
     private readonly IProjectRepository projectRepository = projectRepository;
     private readonly IDevAppRepository devAppRepository = devAppRepository;
     private readonly IGitService gitService = gitService;
+    private readonly IGroupRepository groupRepository = groupRepository;
 
     public async Task<GetAllProjectViewModel> Handle()
     {
         var projects = await this.projectRepository.GetAll();
         var devApps = await this.devAppRepository.GetAll();
-
+        var groups = await this.groupRepository.GetAll();
         return new()
         {
             Projects = projects.Select
@@ -43,7 +51,7 @@ internal class GetAllProjectService(IProjectRepository projectRepository, IDevAp
                     EnableMoveUp = index != 1,
                     EnableMoveDown = index != projects.Count(),
                     EnableAddToGroup = true,
-                    GroupName = "",
+                    GroupName = groups.FirstOrDefault(group => group.Id == value.GroupId)?.Name,
                     DevAppPath = devApps.First(devApp => devApp.Id == value.IDEPathId).Path,
                     CurrentGitBranch = $"Current Git Branch: {this.gitService.GetCurrentBranch(value.Path)}"
                 }
