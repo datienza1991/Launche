@@ -1,6 +1,8 @@
-﻿using ApplicationCore.Features.DevApps;
+﻿using ApplicationCore.Common;
+using ApplicationCore.Features.DevApps;
 using ApplicationCore.Features.Grouping;
 using ApplicationCore.Features.Groups;
+
 using ApplicationCore.Features.Projects;
 using ApplicationCore.Features.Sorting;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +18,7 @@ public static class CoreServiceCollection
             .AddSingleton<IGroupProject, GroupProject>()
             .AddSingleton<IGroupQuery, GroupQuery>()
             .AddSingleton<IDevAppFeaturesCreator, DevAppFeaturesCreator>()
+            .AddSingleton<INotificationMessageService, NotificationMessageService>()
             .AddSingleton<IProjectFeaturesCreator, ProjectFeaturesCreator>();
     }
 }

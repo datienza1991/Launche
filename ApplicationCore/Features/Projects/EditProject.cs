@@ -1,4 +1,6 @@
-﻿namespace ApplicationCore.Features.Projects
+﻿using ApplicationCore.Common;
+
+namespace ApplicationCore.Features.Projects
 {
     public record EditProjectCommand
     (
@@ -14,13 +16,13 @@
         Task<bool> Edit(EditProjectCommand param);
     }
 
-    internal class EditProjectService(IProjectRepository projectRepository) : IEditProjectService
+    internal class EditProjectService(IProjectRepository projectRepository, INotificationMessageService notificationMessageService) : IEditProjectService
     {
         private readonly IProjectRepository projectRepository = projectRepository;
 
         public async Task<bool> Edit(EditProjectCommand command)
         {
-            return await this.projectRepository.Edit
+            var result = await this.projectRepository.Edit
             (
                 new()
                 {
@@ -31,6 +33,8 @@
                     Filename = command.FileName,
                 }
             );
+            notificationMessageService.Create("Record has been updated!", "Edit Project", NotificationType.Success);
+            return result;
         }
     }
 }

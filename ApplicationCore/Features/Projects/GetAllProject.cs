@@ -1,4 +1,5 @@
 ﻿using Infrastructure;
+using Infrastructure.Repositories;
 
 namespace ApplicationCore.Features.Projects;
 
@@ -13,14 +14,16 @@ public interface IGetAllProjectService
     Task<GetAllProjectViewModel> Handle();
 }
 
-internal class GetAllProjectService(IProjectRepository projectRepository, IGitService gitService) : IGetAllProjectService
+internal class GetAllProjectService(IProjectRepository projectRepository, IDevAppRepository devAppRepository, IGitService gitService) : IGetAllProjectService
 {
     private readonly IProjectRepository projectRepository = projectRepository;
+    private readonly IDevAppRepository devAppRepository = devAppRepository;
     private readonly IGitService gitService = gitService;
 
     public async Task<GetAllProjectViewModel> Handle()
     {
         var projects = await this.projectRepository.GetAll();
+        var devApps = await this.devAppRepository.GetAll();
 
         return new()
         {
@@ -41,6 +44,7 @@ internal class GetAllProjectService(IProjectRepository projectRepository, IGitSe
                     EnableMoveDown = index != projects.Count(),
                     EnableAddToGroup = false,
                     GroupName = "",
+                    DevAppPath = devApps.First(devApp => devApp.Id == value.IDEPathId).Path,
                     CurrentGitBranch = $"Current Git Branch: {this.gitService.GetCurrentBranch(value.Path)}"
                 }
             )

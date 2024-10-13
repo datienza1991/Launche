@@ -6,7 +6,7 @@ public interface IStartup
 {
     Task Init();
 }
-public class Startup(IInitializedDatabaseMigration initializedDatabaseMigration) : IStartup
+internal class Startup(IInitializedDatabaseMigration initializedDatabaseMigration) : IStartup
 {
     private readonly IInitializedDatabaseMigration initializedDatabaseMigration = initializedDatabaseMigration;
 

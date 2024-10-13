@@ -1,4 +1,6 @@
-﻿namespace ApplicationCore.Features.Projects
+﻿using ApplicationCore.Common;
+
+namespace ApplicationCore.Features.Projects
 {
     public record AddProjectCommand
     (
@@ -12,13 +14,14 @@
     {
         Task<bool> AddAsync(AddProjectCommand command);
     }
-    internal class AddProjectService(IProjectRepository projectRepository) : IAddProjectService
+    internal class AddProjectService(IProjectRepository projectRepository, INotificationMessageService notificationMessageService) : IAddProjectService
     {
         private readonly IProjectRepository projectRepository = projectRepository;
+        private readonly INotificationMessageService notificationMessageService = notificationMessageService;
 
         public async Task<bool> AddAsync(AddProjectCommand command)
         {
-            return await this.projectRepository.Add
+            var result = await this.projectRepository.Add
             (
                 new()
                 {
@@ -28,6 +31,10 @@
                     Filename = command.FileName
                 }
             );
+
+            notificationMessageService.Create("New Project has been save!", "Add Project", NotificationType.Information);
+
+            return result;
         }
     }
 }
