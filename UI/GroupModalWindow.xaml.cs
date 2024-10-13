@@ -1,5 +1,4 @@
-﻿using ApplicationCore.Features.Grouping;
-using ApplicationCore.Features.Groups;
+﻿using ApplicationCore.Features.Groups;
 using ApplicationCore.Features.Projects;
 using System.Windows;
 using UI.Windows.Group.ViewModels;
@@ -12,37 +11,33 @@ namespace UI.Windows.Group;
 public partial class GroupModalWindow : Window
 {
     public ProjectViewModel? ProjectPath { get; set; }
-    private readonly GroupWindowDataContext dataContext = new();
-    private readonly GroupQuery? groupDataService;
-    private readonly IGroupProject? projectGrouping;
-
     public event EventHandler? OnSave;
+
+    private readonly GroupWindowDataContext dataContext = new();
+    private readonly IGetAllGroupService getAllGroupService;
+    private readonly IAddProjectToGroupService addProjectToGroupService;
+    private readonly IProjectFeaturesCreator projectFeaturesCreator;
+
     public GroupModalWindow()
     {
         InitializeComponent();
         DataContext = dataContext;
     }
 
-    public GroupModalWindow(GroupQuery groupQuery, IGroupProject projectGrouping)
+    public GroupModalWindow(IGroupFeaturesCreator groupFeaturesCreator, IProjectFeaturesCreator projectFeaturesCreator)
     {
         InitializeComponent();
         DataContext = dataContext;
-        groupDataService = groupQuery;
-        this.projectGrouping = projectGrouping;
+        getAllGroupService = groupFeaturesCreator.CreateGetAllGroupService();
+        addProjectToGroupService = projectFeaturesCreator.CreateAddProjectToGroupService();
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        var groups = await groupDataService!.GetAll();
-        dataContext.Groups =
-        [..
-            groups.Select
-            (
-                (group) => new GroupViewModel() { Id = group.Id, Name = group.Name }
-            )
-        ];
+        var getAllGroupVm = await getAllGroupService!.Handle();
+        dataContext.Groups = [.. getAllGroupVm.Groups];
         this.ListBoxGroup.SelectedItem = this.ListBoxGroup.Items.SourceCollection
-                 .Cast<ApplicationCore.Features.Groups.GroupViewModel>()
+                 .Cast<GroupViewModel>()
                  .FirstOrDefault(groupViewModel => groupViewModel.Id == ProjectPath?.GroupId);
 
         dataContext.EnableSave = ProjectPath!.GroupId is not null;
@@ -60,9 +55,9 @@ public partial class GroupModalWindow : Window
             return;
         }
 
-        ProjectPath.GroupId = dataContext.SelectedOption.Id;
+        var groupId = dataContext.SelectedOption.Id;
 
-        await projectGrouping!.Group(ProjectPath.Id, ProjectPath.GroupId);
+        await addProjectToGroupService.Handle(new() { ProjectId = ProjectPath.Id, GroupId = groupId });
 
         OnSave?.Invoke(this, EventArgs.Empty);
     }
@@ -75,7 +70,7 @@ public partial class GroupModalWindow : Window
         }
 
         ProjectPath.GroupId = null;
-        await projectGrouping!.Group(ProjectPath.Id, ProjectPath.GroupId);
+        //await projectGrouping!.Group(ProjectPath.Id, ProjectPath.GroupId);
         this.ListBoxGroup.SelectedItem = null;
         dataContext.EnableSave = false;
     }

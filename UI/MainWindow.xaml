@@ -132,7 +132,8 @@
                 Margin="0,0,5,0"
                 VerticalAlignment="Center"
                 Click="btnNewProjectPath_Click"
-                Content="New">
+                Content="New"
+                IsEnabled="{Binding EnableAddNewProject}">
                 <Button.Resources>
                     <Style TargetType="Border">
                         <Setter Property="CornerRadius" Value="3" />
@@ -292,7 +293,7 @@
                         x:Name="mnuAddToGroup"
                         Click="mnuAddToGroup_Click"
                         Header="Add to Group"
-                        IsEnabled="False" />
+                        IsEnabled="{Binding EnableAddToGroup}" />
                     <MenuItem
                         x:Name="mnuMoveUp"
                         Click="mnuMoveUp_Click"

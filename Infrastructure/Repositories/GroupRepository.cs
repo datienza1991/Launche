@@ -2,15 +2,15 @@
 using Infrastructure.Models;
 using System.Data.SQLite;
 
-namespace ApplicationCore.Features.Groups;
+namespace Infrastructure.Repositories;
 
 public interface IGroupRepository
 {
-    Task<Group> GetOne(int id);
+    Task<Group> GetOne(long id);
     Task<List<Group>> GetAll();
-    Task<bool> Add(Infrastructure.Models.Group param);
-    Task<bool> Edit(Infrastructure.Models.Group param);
-    Task<bool> Delete(int id);
+    Task<bool> Add(Group param);
+    Task<bool> Edit(Group param);
+    Task<bool> Delete(long id);
 }
 
 public class GroupRepository(ICreateSqliteConnection createSqliteConnection) : IGroupRepository
@@ -18,7 +18,7 @@ public class GroupRepository(ICreateSqliteConnection createSqliteConnection) : I
     private readonly ICreateSqliteConnection createSqliteConnection = createSqliteConnection;
     private const string TABLE = $"{nameof(Group)}s";
 
-    public async Task<bool> Add(Infrastructure.Models.Group param)
+    public async Task<bool> Add(Group param)
     {
         using var connection = createSqliteConnection.Execute();
 
@@ -37,7 +37,7 @@ public class GroupRepository(ICreateSqliteConnection createSqliteConnection) : I
         return rows != 0;
     }
 
-    public async Task<bool> Edit(Infrastructure.Models.Group param)
+    public async Task<bool> Edit(Group param)
     {
         using var connection = createSqliteConnection.Execute();
         connection.Open();
@@ -53,7 +53,7 @@ public class GroupRepository(ICreateSqliteConnection createSqliteConnection) : I
         return rows != 0;
     }
 
-    public async Task<bool> Delete(int id)
+    public async Task<bool> Delete(long id)
     {
         using var connection = createSqliteConnection.Execute();
 
@@ -91,7 +91,7 @@ public class GroupRepository(ICreateSqliteConnection createSqliteConnection) : I
         return groups;
     }
 
-    public async Task<Group> GetOne(int id)
+    public async Task<Group> GetOne(long id)
     {
         var tableName = $"{nameof(Group)}s";
         var group = new Group();

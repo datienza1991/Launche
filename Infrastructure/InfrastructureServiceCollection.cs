@@ -1,5 +1,4 @@
-﻿using ApplicationCore.Features.Groups;
-using ApplicationCore.Features.Projects;
+﻿using ApplicationCore.Features.Projects;
 using Infrastructure.Database;
 using Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;

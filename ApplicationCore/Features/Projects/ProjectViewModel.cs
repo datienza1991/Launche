@@ -8,7 +8,7 @@
         public int IDEPathId { get; set; }
         public int SortId { get; init; }
         public string Filename { get; init; } = "";
-        public int? GroupId { get; set; }
+        public long? GroupId { get; set; }
         public int Index { get; init; }
         public bool EnableMoveUp { get; init; }
         public bool EnableMoveDown { get; init; }

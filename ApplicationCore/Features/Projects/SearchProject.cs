@@ -45,7 +45,9 @@ internal class SearchProjectService(IProjectRepository projectRepository) : ISea
                         Path = project.Path,
                         SortId = project.SortId,
                         GroupId = project.GroupId,
-                        GroupName = ""
+                        GroupName = "",
+                        EnableAddToGroup = true,
+
                     };
                 }
             );
@@ -67,7 +69,8 @@ internal class SearchProjectService(IProjectRepository projectRepository) : ISea
                     Path = project.Path,
                     SortId = project.SortId,
                     GroupId = project.GroupId,
-                    GroupName = ""
+                    GroupName = "",
+                    EnableAddToGroup = true,
                 }
             );
         }
