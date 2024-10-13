@@ -1,4 +1,4 @@
-﻿using ApplicationCore;
+﻿using ApplicationCore.Common;
 using ApplicationCore.Features.DevApps;
 using ApplicationCore.Features.Groups;
 using ApplicationCore.Features.Projects;
@@ -8,8 +8,6 @@ using Infrastructure.ViewModels;
 using LibGit2Sharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
-using System.Diagnostics;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using UI.Windows.Group;
@@ -21,7 +19,6 @@ namespace UI;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private readonly IStartup? startup;
     private readonly IAddDevAppService? addDevAppService;
     private readonly IEditDevAppService? editDevAppService;
     private readonly IDeleteDevAppService? deleteDevAppService;
@@ -29,12 +26,15 @@ public partial class MainWindow : Window
     private readonly IGetOneDevAppService? getOneDevAppService;
     private readonly ISortProject? projectSorting;
     private readonly IGroupQuery? groupQuery;
+    private readonly INotificationMessageService notificationMessageService;
     private readonly IAddProjectService? addProjectService;
     private readonly IGetLastProjectService? getLastProjectService;
     private readonly IGetAllProjectService? getAllProjectService;
     private readonly IDeleteProjectService? deleteProjectService;
     private readonly IEditProjectService? editProjectService;
     private readonly ISearchProjectService searchProductService;
+    private readonly IOpenProjectFolderWindowService openProjectFolderWindowService;
+    private readonly IOpenProjectDevAppService openProjectDevAppService;
     private readonly MainWindowViewModel? mainWindowViewModel;
     private GroupModalWindow? groupModalWindow;
     private List<Group> groups = [];
@@ -44,14 +44,14 @@ public partial class MainWindow : Window
     public MainWindow() => InitializeComponent();
 
     public MainWindow(
-        IStartup startup,
         IDevAppFeaturesCreator devAppFeaturesCreator,
         ISortProject? projectSorting,
         IGroupQuery groupQuery,
-        IProjectFeaturesCreator projectFeaturesCreator
+        IProjectFeaturesCreator projectFeaturesCreator,
+        INotificationMessageService notificationMessageService
+
     )
     {
-        this.startup = startup;
         this.addDevAppService = devAppFeaturesCreator.CreateAddDevAppService();
         this.editDevAppService = devAppFeaturesCreator.CreateEditDevAppService();
         this.deleteDevAppService = devAppFeaturesCreator.CreateDeleteDevAppService();
@@ -59,23 +59,33 @@ public partial class MainWindow : Window
         this.getOneDevAppService = devAppFeaturesCreator.CreateGetOneDevAppService();
         this.projectSorting = projectSorting;
         this.groupQuery = groupQuery;
+        this.notificationMessageService = notificationMessageService;
         this.addProjectService = projectFeaturesCreator.CreateAddProjectService();
         this.getLastProjectService = projectFeaturesCreator.CreateGetLastProjectService();
         this.getAllProjectService = projectFeaturesCreator.CreateGetAllProjectService();
         this.deleteProjectService = projectFeaturesCreator.CreateDeleteAddProjectService();
         this.editProjectService = projectFeaturesCreator.CreateEditAddProjectService();
         this.searchProductService = projectFeaturesCreator.CreateSearchProjectService();
+        this.openProjectFolderWindowService = projectFeaturesCreator.CreateOpenProjectFolderWindowAppService();
+        this.openProjectDevAppService = projectFeaturesCreator.CreateOpenProjectDevAppService();
+
+
         this.mainWindowViewModel = new MainWindowViewModel();
         DataContext = this.mainWindowViewModel;
         InitializeComponent();
 
     }
 
+
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        await this.startup!.Init();
         await this.FetchProjectPaths();
         await this.FetchIDEPaths();
+    }
+
+    private void NotificationMessageService_Notify(object? sender, NotificationMessageEventArgs e)
+    {
+        MessageBox.Show(e.Message);
     }
 
     private async void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
@@ -117,17 +127,8 @@ public partial class MainWindow : Window
 
     private async Task FetchIDEPaths()
     {
-
         var getAllDevAppVm = await this.getAllDevAppService!.Handle();
-
-
-        foreach (var item in getAllDevAppVm.DevApps.Select((value, index) => (value, index)))
-        {
-            var (value, index) = item;
-            index++;
-
-            this.mainWindowViewModel!.IdePathsModels?.Add(new() { Id = value.Id, Path = value.Path });
-        }
+        this.mainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
     }
 
     private void ProjectPathsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -186,54 +187,42 @@ public partial class MainWindow : Window
 
     private async void btnSaveProjectPath_Click(object sender, RoutedEventArgs e)
     {
-        bool result;
-
-        this.mainWindowViewModel!.SelectedProjectPath!.IDEPathId = this.mainWindowViewModel!.SelectedIdePath!.Id;
-
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0)
         {
-            result = await this.addProjectService.AddAsync
+            await this.addProjectService!.AddAsync
             (
                 new
                 (
                     this.mainWindowViewModel!.SelectedProjectPath!.Name,
                     this.mainWindowViewModel!.SelectedProjectPath!.Path,
-                    this.mainWindowViewModel!.SelectedProjectPath!.IDEPathId,
+                    this.mainWindowViewModel!.SelectedIdePath!.Id,
                     this.mainWindowViewModel!.SelectedProjectPath!.Filename
                 )
             );
 
-            this.mainWindowViewModel.SelectedProjectPath.Id = (await this.getLastProjectService.GetLast()).Id;
+            this.mainWindowViewModel.SelectedProjectPath.Id = (await this.getLastProjectService!.GetLast()).Id;
             this.mainWindowViewModel!.ProjectPathModels!.Clear();
             await this.FetchProjectPaths();
             await this.Search();
             SelectNewlyAddedItem();
-        }
-        else
-        {
-            result = await this.editProjectService.Edit
-            (
-                new
-                (
-                    this.mainWindowViewModel!.SelectedProjectPath!.Id,
-                    this.mainWindowViewModel!.SelectedProjectPath!.Name,
-                    this.mainWindowViewModel!.SelectedProjectPath!.Path,
-                    this.mainWindowViewModel!.SelectedProjectPath!.IDEPathId,
-                    this.mainWindowViewModel!.SelectedProjectPath!.Filename
-                )
-            );
-            this.mainWindowViewModel!.ProjectPathModels!.Clear();
-            await this.FetchProjectPaths();
-            await this.Search();
-            SelectEditedItem();
-        }
-
-        if (!result)
-        {
             return;
         }
 
-        MessageBox.Show("Project path saved!");
+        await this.editProjectService!.Edit
+        (
+            new
+            (
+                this.mainWindowViewModel!.SelectedProjectPath!.Id,
+                this.mainWindowViewModel!.SelectedProjectPath!.Name,
+                this.mainWindowViewModel!.SelectedProjectPath!.Path,
+                this.mainWindowViewModel!.SelectedProjectPath!.IDEPathId,
+                this.mainWindowViewModel!.SelectedProjectPath!.Filename
+            )
+        );
+        this.mainWindowViewModel!.ProjectPathModels!.Clear();
+        await this.FetchProjectPaths();
+        await this.Search();
+        SelectEditedItem();
     }
 
     private void SelectEditedItem()
@@ -253,69 +242,29 @@ public partial class MainWindow : Window
 
     private void ProjectPathsList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
-        this.OpenProject();
+        OpenProject();
     }
 
     private void OpenProject()
     {
-        try
+        var project = this.mainWindowViewModel!.SelectedProjectPath;
+
+        if (project is null)
         {
-            if (!Directory.Exists(this.mainWindowViewModel!.SelectedProjectPath!.Path))
-            {
-                MessageBox.Show("Directory not found!", "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            if (this.mainWindowViewModel.SelectedProjectPath.Filename is not "")
-            {
-                this.OpenIDEWithFileName();
-                return;
-            }
-
-            this.OpenIDE
-            (
-                new()
-                {
-                    FileName = this.mainWindowViewModel!.SelectedIdePath!.Path,
-                    Arguments = $"{this.mainWindowViewModel.SelectedProjectPath.Path}",
-                    UseShellExecute = true,
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message, "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
-
-    private void OpenIDEWithFileName()
-    {
-        var file = $"{this.mainWindowViewModel?.SelectedProjectPath?.Path}\\{this.mainWindowViewModel?.SelectedProjectPath?.Filename}";
-
-        if (File.Exists(file) is false)
-        {
-            MessageBox.Show("File not found!", "Open Project Error", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
 
-        this.OpenIDE
+        this.openProjectDevAppService.Handle
         (
             new()
             {
-                FileName = this.mainWindowViewModel!.SelectedIdePath!.Path,
-                Arguments = $"{file}",
-                UseShellExecute = true,
+                DevAppPath = project.DevAppPath,
+                DirectoryPath = project.Path,
+                FullFilePath = project.FullPath,
+                HasFileName = project.HasFileName,
             }
         );
     }
-
-    private void OpenIDE(ProcessStartInfo processInfo)
-    {
-        using Process process = new();
-        process.StartInfo = processInfo;
-        process.Start();
-    }
-
 
     private async void btnDeleteIdePath_Click(object sender, RoutedEventArgs e)
     {
@@ -389,28 +338,10 @@ public partial class MainWindow : Window
     }
     private void MnuOpenFolderWindow_Click(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            if (!Directory.Exists(this.mainWindowViewModel!.SelectedProjectPath!.Path))
-            {
-                MessageBox.Show("Directory not found!", "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-            ProcessStartInfo startInfo = new()
-            {
-                FileName = "explorer.exe",
-                Arguments = this.mainWindowViewModel.SelectedProjectPath.Path,
-                UseShellExecute = true,
-
-            };
-            Process.Start(startInfo);
-
-        }
-        catch (Exception ex)
-        {
-
-            MessageBox.Show(ex.Message, "Launch IDE Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
+        this.openProjectFolderWindowService.Handle
+        (
+            new() { Path = this.mainWindowViewModel!.SelectedProjectPath!.Path }
+        );
     }
 
     private void txtSearch_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
@@ -454,7 +385,7 @@ public partial class MainWindow : Window
     {
         this.mainWindowViewModel!.ProjectPathModels!.Clear();
         await this.FetchProjectPaths();
-        this.Search();
+        await this.Search();
         SelectEditedItem();
         groupModalWindow!.Close();
     }

@@ -15,5 +15,15 @@
         public bool EnableAddToGroup { get; init; }
         public string? GroupName { get; init; }
         public string CurrentGitBranch { get; init; } = "";
+        public string FullPath { get { return $@"{Path}\{Filename}"; } }
+        public bool HasFileName
+        {
+            get
+            {
+                return Filename is not null && Filename is not "";
+            }
+        }
+
+        public string DevAppPath { get; set; } = string.Empty;
     }
 }

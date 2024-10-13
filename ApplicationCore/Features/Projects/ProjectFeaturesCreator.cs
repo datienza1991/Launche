@@ -1,4 +1,6 @@
-﻿using Infrastructure;
+﻿using ApplicationCore.Common;
+using Infrastructure;
+using Infrastructure.Repositories;
 
 namespace ApplicationCore.Features.Projects
 {
@@ -10,20 +12,31 @@ namespace ApplicationCore.Features.Projects
         IGetAllProjectService CreateGetAllProjectService();
         IGetLastProjectService CreateGetLastProjectService();
         ISearchProjectService CreateSearchProjectService();
+        IOpenProjectFolderWindowService CreateOpenProjectFolderWindowAppService();
+        IOpenProjectDevAppService CreateOpenProjectDevAppService();
     }
 
-    public class ProjectFeaturesCreator(IProjectRepository projectRepository, IGitService gitService) : IProjectFeaturesCreator
+    public class ProjectFeaturesCreator
+    (
+        IProjectRepository projectRepository,
+        IDevAppRepository devAppRepository,
+        IGitService gitService,
+        INotificationMessageService notificationMessageService
+    )
+        : IProjectFeaturesCreator
     {
         private readonly IProjectRepository projectRepository = projectRepository;
+        private readonly IDevAppRepository devAppRepository = devAppRepository;
         private readonly IGitService gitService = gitService;
+        private readonly INotificationMessageService notificationMessageService = notificationMessageService;
 
         public IAddProjectService CreateAddProjectService()
         {
-            return new AddProjectService(projectRepository);
+            return new AddProjectService(projectRepository, notificationMessageService);
         }
         public IEditProjectService CreateEditAddProjectService()
         {
-            return new EditProjectService(projectRepository);
+            return new EditProjectService(projectRepository, notificationMessageService);
         }
         public IDeleteProjectService CreateDeleteAddProjectService()
         {
@@ -32,7 +45,7 @@ namespace ApplicationCore.Features.Projects
 
         public IGetAllProjectService CreateGetAllProjectService()
         {
-            return new GetAllProjectService(projectRepository, gitService);
+            return new GetAllProjectService(projectRepository, devAppRepository, gitService);
         }
 
         public IGetLastProjectService CreateGetLastProjectService()
@@ -43,6 +56,16 @@ namespace ApplicationCore.Features.Projects
         public ISearchProjectService CreateSearchProjectService()
         {
             return new SearchProjectService(projectRepository);
+        }
+
+        public IOpenProjectFolderWindowService CreateOpenProjectFolderWindowAppService()
+        {
+            return new OpenProjectFolderWindowService(notificationMessageService);
+        }
+
+        public IOpenProjectDevAppService CreateOpenProjectDevAppService()
+        {
+            return new OpenProjectDevAppService(notificationMessageService);
         }
     }
 }
