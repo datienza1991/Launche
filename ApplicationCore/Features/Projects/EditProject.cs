@@ -33,7 +33,11 @@ namespace ApplicationCore.Features.Projects
                     Filename = command.FileName,
                 }
             );
-            notificationMessageService.Create("Record has been updated!", "Edit Project", NotificationType.Success);
+            if (result)
+            {
+                notificationMessageService.Create("Record has been updated!", "Edit Project", NotificationType.Success);
+            }
+
             return result;
         }
     }

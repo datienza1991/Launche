@@ -1,5 +1,6 @@
 ﻿using ApplicationCore.Common;
 using ApplicationCore.Features.DevApps;
+using ApplicationCore.Features.Git;
 using ApplicationCore.Features.Grouping;
 using ApplicationCore.Features.Groups;
 
@@ -19,6 +20,7 @@ public static class CoreServiceCollection
             .AddSingleton<IGroupQuery, GroupQuery>()
             .AddSingleton<IDevAppFeaturesCreator, DevAppFeaturesCreator>()
             .AddSingleton<INotificationMessageService, NotificationMessageService>()
+            .AddSingleton<IGitFeaturesCreator, GitFeaturesCreator>()
             .AddSingleton<IProjectFeaturesCreator, ProjectFeaturesCreator>();
     }
 }

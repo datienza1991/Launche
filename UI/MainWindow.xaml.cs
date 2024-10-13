@@ -1,11 +1,11 @@
 ﻿using ApplicationCore.Common;
 using ApplicationCore.Features.DevApps;
+using ApplicationCore.Features.Git;
 using ApplicationCore.Features.Groups;
 using ApplicationCore.Features.Projects;
 using ApplicationCore.Features.Sorting;
 using Infrastructure.Models;
 using Infrastructure.ViewModels;
-using LibGit2Sharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Windows;
@@ -35,6 +35,7 @@ public partial class MainWindow : Window
     private readonly ISearchProjectService searchProductService;
     private readonly IOpenProjectFolderWindowService openProjectFolderWindowService;
     private readonly IOpenProjectDevAppService openProjectDevAppService;
+    private readonly IGetCurrentGitBranchService getCurrentGitBranchService;
     private readonly MainWindowViewModel? mainWindowViewModel;
     private GroupModalWindow? groupModalWindow;
     private List<Group> groups = [];
@@ -48,8 +49,8 @@ public partial class MainWindow : Window
         ISortProject? projectSorting,
         IGroupQuery groupQuery,
         IProjectFeaturesCreator projectFeaturesCreator,
-        INotificationMessageService notificationMessageService
-
+        INotificationMessageService notificationMessageService,
+        IGitFeaturesCreator gitFeaturesCreator
     )
     {
         this.addDevAppService = devAppFeaturesCreator.CreateAddDevAppService();
@@ -68,7 +69,7 @@ public partial class MainWindow : Window
         this.searchProductService = projectFeaturesCreator.CreateSearchProjectService();
         this.openProjectFolderWindowService = projectFeaturesCreator.CreateOpenProjectFolderWindowAppService();
         this.openProjectDevAppService = projectFeaturesCreator.CreateOpenProjectDevAppService();
-
+        this.getCurrentGitBranchService = gitFeaturesCreator.CreateGetCurrentGitBranchService();
 
         this.mainWindowViewModel = new MainWindowViewModel();
         DataContext = this.mainWindowViewModel;
@@ -81,11 +82,6 @@ public partial class MainWindow : Window
     {
         await this.FetchProjectPaths();
         await this.FetchIDEPaths();
-    }
-
-    private void NotificationMessageService_Notify(object? sender, NotificationMessageEventArgs e)
-    {
-        MessageBox.Show(e.Message);
     }
 
     private async void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
@@ -105,11 +101,8 @@ public partial class MainWindow : Window
         var resultSave = await this.addDevAppService!.Add(new() { Path = filePath });
         if (resultSave)
         {
-            this.mainWindowViewModel!.IdePathsModels!.Clear();
             await this.FetchIDEPaths();
-            this.mainWindowViewModel.SelectedIdePath = new();
-            this.mainWindowViewModel.SelectedProjectPath = null;
-            MessageBox.Show("IDE path saved!");
+            this.mainWindowViewModel!.SelectedIdePath = null;
         }
     }
 
@@ -133,41 +126,19 @@ public partial class MainWindow : Window
 
     private void ProjectPathsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
-        string branchName = "";
+        SelectProject();
+
+    }
+
+    private void SelectProject()
+    {
         if (lvProjectPaths.SelectedIndex == -1) return;
-
         var project = (ProjectViewModel)lvProjectPaths.SelectedItem;
-
-        try
-        {
-            this.mainWindowViewModel!.SelectedIdePath = this.mainWindowViewModel!.IdePathsModels!.Single(x => x.Id == project.IDEPathId);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message);
-        }
-
-        try
-        {
-            using var repo = new Repository(project.Path);
-
-            if (repo == null) { return; }
-
-            var branch = repo.Branches.FirstOrDefault(branch => branch.IsCurrentRepositoryHead);
-
-            branchName = branch?.FriendlyName ?? "";
-        }
-        catch (RepositoryNotFoundException)
-        {
-            branchName = "No Git Repository for this project!";
-        }
-        catch (Exception ex)
-        {
-            branchName = $"Other errors thrown: {ex.Message}";
-        }
-
+        var currentGitBranch = getCurrentGitBranchService.Handle(new() { DirectoryPath = project.Path });
+        project.CurrentGitBranch = currentGitBranch;
         this.mainWindowViewModel!.SelectedProjectPath = project;
-
+        // Selected Dev App : Must be same reference, data must be on view model list to set the value
+        this.mainWindowViewModel!.SelectedIdePath = this.mainWindowViewModel!.IdePathsModels!.First(x => x.Id == project.IDEPathId);
     }
 
     private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
@@ -200,8 +171,6 @@ public partial class MainWindow : Window
                 )
             );
 
-            this.mainWindowViewModel.SelectedProjectPath.Id = (await this.getLastProjectService!.GetLast()).Id;
-            this.mainWindowViewModel!.ProjectPathModels!.Clear();
             await this.FetchProjectPaths();
             await this.Search();
             SelectNewlyAddedItem();
@@ -219,7 +188,7 @@ public partial class MainWindow : Window
                 this.mainWindowViewModel!.SelectedProjectPath!.Filename
             )
         );
-        this.mainWindowViewModel!.ProjectPathModels!.Clear();
+
         await this.FetchProjectPaths();
         await this.Search();
         SelectEditedItem();
@@ -299,7 +268,7 @@ public partial class MainWindow : Window
     {
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0) return;
 
-        var result = await this.deleteProjectService.Delete(this.mainWindowViewModel!.SelectedProjectPath!.Id);
+        var result = await this.deleteProjectService!.Delete(this.mainWindowViewModel!.SelectedProjectPath!.Id);
 
         if (result)
         {

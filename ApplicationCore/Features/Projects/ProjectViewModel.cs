@@ -14,7 +14,7 @@
         public bool EnableMoveDown { get; init; }
         public bool EnableAddToGroup { get; init; }
         public string? GroupName { get; init; }
-        public string CurrentGitBranch { get; init; } = "";
+        public string CurrentGitBranch { get; set; } = "";
         public string FullPath { get { return $@"{Path}\{Filename}"; } }
         public bool HasFileName
         {

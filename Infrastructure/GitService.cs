@@ -17,12 +17,12 @@ public class GitService : IGitService
 
             if (repo == null)
             {
-                return "";
+                return "Current Git Branch: Not found";
             }
 
             var branch = repo.Branches.FirstOrDefault(branch => branch.IsCurrentRepositoryHead);
 
-            return branch?.FriendlyName ?? "";
+            return $"Current Git Branch: {branch?.FriendlyName}" ?? "";
         }
         catch (RepositoryNotFoundException)
         {
