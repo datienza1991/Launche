@@ -59,6 +59,10 @@ namespace UI
                  .AddSingleton<GroupModalWindow>()
                  .BuildServiceProvider();
         }
+        public static GroupModalWindow? GetGroupWindowInstance()
+        {
+            return GetCurrentServiceProvider().GetService<GroupModalWindow>();
+        }
     }
 
 }

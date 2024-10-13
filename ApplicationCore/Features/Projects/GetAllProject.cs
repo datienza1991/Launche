@@ -42,7 +42,7 @@ internal class GetAllProjectService(IProjectRepository projectRepository, IDevAp
                     Index = index + 1,
                     EnableMoveUp = index != 1,
                     EnableMoveDown = index != projects.Count(),
-                    EnableAddToGroup = false,
+                    EnableAddToGroup = true,
                     GroupName = "",
                     DevAppPath = devApps.First(devApp => devApp.Id == value.IDEPathId).Path,
                     CurrentGitBranch = $"Current Git Branch: {this.gitService.GetCurrentBranch(value.Path)}"

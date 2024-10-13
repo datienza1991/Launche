@@ -16,6 +16,18 @@ namespace Infrastructure.ViewModels
             this.search = "";
         }
 
+        private bool _enableAddNewProject = false;
+
+        public bool EnableAddNewProject
+        {
+            get { return _enableAddNewProject; }
+            set
+            {
+                _enableAddNewProject = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.EnableAddNewProject)));
+            }
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         private ObservableCollection<ProjectViewModel>? projectPathModels;

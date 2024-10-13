@@ -1,12 +1,10 @@
 ﻿using ApplicationCore.Common;
 using ApplicationCore.Features.DevApps;
 using ApplicationCore.Features.Git;
-using ApplicationCore.Features.Groups;
 using ApplicationCore.Features.Projects;
 using ApplicationCore.Features.Sorting;
 using Infrastructure.Models;
 using Infrastructure.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,7 +23,6 @@ public partial class MainWindow : Window
     private readonly IGetAllDevAppService? getAllDevAppService;
     private readonly IGetOneDevAppService? getOneDevAppService;
     private readonly ISortProject? projectSorting;
-    private readonly IGroupQuery? groupQuery;
     private readonly INotificationMessageService notificationMessageService;
     private readonly IAddProjectService? addProjectService;
     private readonly IGetLastProjectService? getLastProjectService;
@@ -47,7 +44,6 @@ public partial class MainWindow : Window
     public MainWindow(
         IDevAppFeaturesCreator devAppFeaturesCreator,
         ISortProject? projectSorting,
-        IGroupQuery groupQuery,
         IProjectFeaturesCreator projectFeaturesCreator,
         INotificationMessageService notificationMessageService,
         IGitFeaturesCreator gitFeaturesCreator
@@ -59,7 +55,6 @@ public partial class MainWindow : Window
         this.getAllDevAppService = devAppFeaturesCreator.CreateGetAllDevAppService();
         this.getOneDevAppService = devAppFeaturesCreator.CreateGetOneDevAppService();
         this.projectSorting = projectSorting;
-        this.groupQuery = groupQuery;
         this.notificationMessageService = notificationMessageService;
         this.addProjectService = projectFeaturesCreator.CreateAddProjectService();
         this.getLastProjectService = projectFeaturesCreator.CreateGetLastProjectService();
@@ -104,11 +99,6 @@ public partial class MainWindow : Window
             await this.FetchIDEPaths();
             this.mainWindowViewModel!.SelectedIdePath = null;
         }
-    }
-
-    private async Task FetchGroups()
-    {
-        this.groups = await this.groupQuery!.GetAll();
     }
 
     private async Task FetchProjectPaths()
@@ -261,7 +251,6 @@ public partial class MainWindow : Window
     {
         this.mainWindowViewModel!.SelectedProjectPath = new();
         this.mainWindowViewModel!.SelectedIdePath = new();
-
     }
 
     private async void btnDeleteProjectPath_Click(object sender, RoutedEventArgs e)
@@ -302,6 +291,7 @@ public partial class MainWindow : Window
     {
 
         var searchViewModel = await this.searchProductService.Handle(new() { Search = this.mainWindowViewModel!.Search });
+        this.mainWindowViewModel.EnableAddNewProject = searchViewModel.EnableAddNewProject;
         this.mainWindowViewModel!.ProjectPathModels = [.. searchViewModel.Projects];
 
     }
@@ -344,7 +334,7 @@ public partial class MainWindow : Window
 
     private void mnuAddToGroup_Click(object sender, RoutedEventArgs e)
     {
-        this.groupModalWindow = App.GetCurrentServiceProvider().GetService<GroupModalWindow>();
+        this.groupModalWindow = App.GetGroupWindowInstance();
         this.groupModalWindow!.ProjectPath = this.mainWindowViewModel!.SelectedProjectPath;
         groupModalWindow!.OnSave += GroupModalWindow_OnSave;
         groupModalWindow?.ShowDialog();
@@ -352,8 +342,6 @@ public partial class MainWindow : Window
 
     private async void GroupModalWindow_OnSave(object? sender, EventArgs e)
     {
-        this.mainWindowViewModel!.ProjectPathModels!.Clear();
-        await this.FetchProjectPaths();
         await this.Search();
         SelectEditedItem();
         groupModalWindow!.Close();

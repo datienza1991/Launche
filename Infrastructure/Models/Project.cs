@@ -8,5 +8,5 @@ public class Project
     public int IDEPathId { get; set; }
     public int SortId { get; set; }
     public string Filename { get; set; } = string.Empty;
-    public int? GroupId { get; set; }
+    public long? GroupId { get; set; }
 }
