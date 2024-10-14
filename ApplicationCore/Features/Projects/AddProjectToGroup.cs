@@ -11,12 +11,19 @@ public class AddProjectToGroupCommand
 
 public interface IAddProjectToGroupService
 {
+    event EventHandler Notify;
     Task Handle(AddProjectToGroupCommand command);
 }
 
-internal class AddProjectToGroupService(IGroupRepository groupRepository, IProjectRepository projectRepository, INotificationMessageService notificationMessageService) : IAddProjectToGroupService
+internal class AddProjectToGroupService
+(
+    IGroupRepository groupRepository,
+    IProjectRepository projectRepository,
+    INotificationMessageService notificationMessageService) : IAddProjectToGroupService
 {
     private readonly IProjectRepository projectRepository = projectRepository;
+
+    public event EventHandler? Notify;
 
     public async Task Handle(AddProjectToGroupCommand command)
     {
@@ -56,6 +63,8 @@ internal class AddProjectToGroupService(IGroupRepository groupRepository, IProje
                 "Add Project to Group",
                 NotificationType.Success
             );
+
+            this.Notify!.Invoke(this, EventArgs.Empty);
         }
 
     }

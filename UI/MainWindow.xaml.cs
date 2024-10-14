@@ -1,13 +1,13 @@
-﻿using ApplicationCore.Common;
-using ApplicationCore.Features.DevApps;
+﻿using ApplicationCore.Features.DevApps;
 using ApplicationCore.Features.Git;
+using ApplicationCore.Features.Groups;
 using ApplicationCore.Features.Projects;
-using ApplicationCore.Features.Sorting;
 using Infrastructure.Models;
 using Infrastructure.ViewModels;
 using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using UI.Windows.Group;
 
 namespace UI;
@@ -22,34 +22,32 @@ public partial class MainWindow : Window
     private readonly IDeleteDevAppService? deleteDevAppService;
     private readonly IGetAllDevAppService? getAllDevAppService;
     private readonly IGetOneDevAppService? getOneDevAppService;
-    private readonly ISortProject? projectSorting;
-    private readonly INotificationMessageService notificationMessageService;
-    private readonly IRemoveProjectFromGroupNotificationService removeProjectFromGroupNotificationService;
+    private readonly IProjectFeaturesCreator? projectFeaturesCreator;
+    private readonly IGroupFeaturesCreator? groupFeaturesCreator;
+    private readonly IGetAllGroupService? getAllGroupService;
     private readonly IAddProjectService? addProjectService;
-    private readonly IGetLastProjectService? getLastProjectService;
     private readonly IGetAllProjectService? getAllProjectService;
     private readonly IDeleteProjectService? deleteProjectService;
     private readonly IEditProjectService? editProjectService;
-    private readonly ISearchProjectService searchProductService;
-    private readonly IOpenProjectFolderWindowService openProjectFolderWindowService;
-    private readonly IOpenProjectDevAppService openProjectDevAppService;
-    private readonly IGetCurrentGitBranchService getCurrentGitBranchService;
-    private readonly IRemoveProjectFromGroupService removeProjectFromGroupService;
+    private readonly ISearchProjectService? searchProductService;
+    private readonly IOpenProjectFolderWindowService? openProjectFolderWindowService;
+    private readonly IOpenProjectDevAppService? openProjectDevAppService;
+    private readonly IGetCurrentGitBranchService? getCurrentGitBranchService;
+    private readonly IRemoveProjectFromGroupService? removeProjectFromGroupService;
+    private readonly IAddProjectToGroupService? addProjectToGroupService;
+    private readonly ISortUpProjectService sortUpProjectService;
+    private readonly ISortDownProjectService sortDownProjectService;
     private readonly MainWindowViewModel? mainWindowViewModel;
     private GroupModalWindow? groupModalWindow;
-    private List<Group> groups = [];
-
-    //public ObservableCollection<Infrastructure.Models.Project> Entries { get; private set; } = [];
+    private readonly List<Group> groups = [];
 
     public MainWindow() => InitializeComponent();
 
     public MainWindow(
         IDevAppFeaturesCreator devAppFeaturesCreator,
-        ISortProject? projectSorting,
         IProjectFeaturesCreator projectFeaturesCreator,
-        INotificationMessageService notificationMessageService,
-        IRemoveProjectFromGroupNotificationService removeProjectFromGroupNotificationService,
-        IGitFeaturesCreator gitFeaturesCreator
+        IGitFeaturesCreator gitFeaturesCreator,
+        IGroupFeaturesCreator groupFeaturesCreator
     )
     {
         this.addDevAppService = devAppFeaturesCreator.CreateAddDevAppService();
@@ -57,11 +55,9 @@ public partial class MainWindow : Window
         this.deleteDevAppService = devAppFeaturesCreator.CreateDeleteDevAppService();
         this.getAllDevAppService = devAppFeaturesCreator.CreateGetAllDevAppService();
         this.getOneDevAppService = devAppFeaturesCreator.CreateGetOneDevAppService();
-        this.projectSorting = projectSorting;
-        this.notificationMessageService = notificationMessageService;
-        this.removeProjectFromGroupNotificationService = removeProjectFromGroupNotificationService;
+        this.projectFeaturesCreator = projectFeaturesCreator;
+        this.getAllGroupService = groupFeaturesCreator.CreateGetAllGroupService();
         this.addProjectService = projectFeaturesCreator.CreateAddProjectService();
-        this.getLastProjectService = projectFeaturesCreator.CreateGetLastProjectService();
         this.getAllProjectService = projectFeaturesCreator.CreateGetAllProjectService();
         this.deleteProjectService = projectFeaturesCreator.CreateDeleteAddProjectService();
         this.editProjectService = projectFeaturesCreator.CreateEditAddProjectService();
@@ -70,26 +66,43 @@ public partial class MainWindow : Window
         this.openProjectDevAppService = projectFeaturesCreator.CreateOpenProjectDevAppService();
         this.getCurrentGitBranchService = gitFeaturesCreator.CreateGetCurrentGitBranchService();
         this.removeProjectFromGroupService = projectFeaturesCreator.CreateRemoveProjectFromGroupService();
+        this.addProjectToGroupService = projectFeaturesCreator.CreateAddProjectToGroupService();
+        this.sortUpProjectService = projectFeaturesCreator.CreateSortUpProjectService();
+        this.sortDownProjectService = projectFeaturesCreator.CreateSortDownProjectService();
         this.mainWindowViewModel = new MainWindowViewModel();
         DataContext = this.mainWindowViewModel;
         InitializeComponent();
-
     }
 
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        this.removeProjectFromGroupNotificationService.Notify += RemoveProjectFromGroupNotificationService_Notify; ;
-        await this.FetchProjectPaths();
-        await this.FetchIDEPaths();
+        this.removeProjectFromGroupService!.Notify += RemoveProjectFromGroupNotificationService_Notify; ;
+        this.addProjectToGroupService!.Notify += AddProjectToGroupService_Notify;
+        await this.FetchProjects();
+        await this.FetchDevApps();
     }
 
-    private void RemoveProjectFromGroupNotificationService_Notify(object? sender, RemoveProjectFromGroupEventArgs e)
+    private async void AddProjectToGroupService_Notify(object? sender, EventArgs e)
     {
+        await this.Search();
+        SelectEditedItem();
+        groupModalWindow!.Close();
+    }
+
+    private async void RemoveProjectFromGroupNotificationService_Notify(object? sender, RemoveProjectFromGroupEventArgs e)
+    {
+        await this.Search();
+        SelectEditedItem();
         groupModalWindow!.Close();
     }
 
     private async void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
+    {
+        await OpenDevAppDialog();
+    }
+
+    private async Task OpenDevAppDialog()
     {
         var openFolderDialog = new OpenFileDialog
         {
@@ -106,19 +119,18 @@ public partial class MainWindow : Window
         var resultSave = await this.addDevAppService!.Add(new() { Path = filePath });
         if (resultSave)
         {
-            await this.FetchIDEPaths();
-            this.mainWindowViewModel!.SelectedIdePath = null;
+            await this.FetchDevApps();
+            this.mainWindowViewModel!.SelectedIdePath = new();
         }
     }
 
-    private async Task FetchProjectPaths()
+    private async Task FetchProjects()
     {
         var getAllProjectVm = await this.getAllProjectService!.Handle();
         this.mainWindowViewModel!.ProjectPathModels = [.. getAllProjectVm.Projects];
-
     }
 
-    private async Task FetchIDEPaths()
+    private async Task FetchDevApps()
     {
         var getAllDevAppVm = await this.getAllDevAppService!.Handle();
         this.mainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
@@ -127,14 +139,13 @@ public partial class MainWindow : Window
     private void ProjectPathsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
         SelectProject();
-
     }
 
     private void SelectProject()
     {
-        if (lvProjectPaths.SelectedIndex == -1) return;
+        if (lvProjectPaths.SelectedIndex == -1) { return; }
         var project = (ProjectViewModel)lvProjectPaths.SelectedItem;
-        var currentGitBranch = getCurrentGitBranchService.Handle(new() { DirectoryPath = project.Path });
+        var currentGitBranch = getCurrentGitBranchService!.Handle(new() { DirectoryPath = project.Path });
         project.CurrentGitBranch = currentGitBranch;
         this.mainWindowViewModel!.SelectedProjectPath = project;
         // Selected Dev App : Must be same reference, data must be on view model list to set the value
@@ -142,6 +153,11 @@ public partial class MainWindow : Window
     }
 
     private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
+    {
+        OpenProjectDialog();
+    }
+
+    private void OpenProjectDialog()
     {
         var openFolderDialog = new OpenFolderDialog();
         var result = openFolderDialog.ShowDialog() ?? false;
@@ -151,14 +167,22 @@ public partial class MainWindow : Window
             string filePath = openFolderDialog.FolderName;
             string name = openFolderDialog.SafeFolderName;
 
-            this.mainWindowViewModel!.SelectedProjectPath = new() { Id = this.mainWindowViewModel!.SelectedProjectPath!.Id, Path = filePath!, Name = name! };
-
+            this.mainWindowViewModel!.SelectedProjectPath = new()
+            {
+                Path = filePath!,
+                Name = name!
+            };
         }
     }
 
     private async void btnSaveProjectPath_Click(object sender, RoutedEventArgs e)
     {
-        if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0)
+        await SaveProject();
+    }
+
+    private async Task SaveProject()
+    {
+        if (this.mainWindowViewModel!.SelectedProjectPath?.Id == 0)
         {
             await this.addProjectService!.AddAsync
             (
@@ -221,7 +245,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        this.openProjectDevAppService.Handle
+        this.openProjectDevAppService!.Handle
         (
             new()
             {
@@ -235,23 +259,19 @@ public partial class MainWindow : Window
 
     private async void btnDeleteIdePath_Click(object sender, RoutedEventArgs e)
     {
+        await DeleteDevApp();
+    }
+
+    private async Task DeleteDevApp()
+    {
         if (this.mainWindowViewModel!.SelectedIdePath!.Id == 0) return;
 
-        try
-        {
-            var result = await this.deleteDevAppService!.Delete(new() { Id = this.mainWindowViewModel!.SelectedIdePath!.Id });
+        var result = await this.deleteDevAppService!.Delete(new() { Id = this.mainWindowViewModel!.SelectedIdePath!.Id });
 
-            if (result)
-            {
-                this.mainWindowViewModel!.IdePathsModels!.Clear();
-                await this.FetchIDEPaths();
-                this.mainWindowViewModel!.SelectedIdePath = new();
-            }
-        }
-        catch (Exception ex)
+        if (result)
         {
-
-            MessageBox.Show(ex.Message);
+            await this.FetchDevApps();
+            this.mainWindowViewModel!.SelectedIdePath = new();
         }
     }
 
@@ -263,14 +283,18 @@ public partial class MainWindow : Window
 
     private async void btnDeleteProjectPath_Click(object sender, RoutedEventArgs e)
     {
+        await DeleteProject();
+    }
+
+    private async Task DeleteProject()
+    {
         if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0) return;
 
         var result = await this.deleteProjectService!.Delete(this.mainWindowViewModel!.SelectedProjectPath!.Id);
 
         if (result)
         {
-            this.mainWindowViewModel!.ProjectPathModels!.Clear();
-            await this.FetchProjectPaths();
+            await Search();
             this.mainWindowViewModel!.SelectedProjectPath = new();
             this.mainWindowViewModel!.SelectedIdePath = new();
         }
@@ -278,16 +302,33 @@ public partial class MainWindow : Window
 
     private async void mnuMoveUp_Click(object sender, RoutedEventArgs e)
     {
-        await this.projectSorting!.SortUp(this.mainWindowViewModel!.SelectedProjectPath!.SortId);
-        this.mainWindowViewModel.ProjectPathModels?.Clear();
-        await this.FetchProjectPaths();
+        await SortUpProject();
+    }
+
+    private async Task SortUpProject()
+    {
+        var result = await this.sortUpProjectService!.Handle(new() { SortId = this.mainWindowViewModel!.SelectedProjectPath!.SortId });
+        if (!result)
+        {
+            return;
+        }
+
+        await this.FetchProjects();
     }
 
     private async void mnuMoveDown_Click(object sender, RoutedEventArgs e)
     {
-        await this.projectSorting!.SortDown(this.mainWindowViewModel!.SelectedProjectPath!.SortId);
-        this.mainWindowViewModel.ProjectPathModels?.Clear();
-        await this.FetchProjectPaths();
+        await SortDownProject();
+    }
+
+    private async Task SortDownProject()
+    {
+        var result = await this.sortDownProjectService.Handle(new() { SortId = this.mainWindowViewModel!.SelectedProjectPath!.SortId });
+        if (!result)
+        {
+            return;
+        }
+        await this.FetchProjects();
     }
 
     private async void TxtSearch_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
@@ -297,23 +338,27 @@ public partial class MainWindow : Window
 
     private async Task Search()
     {
-
-        var searchViewModel = await this.searchProductService.Handle(new() { Search = this.mainWindowViewModel!.Search });
+        var searchViewModel = await this.searchProductService!.Handle(new() { Search = this.mainWindowViewModel!.Search });
         this.mainWindowViewModel.EnableAddNewProject = searchViewModel.EnableAddNewProject;
         this.mainWindowViewModel!.ProjectPathModels = [.. searchViewModel.Projects];
 
     }
     private void MnuOpenFolderWindow_Click(object sender, RoutedEventArgs e)
     {
-        this.openProjectFolderWindowService.Handle
+        this.openProjectFolderWindowService!.Handle
         (
             new() { Path = this.mainWindowViewModel!.SelectedProjectPath!.Path }
         );
     }
 
-    private void txtSearch_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+    private void txtSearch_KeyUp(object sender, KeyEventArgs e)
     {
-        if (e.Key != System.Windows.Input.Key.Down)
+        FocusOnListViewWhenArrowDown(e);
+    }
+
+    private void FocusOnListViewWhenArrowDown(KeyEventArgs e)
+    {
+        if (e.Key != Key.Down)
         {
             return;
         }
@@ -332,7 +377,12 @@ public partial class MainWindow : Window
 
     private void lvProjectPaths_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
-        if (e.Key != System.Windows.Input.Key.Enter)
+        OpenProjectWhenEnter(e);
+    }
+
+    private void OpenProjectWhenEnter(KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter)
         {
             return;
         }
@@ -342,16 +392,19 @@ public partial class MainWindow : Window
 
     private void mnuAddToGroup_Click(object sender, RoutedEventArgs e)
     {
-        this.groupModalWindow = App.GetGroupWindowInstance();
-        this.groupModalWindow!.ProjectPath = this.mainWindowViewModel!.SelectedProjectPath;
-        groupModalWindow?.Show();
+        OpenAddToGroupDialog();
     }
 
-    private async void GroupModalWindow_OnSave(object? sender, EventArgs e)
+    private void OpenAddToGroupDialog()
     {
-        await this.Search();
-        SelectEditedItem();
-        groupModalWindow!.Close();
+        this.groupModalWindow = new GroupModalWindow
+        (
+            getAllGroupService!,
+            addProjectToGroupService!,
+            removeProjectFromGroupService!
+        );
+
+        this.groupModalWindow!.ProjectPath = this.mainWindowViewModel!.SelectedProjectPath;
+        groupModalWindow?.ShowDialog();
     }
 }
-

@@ -16,6 +16,8 @@ namespace ApplicationCore.Features.Projects
         IOpenProjectDevAppService CreateOpenProjectDevAppService();
         IAddProjectToGroupService CreateAddProjectToGroupService();
         IRemoveProjectFromGroupService CreateRemoveProjectFromGroupService();
+        ISortUpProjectService CreateSortUpProjectService();
+        ISortDownProjectService CreateSortDownProjectService();
     }
 
     public class ProjectFeaturesCreator
@@ -24,8 +26,7 @@ namespace ApplicationCore.Features.Projects
         IDevAppRepository devAppRepository,
         IGitService gitService,
         INotificationMessageService notificationMessageService,
-        IGroupRepository groupRepository,
-        IRemoveProjectFromGroupNotificationService removeProjectFromGroupNotificationService
+        IGroupRepository groupRepository
     )
         : IProjectFeaturesCreator
     {
@@ -33,7 +34,6 @@ namespace ApplicationCore.Features.Projects
         private readonly IDevAppRepository devAppRepository = devAppRepository;
         private readonly IGitService gitService = gitService;
         private readonly INotificationMessageService notificationMessageService = notificationMessageService;
-        private readonly IRemoveProjectFromGroupNotificationService removeProjectFromGroupNotificationService = removeProjectFromGroupNotificationService;
 
         public IAddProjectService CreateAddProjectService()
         {
@@ -86,7 +86,17 @@ namespace ApplicationCore.Features.Projects
 
         public IRemoveProjectFromGroupService CreateRemoveProjectFromGroupService()
         {
-            return new RemoveProjectFromGroupService(projectRepository, notificationMessageService, removeProjectFromGroupNotificationService);
+            return new RemoveProjectFromGroupService(projectRepository, notificationMessageService);
+        }
+
+        public ISortUpProjectService CreateSortUpProjectService()
+        {
+            return new SortUpProjectService(projectRepository);
+        }
+
+        public ISortDownProjectService CreateSortDownProjectService()
+        {
+            return new SortDownProjectService(projectRepository);
         }
     }
 }

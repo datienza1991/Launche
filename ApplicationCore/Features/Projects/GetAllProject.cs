@@ -37,23 +37,26 @@ internal class GetAllProjectService
         {
             Projects = projects.Select
             (
-                (value, index) => new ProjectViewModel
+                (value, index) =>
                 {
-
-                    Id = value.Id,
-                    Name = value.Name,
-                    Path = value.Path,
-                    IDEPathId = value.IDEPathId,
-                    SortId = value.SortId,
-                    Filename = value.Filename,
-                    GroupId = value.GroupId,
-                    Index = index + 1,
-                    EnableMoveUp = index != 1,
-                    EnableMoveDown = index != projects.Count(),
-                    EnableAddToGroup = true,
-                    GroupName = groups.FirstOrDefault(group => group.Id == value.GroupId)?.Name,
-                    DevAppPath = devApps.First(devApp => devApp.Id == value.IDEPathId).Path,
-                    CurrentGitBranch = $"Current Git Branch: {this.gitService.GetCurrentBranch(value.Path)}"
+                    var position = index + 1;
+                    return new ProjectViewModel
+                    {
+                        Id = value.Id,
+                        Name = value.Name,
+                        Path = value.Path,
+                        IDEPathId = value.IDEPathId,
+                        SortId = value.SortId,
+                        Filename = value.Filename,
+                        GroupId = value.GroupId,
+                        Index = position,
+                        EnableMoveUp = position != 1,
+                        EnableMoveDown = position != projects.Count(),
+                        EnableAddToGroup = true,
+                        GroupName = groups.FirstOrDefault(group => group.Id == value.GroupId)?.Name,
+                        DevAppPath = devApps.First(devApp => devApp.Id == value.IDEPathId).Path,
+                        CurrentGitBranch = $"Current Git Branch: {this.gitService.GetCurrentBranch(value.Path)}"
+                    };
                 }
             )
         };

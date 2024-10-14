@@ -1,5 +1,4 @@
 ﻿using ApplicationCore.Common;
-
 namespace ApplicationCore.Features.Projects;
 
 public class RemoveProjectFromGroupCommand
@@ -9,19 +8,25 @@ public class RemoveProjectFromGroupCommand
 
 public interface IRemoveProjectFromGroupService
 {
+    event EventHandler<RemoveProjectFromGroupEventArgs> Notify;
     Task Handle(RemoveProjectFromGroupCommand command);
 }
+
+public class RemoveProjectFromGroupEventArgs(long productId) : EventArgs
+{
+    public long ProductId { get; } = productId;
+}
+
 internal class RemoveProjectFromGroupService
 (
     IProjectRepository projectRepository,
-    INotificationMessageService notificationMessageService,
-    IRemoveProjectFromGroupNotificationService removeProjectFromGroupNotificationService
+    INotificationMessageService notificationMessageService
 )
     : IRemoveProjectFromGroupService
 {
     private readonly IProjectRepository projectRepository = projectRepository;
     private readonly INotificationMessageService notificationMessageService = notificationMessageService;
-    private readonly IRemoveProjectFromGroupNotificationService removeProjectFromGroupNotificationService = removeProjectFromGroupNotificationService;
+    public event EventHandler<RemoveProjectFromGroupEventArgs>? Notify;
 
     public async Task Handle(RemoveProjectFromGroupCommand command)
     {
@@ -43,35 +48,15 @@ internal class RemoveProjectFromGroupService
         var result = await projectRepository.Edit(project);
         if (result)
         {
-            removeProjectFromGroupNotificationService.Create(project.Id);
+            notificationMessageService.Create
+            (
+                "Project has been remove from group!",
+                "Remove Project from Group",
+                NotificationType.Error
+            );
+
+            this.Notify!.Invoke(this, new(project.Id));
         }
-    }
-}
-
-public class RemoveProjectFromGroupEventArgs(long productId) : EventArgs
-{
-    public long ProductId { get; } = productId;
-}
-
-public interface IRemoveProjectFromGroupNotificationService
-{
-    event EventHandler<RemoveProjectFromGroupEventArgs>? Notify;
-    void Create(long projectId);
-}
-
-internal class RemoveProjectFromGroupNotificationService : IRemoveProjectFromGroupNotificationService
-{
-    private EventHandler<RemoveProjectFromGroupEventArgs>? _onNotifyOccured;
-
-    public event EventHandler<RemoveProjectFromGroupEventArgs>? Notify
-    {
-        add { _onNotifyOccured += value; }
-        remove { _onNotifyOccured -= value; }
-    }
-
-    public void Create(long projectId)
-    {
-        this._onNotifyOccured!.Invoke(this, new(projectId));
     }
 }
 

@@ -40,7 +40,7 @@ internal class NotificationMessageService : INotificationMessageService
 
     public void Create(string message, string title, NotificationType notificationType)
     {
-        _onNotifyOccured?.Invoke(this, new(message, title, notificationType));
+        _onNotifyOccured!.Invoke(this, new(message, title, notificationType));
     }
 
     public EventHandler<NotificationMessageEventArgs> GetEvent()

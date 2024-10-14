@@ -16,7 +16,7 @@ namespace Infrastructure.ViewModels
             this.search = "";
         }
 
-        private bool _enableAddNewProject = false;
+        private bool _enableAddNewProject = true;
 
         public bool EnableAddNewProject
         {
@@ -54,7 +54,7 @@ namespace Infrastructure.ViewModels
             }
         }
 
-        private ProjectViewModel? selectedProjectPath;
+        private ProjectViewModel? selectedProjectPath = new();
 
         public ProjectViewModel? SelectedProjectPath
         {

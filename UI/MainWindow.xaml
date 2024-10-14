@@ -328,6 +328,11 @@
                             Header="#" />
                         <GridViewColumn
                             Width="Auto"
+                            DisplayMemberBinding="{Binding Path=GroupName}"
+                            HeaderContainerStyle="{StaticResource HeaderStyle}"
+                            HeaderTemplate="{StaticResource GroupTemplate}" />
+                        <GridViewColumn
+                            Width="Auto"
                             DisplayMemberBinding="{Binding Path=Name}"
                             HeaderContainerStyle="{StaticResource HeaderStyle}"
                             HeaderTemplate="{StaticResource Templ}" />
@@ -336,11 +341,6 @@
                             DisplayMemberBinding="{Binding Path=Path}"
                             HeaderContainerStyle="{StaticResource HeaderStyle}"
                             HeaderTemplate="{StaticResource pathTemplate}" />
-                        <GridViewColumn
-                            Width="Auto"
-                            DisplayMemberBinding="{Binding Path=GroupName}"
-                            HeaderContainerStyle="{StaticResource HeaderStyle}"
-                            HeaderTemplate="{StaticResource GroupTemplate}" />
                     </GridView.Columns>
                 </GridView>
             </ListView.View>
