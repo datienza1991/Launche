@@ -54,7 +54,7 @@ namespace Infrastructure.ViewModels
             }
         }
 
-        private ProjectViewModel? selectedProjectPath = new();
+        private ProjectViewModel? selectedProjectPath;
 
         public ProjectViewModel? SelectedProjectPath
         {

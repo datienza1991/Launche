@@ -21,6 +21,24 @@ namespace ApplicationCore.Features.Projects
 
         public async Task<bool> AddAsync(AddProjectCommand command)
         {
+            if (command.Name is null || command.Name is "")
+            {
+                notificationMessageService.Create("Project Name must be provided", "Add Project", NotificationType.Error);
+                return false;
+            }
+
+            if (command.Path is null || command.Path is "")
+            {
+                notificationMessageService.Create("Project Path must be provided", "Add Project", NotificationType.Error);
+                return false;
+            }
+
+            if (command.IDEPathId is 0)
+            {
+                notificationMessageService.Create("Project Dev App must be provided", "Add Project", NotificationType.Error);
+                return false;
+            }
+
             var projects = await projectRepository.GetAll();
             var lastSortId = projects.LastOrDefault()?.SortId ?? 0;
             var result = await this.projectRepository.Add
