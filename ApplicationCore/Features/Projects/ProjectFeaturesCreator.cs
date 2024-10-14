@@ -24,7 +24,8 @@ namespace ApplicationCore.Features.Projects
         IDevAppRepository devAppRepository,
         IGitService gitService,
         INotificationMessageService notificationMessageService,
-        IGroupRepository groupRepository
+        IGroupRepository groupRepository,
+        IRemoveProjectFromGroupNotificationService removeProjectFromGroupNotificationService
     )
         : IProjectFeaturesCreator
     {
@@ -32,6 +33,7 @@ namespace ApplicationCore.Features.Projects
         private readonly IDevAppRepository devAppRepository = devAppRepository;
         private readonly IGitService gitService = gitService;
         private readonly INotificationMessageService notificationMessageService = notificationMessageService;
+        private readonly IRemoveProjectFromGroupNotificationService removeProjectFromGroupNotificationService = removeProjectFromGroupNotificationService;
 
         public IAddProjectService CreateAddProjectService()
         {
@@ -64,7 +66,7 @@ namespace ApplicationCore.Features.Projects
 
         public ISearchProjectService CreateSearchProjectService()
         {
-            return new SearchProjectService(projectRepository, groupRepository);
+            return new SearchProjectService(projectRepository, groupRepository, devAppRepository);
         }
 
         public IOpenProjectFolderWindowService CreateOpenProjectFolderWindowAppService()
@@ -84,7 +86,7 @@ namespace ApplicationCore.Features.Projects
 
         public IRemoveProjectFromGroupService CreateRemoveProjectFromGroupService()
         {
-            return new RemoveProjectFromGroupService(projectRepository, notificationMessageService);
+            return new RemoveProjectFromGroupService(projectRepository, notificationMessageService, removeProjectFromGroupNotificationService);
         }
     }
 }

@@ -13,6 +13,7 @@
         public bool EnableMoveUp { get; init; }
         public bool EnableMoveDown { get; init; }
         public bool EnableAddToGroup { get; init; }
+        public bool EnabledGroupReset { get { return GroupId is not null; } }
         public string? GroupName { get; init; }
         public string CurrentGitBranch { get; set; } = "";
         public string FullPath { get { return $@"{Path}\{Filename}"; } }

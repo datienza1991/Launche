@@ -1,5 +1,4 @@
-﻿using ApplicationCore.Features.Projects;
-using Infrastructure.Repositories;
+﻿using Infrastructure.Repositories;
 
 namespace ApplicationCore.Features.Groups;
 
@@ -8,14 +7,17 @@ public interface IGroupFeaturesCreator
     IGetAllGroupService CreateGetAllGroupService();
 }
 
-internal class GroupFeaturesCreator(IGroupRepository groupRepository, IProjectRepository projectRepository) : IGroupFeaturesCreator
+internal class GroupFeaturesCreator
+(
+    IGroupRepository groupRepository
+)
+    : IGroupFeaturesCreator
 {
     private readonly IGroupRepository groupRepository = groupRepository;
-    private readonly IProjectRepository projectRepository = projectRepository;
 
     public IGetAllGroupService CreateGetAllGroupService()
     {
-        return new GetAllGroupService(groupRepository, projectRepository);
+        return new GetAllGroupService(groupRepository);
     }
 }
 
