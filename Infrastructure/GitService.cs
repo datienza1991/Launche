@@ -26,11 +26,11 @@ public class GitService : IGitService
         }
         catch (RepositoryNotFoundException)
         {
-            return "No Git Repository for this project!";
+            return "Current Git Branch: No Git Repository for this project!";
         }
         catch (Exception ex)
         {
-            return $"Other errors thrown: {ex.Message}";
+            return $"Current Git Branch: Other errors thrown: {ex.Message}";
         }
     }
 }

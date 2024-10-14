@@ -3,8 +3,8 @@
     public class ProjectViewModel
     {
         public long Id { get; set; } = 0;
-        public string Name { get; init; } = "";
-        public string Path { get; init; } = "";
+        public string Name { get; set; } = "";
+        public string Path { get; set; } = "";
         public int IDEPathId { get; set; }
         public int SortId { get; init; }
         public string Filename { get; init; } = "";
@@ -26,6 +26,34 @@
         }
 
         public string DevAppPath { get; set; } = string.Empty;
+    }
 
+    public static class ProjectViewModelExtension
+    {
+        public static ProjectViewModel Copy(this ProjectViewModel value)
+        {
+            if (value is null)
+            {
+                return new();
+            }
+
+            return new()
+            {
+                CurrentGitBranch = value.CurrentGitBranch,
+                DevAppPath = value.DevAppPath,
+                EnableAddToGroup = value.EnableAddToGroup,
+                EnableMoveDown = value.EnableMoveDown,
+                EnableMoveUp = value.EnableMoveUp,
+                Filename = value.Filename,
+                GroupId = value.GroupId,
+                GroupName = value.GroupName,
+                Id = value.Id,
+                IDEPathId = value.IDEPathId,
+                Index = value.Index,
+                Name = value.Name,
+                SortId = value.SortId,
+                Path = value.Path,
+            };
+        }
     }
 }

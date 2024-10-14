@@ -35,6 +35,24 @@ namespace ApplicationCore.Features.Projects
                 return false;
             }
 
+            if (command.Name is null || command.Name is "")
+            {
+                notificationMessageService.Create("Project Name must be provided", "Edit Project", NotificationType.Error);
+                return false;
+            }
+
+            if (command.Path is null || command.Path is "")
+            {
+                notificationMessageService.Create("Project Path must be provided", "Edit Project", NotificationType.Error);
+                return false;
+            }
+
+            if (command.IDEPathId is 0)
+            {
+                notificationMessageService.Create("Project Dev App must be provided", "Edit Project", NotificationType.Error);
+                return false;
+            }
+
             project.Name = command.Name;
             project.Path = command.Path;
             project.IDEPathId = command.IDEPathId;

@@ -9,7 +9,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using UI.Windows.Group;
-
 namespace UI;
 
 /// <summary>
@@ -35,8 +34,8 @@ public partial class MainWindow : Window
     private readonly IGetCurrentGitBranchService? getCurrentGitBranchService;
     private readonly IRemoveProjectFromGroupService? removeProjectFromGroupService;
     private readonly IAddProjectToGroupService? addProjectToGroupService;
-    private readonly ISortUpProjectService sortUpProjectService;
-    private readonly ISortDownProjectService sortDownProjectService;
+    private readonly ISortUpProjectService? sortUpProjectService;
+    private readonly ISortDownProjectService? sortDownProjectService;
     private readonly MainWindowViewModel? mainWindowViewModel;
     private GroupModalWindow? groupModalWindow;
     private readonly List<Group> groups = [];
@@ -50,25 +49,30 @@ public partial class MainWindow : Window
         IGroupFeaturesCreator groupFeaturesCreator
     )
     {
+        // Dev App Services
         this.addDevAppService = devAppFeaturesCreator.CreateAddDevAppService();
         this.editDevAppService = devAppFeaturesCreator.CreateEditDevAppService();
         this.deleteDevAppService = devAppFeaturesCreator.CreateDeleteDevAppService();
         this.getAllDevAppService = devAppFeaturesCreator.CreateGetAllDevAppService();
         this.getOneDevAppService = devAppFeaturesCreator.CreateGetOneDevAppService();
-        this.projectFeaturesCreator = projectFeaturesCreator;
+        // Group Services
         this.getAllGroupService = groupFeaturesCreator.CreateGetAllGroupService();
-        this.addProjectService = projectFeaturesCreator.CreateAddProjectService();
+        // Project Services
         this.getAllProjectService = projectFeaturesCreator.CreateGetAllProjectService();
-        this.deleteProjectService = projectFeaturesCreator.CreateDeleteAddProjectService();
+        this.addProjectService = projectFeaturesCreator.CreateAddProjectService();
         this.editProjectService = projectFeaturesCreator.CreateEditAddProjectService();
+        this.deleteProjectService = projectFeaturesCreator.CreateDeleteAddProjectService();
+        //
         this.searchProductService = projectFeaturesCreator.CreateSearchProjectService();
         this.openProjectFolderWindowService = projectFeaturesCreator.CreateOpenProjectFolderWindowAppService();
         this.openProjectDevAppService = projectFeaturesCreator.CreateOpenProjectDevAppService();
         this.getCurrentGitBranchService = gitFeaturesCreator.CreateGetCurrentGitBranchService();
+        //
         this.removeProjectFromGroupService = projectFeaturesCreator.CreateRemoveProjectFromGroupService();
         this.addProjectToGroupService = projectFeaturesCreator.CreateAddProjectToGroupService();
         this.sortUpProjectService = projectFeaturesCreator.CreateSortUpProjectService();
         this.sortDownProjectService = projectFeaturesCreator.CreateSortDownProjectService();
+        //
         this.mainWindowViewModel = new MainWindowViewModel();
         DataContext = this.mainWindowViewModel;
         InitializeComponent();
@@ -77,7 +81,7 @@ public partial class MainWindow : Window
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        this.removeProjectFromGroupService!.Notify += RemoveProjectFromGroupNotificationService_Notify; ;
+        this.removeProjectFromGroupService!.Notify += RemoveProjectFromGroupNotificationService_Notify;
         this.addProjectToGroupService!.Notify += AddProjectToGroupService_Notify;
         await this.FetchProjects();
         await this.FetchDevApps();
@@ -147,7 +151,8 @@ public partial class MainWindow : Window
         var project = (ProjectViewModel)lvProjectPaths.SelectedItem;
         var currentGitBranch = getCurrentGitBranchService!.Handle(new() { DirectoryPath = project.Path });
         project.CurrentGitBranch = currentGitBranch;
-        this.mainWindowViewModel!.SelectedProjectPath = project;
+        this.mainWindowViewModel!.SelectedProjectPath = project.Copy();
+
         // Selected Dev App : Must be same reference, data must be on view model list to set the value
         this.mainWindowViewModel!.SelectedIdePath = this.mainWindowViewModel!.IdePathsModels!.First(x => x.Id == project.IDEPathId);
     }
@@ -166,12 +171,10 @@ public partial class MainWindow : Window
         {
             string filePath = openFolderDialog.FolderName;
             string name = openFolderDialog.SafeFolderName;
-
-            this.mainWindowViewModel!.SelectedProjectPath = new()
-            {
-                Path = filePath!,
-                Name = name!
-            };
+            var project = this.mainWindowViewModel!.SelectedProjectPath!.Copy();
+            project.Name = name;
+            project.Path = filePath;
+            this.mainWindowViewModel!.SelectedProjectPath = project;
         }
     }
 
@@ -184,7 +187,7 @@ public partial class MainWindow : Window
     {
         if (this.mainWindowViewModel!.SelectedProjectPath?.Id == 0)
         {
-            await this.addProjectService!.AddAsync
+            var addResult = await this.addProjectService!.AddAsync
             (
                 new
                 (
@@ -195,12 +198,16 @@ public partial class MainWindow : Window
                 )
             );
 
-            await this.Search();
-            SelectNewlyAddedItem();
+            if (addResult)
+            {
+
+                await this.Search();
+                SelectNewlyAddedItem();
+            }
             return;
         }
 
-        await this.editProjectService!.Edit
+        var editResult = await this.editProjectService!.Edit
         (
             new
             (
@@ -212,8 +219,11 @@ public partial class MainWindow : Window
             )
         );
 
-        await this.Search();
-        SelectEditedItem();
+        if (editResult)
+        {
+            await this.Search();
+            SelectEditedItem();
+        }
     }
 
     private void SelectEditedItem()
@@ -323,7 +333,7 @@ public partial class MainWindow : Window
 
     private async Task SortDownProject()
     {
-        var result = await this.sortDownProjectService.Handle(new() { SortId = this.mainWindowViewModel!.SelectedProjectPath!.SortId });
+        var result = await this.sortDownProjectService!.Handle(new() { SortId = this.mainWindowViewModel!.SelectedProjectPath!.SortId });
         if (!result)
         {
             return;
