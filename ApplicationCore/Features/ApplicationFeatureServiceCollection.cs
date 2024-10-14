@@ -18,6 +18,7 @@ public static class CoreServiceCollection
             .AddSingleton<IGroupFeaturesCreator, GroupFeaturesCreator>()
             .AddSingleton<IDevAppFeaturesCreator, DevAppFeaturesCreator>()
             .AddSingleton<INotificationMessageService, NotificationMessageService>()
+            .AddSingleton<IRemoveProjectFromGroupNotificationService, RemoveProjectFromGroupNotificationService>()
             .AddSingleton<IGitFeaturesCreator, GitFeaturesCreator>()
             .AddSingleton<IProjectFeaturesCreator, ProjectFeaturesCreator>();
     }

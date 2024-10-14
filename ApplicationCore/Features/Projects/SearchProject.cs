@@ -21,17 +21,20 @@ public interface ISearchProjectService
 internal class SearchProjectService
 (
     IProjectRepository projectRepository,
-    IGroupRepository groupRepository
+    IGroupRepository groupRepository,
+    IDevAppRepository devAppRepository
 )
     : ISearchProjectService
 {
     private readonly IProjectRepository projectRepository = projectRepository;
     private readonly IGroupRepository groupRepository = groupRepository;
+    private readonly IDevAppRepository devAppRepository = devAppRepository;
 
     public async Task<SearchProjectViewModel> Handle(SearchProjectQuery query)
     {
         var projects = await projectRepository.GetAll();
         var groups = await groupRepository.GetAll();
+        var devApps = await devAppRepository.GetAll();
         var filteredPaths = projects.Where(projectPath => projectPath.Name.ToLower().Contains(query.Search.ToLower()));
         SearchProjectViewModel vm = new();
 
@@ -54,6 +57,7 @@ internal class SearchProjectService
                         Path = project.Path,
                         SortId = project.SortId,
                         GroupId = project.GroupId,
+                        DevAppPath = devApps.First(devapp => devapp.Id == project.IDEPathId).Path,
                         GroupName = groups.FirstOrDefault(group => group.Id == project.GroupId)?.Name,
                         EnableAddToGroup = true,
 
@@ -78,6 +82,7 @@ internal class SearchProjectService
                     Path = project.Path,
                     SortId = project.SortId,
                     GroupId = project.GroupId,
+                    DevAppPath = devApps.First(devapp => devapp.Id == project.IDEPathId).Path,
                     GroupName = groups.FirstOrDefault(group => group.Id == project.GroupId)?.Name,
                     EnableAddToGroup = true,
                 }

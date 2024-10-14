@@ -24,6 +24,7 @@ public partial class MainWindow : Window
     private readonly IGetOneDevAppService? getOneDevAppService;
     private readonly ISortProject? projectSorting;
     private readonly INotificationMessageService notificationMessageService;
+    private readonly IRemoveProjectFromGroupNotificationService removeProjectFromGroupNotificationService;
     private readonly IAddProjectService? addProjectService;
     private readonly IGetLastProjectService? getLastProjectService;
     private readonly IGetAllProjectService? getAllProjectService;
@@ -33,6 +34,7 @@ public partial class MainWindow : Window
     private readonly IOpenProjectFolderWindowService openProjectFolderWindowService;
     private readonly IOpenProjectDevAppService openProjectDevAppService;
     private readonly IGetCurrentGitBranchService getCurrentGitBranchService;
+    private readonly IRemoveProjectFromGroupService removeProjectFromGroupService;
     private readonly MainWindowViewModel? mainWindowViewModel;
     private GroupModalWindow? groupModalWindow;
     private List<Group> groups = [];
@@ -46,6 +48,7 @@ public partial class MainWindow : Window
         ISortProject? projectSorting,
         IProjectFeaturesCreator projectFeaturesCreator,
         INotificationMessageService notificationMessageService,
+        IRemoveProjectFromGroupNotificationService removeProjectFromGroupNotificationService,
         IGitFeaturesCreator gitFeaturesCreator
     )
     {
@@ -56,6 +59,7 @@ public partial class MainWindow : Window
         this.getOneDevAppService = devAppFeaturesCreator.CreateGetOneDevAppService();
         this.projectSorting = projectSorting;
         this.notificationMessageService = notificationMessageService;
+        this.removeProjectFromGroupNotificationService = removeProjectFromGroupNotificationService;
         this.addProjectService = projectFeaturesCreator.CreateAddProjectService();
         this.getLastProjectService = projectFeaturesCreator.CreateGetLastProjectService();
         this.getAllProjectService = projectFeaturesCreator.CreateGetAllProjectService();
@@ -65,7 +69,7 @@ public partial class MainWindow : Window
         this.openProjectFolderWindowService = projectFeaturesCreator.CreateOpenProjectFolderWindowAppService();
         this.openProjectDevAppService = projectFeaturesCreator.CreateOpenProjectDevAppService();
         this.getCurrentGitBranchService = gitFeaturesCreator.CreateGetCurrentGitBranchService();
-
+        this.removeProjectFromGroupService = projectFeaturesCreator.CreateRemoveProjectFromGroupService();
         this.mainWindowViewModel = new MainWindowViewModel();
         DataContext = this.mainWindowViewModel;
         InitializeComponent();
@@ -75,8 +79,14 @@ public partial class MainWindow : Window
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
+        this.removeProjectFromGroupNotificationService.Notify += RemoveProjectFromGroupNotificationService_Notify; ;
         await this.FetchProjectPaths();
         await this.FetchIDEPaths();
+    }
+
+    private void RemoveProjectFromGroupNotificationService_Notify(object? sender, RemoveProjectFromGroupEventArgs e)
+    {
+        groupModalWindow!.Close();
     }
 
     private async void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
@@ -334,8 +344,7 @@ public partial class MainWindow : Window
     {
         this.groupModalWindow = App.GetGroupWindowInstance();
         this.groupModalWindow!.ProjectPath = this.mainWindowViewModel!.SelectedProjectPath;
-        groupModalWindow!.OnSave += GroupModalWindow_OnSave;
-        groupModalWindow?.ShowDialog();
+        groupModalWindow?.Show();
     }
 
     private async void GroupModalWindow_OnSave(object? sender, EventArgs e)
