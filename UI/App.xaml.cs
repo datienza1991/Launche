@@ -2,7 +2,6 @@
 using ApplicationCore.Common;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
-using UI.Windows.Group;
 
 namespace UI
 {
@@ -56,12 +55,7 @@ namespace UI
             return services
                  .AddApplicationCoreServiceCollection()
                  .AddSingleton<MainWindow>()
-                 .AddSingleton<GroupModalWindow>()
                  .BuildServiceProvider();
-        }
-        public static GroupModalWindow? GetGroupWindowInstance()
-        {
-            return GetCurrentServiceProvider().GetService<GroupModalWindow>();
         }
     }
 

@@ -70,21 +70,25 @@ internal class SearchProjectService
             vm.EnableAddNewProject = true;
             vm.Projects = filteredPaths.Select
             (
-                (project, index) => new ProjectViewModel
+                (project, index) =>
                 {
-                    EnableMoveUp = index != 1,
-                    EnableMoveDown = index != projects.Count(),
-                    Filename = project.Filename,
-                    Id = project.Id,
-                    IDEPathId = project.IDEPathId,
-                    Index = index + 1,
-                    Name = project.Name,
-                    Path = project.Path,
-                    SortId = project.SortId,
-                    GroupId = project.GroupId,
-                    DevAppPath = devApps.First(devapp => devapp.Id == project.IDEPathId).Path,
-                    GroupName = groups.FirstOrDefault(group => group.Id == project.GroupId)?.Name,
-                    EnableAddToGroup = true,
+                    var position = index + 1;
+                    return new ProjectViewModel
+                    {
+                        EnableMoveUp = position != 1,
+                        EnableMoveDown = position != projects.Count(),
+                        Filename = project.Filename,
+                        Id = project.Id,
+                        IDEPathId = project.IDEPathId,
+                        Index = index + 1,
+                        Name = project.Name,
+                        Path = project.Path,
+                        SortId = project.SortId,
+                        GroupId = project.GroupId,
+                        DevAppPath = devApps.First(devapp => devapp.Id == project.IDEPathId).Path,
+                        GroupName = groups.FirstOrDefault(group => group.Id == project.GroupId)?.Name,
+                        EnableAddToGroup = true,
+                    };
                 }
             );
         }

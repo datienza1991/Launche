@@ -17,8 +17,6 @@ public partial class GroupModalWindow : Window
     private readonly IGetAllGroupService? getAllGroupService;
     private readonly IAddProjectToGroupService? addProjectToGroupService;
     private readonly IRemoveProjectFromGroupService? removeProjectToGroupService;
-    private readonly IProjectFeaturesCreator? projectFeaturesCreator;
-    private readonly IRemoveProjectFromGroupNotificationService removeProjectFromGroupNotificationService;
 
     public GroupModalWindow()
     {
@@ -28,24 +26,17 @@ public partial class GroupModalWindow : Window
 
     public GroupModalWindow
     (
-        IGroupFeaturesCreator groupFeaturesCreator,
-        IProjectFeaturesCreator projectFeaturesCreator,
-        IRemoveProjectFromGroupNotificationService removeProjectFromGroupNotificationService
+        IGetAllGroupService getAllGroupService,
+        IAddProjectToGroupService addProjectToGroupService,
+        IRemoveProjectFromGroupService removeProjectFromGroupService
     )
     {
         InitializeComponent();
         DataContext = dataContext;
 
-        getAllGroupService = groupFeaturesCreator.CreateGetAllGroupService();
-        addProjectToGroupService = projectFeaturesCreator.CreateAddProjectToGroupService();
-        removeProjectToGroupService = projectFeaturesCreator.CreateRemoveProjectFromGroupService();
-        this.removeProjectFromGroupNotificationService = removeProjectFromGroupNotificationService;
-        this.removeProjectFromGroupNotificationService.Notify += RemoveProjectFromGroupNotificationService_Notify;
-    }
-
-    private void RemoveProjectFromGroupNotificationService_Notify(object? sender, RemoveProjectFromGroupEventArgs e)
-    {
-        //throw new NotImplementedException();
+        this.getAllGroupService = getAllGroupService;
+        this.addProjectToGroupService = addProjectToGroupService;
+        removeProjectToGroupService = removeProjectFromGroupService;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)

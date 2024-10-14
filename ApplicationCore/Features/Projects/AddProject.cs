@@ -21,6 +21,8 @@ namespace ApplicationCore.Features.Projects
 
         public async Task<bool> AddAsync(AddProjectCommand command)
         {
+            var projects = await projectRepository.GetAll();
+            var lastSortId = projects.LastOrDefault()?.SortId ?? 0;
             var result = await this.projectRepository.Add
             (
                 new()
@@ -28,9 +30,10 @@ namespace ApplicationCore.Features.Projects
                     Name = command.Name,
                     Path = command.Path,
                     IDEPathId = command.IDEPathId,
-                    Filename = command.FileName
+                    Filename = command.FileName,
+                    SortId = lastSortId + 1
                 }
-            );
+            ); ;
 
             if (result)
             {

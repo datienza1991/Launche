@@ -12,6 +12,9 @@ public interface IProjectRepository
     Task<bool> Add(Project param);
     Task<bool> Edit(Project param);
     Task<bool> Delete(long id);
+    Task<bool> SortUp(int sortId);
+    Task<bool> SortDown(int sortId);
+
 }
 
 public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) : IProjectRepository
@@ -27,8 +30,8 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
 
         string createTableSql = @$"
                 PRAGMA foreign_keys = ON; 
-                INSERT INTO {TABLE}( Path , Name , IDEPathId , SortId,  Filename ) 
-                    VALUES ( @path , @name , @idePath , (select max( SortId ) from {TABLE}) + 1 , @fileName );
+                INSERT INTO {TABLE}( Path , Name , IDEPathId, SortId,  Filename ) 
+                    VALUES ( @path , @name , @idePath , @sortId, @fileName );
                 SELECT last_insert_rowid();";
 
         using var command = new SQLiteCommand(createTableSql, connection);
@@ -37,6 +40,7 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
         command.Parameters.AddWithValue("@name", param?.Name);
         command.Parameters.AddWithValue("@idePath", param?.IDEPathId);
         command.Parameters.AddWithValue("@fileName", param?.Filename);
+        command.Parameters.AddWithValue("@sortId", param?.SortId);
 
         var rows = await command.ExecuteNonQueryAsync();
 
@@ -49,7 +53,8 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
 
         connection.Open();
 
-        string createTableSql = $"UPDATE {TABLE} SET  " +
+        string createTableSql = @$"PRAGMA foreign_keys = ON;
+            UPDATE {TABLE} SET  " +
             $"Path = @path, " +
             $"Name = @name, " +
             $"IDEPathId = @idePathId," +
@@ -116,7 +121,7 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
 
     public async Task<IEnumerable<Project>> GetAll()
     {
-        var projectPaths = new List<Infrastructure.Models.Project>();
+        List<Project> projectPaths = [];
         var connection = createSqliteConnection.Execute();
         connection.Open();
         using var command = connection.CreateCommand();
@@ -177,6 +182,50 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
         }
 
         return projectPath;
+    }
+
+    public async Task<bool> SortUp(int sortId)
+    {
+        using var connection = createSqliteConnection.Execute();
+
+        connection.Open();
+
+        string createTableSql = @$"
+                update {TABLE}
+                    set SortId = @SortIdTop + @SortIdDown - SortId
+                    where SortId in (@SortIdTop, @SortIdDown)";
+
+        using var command = new SQLiteCommand(createTableSql, connection);
+
+        var top = sortId - 1;
+
+        command.Parameters.AddWithValue("@SortIdTop", top);
+        command.Parameters.AddWithValue("@SortIdDown", sortId);
+
+        var rows = await command.ExecuteNonQueryAsync();
+        return rows != 0;
+    }
+
+    public async Task<bool> SortDown(int sortId)
+    {
+        using var connection = createSqliteConnection.Execute();
+
+        connection.Open();
+
+        string createTableSql = @$"
+                update {TABLE}
+                    set SortId = @SortIdTop + @SortIdDown - SortId
+                    where SortId in (@SortIdTop, @SortIdDown)";
+
+        using var command = new SQLiteCommand(createTableSql, connection);
+
+        var top = sortId + 1;
+
+        command.Parameters.AddWithValue("@SortIdTop", top);
+        command.Parameters.AddWithValue("@SortIdDown", sortId);
+
+        var rows = await command.ExecuteNonQueryAsync();
+        return rows != 0;
     }
 }
 
