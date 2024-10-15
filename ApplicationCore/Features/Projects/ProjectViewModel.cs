@@ -30,6 +30,11 @@
 
     public static class ProjectViewModelExtension
     {
+        /// <summary>
+        /// Deep Copy of Object
+        /// </summary>
+        /// <param name="value">Actual object to be copy</param>
+        /// <returns>new instance of object</returns>
         public static ProjectViewModel Copy(this ProjectViewModel value)
         {
             if (value is null)
