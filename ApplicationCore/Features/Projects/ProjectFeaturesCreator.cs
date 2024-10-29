@@ -6,7 +6,7 @@ namespace ApplicationCore.Features.Projects
 {
     public interface IProjectFeaturesCreator
     {
-        IAddProjectService CreateAddProjectService();
+        IAddProjectService AddProjectServiceInstance { get; }
         IEditProjectService CreateEditAddProjectService();
         IDeleteProjectService CreateDeleteAddProjectService();
         IGetAllProjectService CreateGetAllProjectService();
@@ -20,25 +20,34 @@ namespace ApplicationCore.Features.Projects
         ISortDownProjectService CreateSortDownProjectService();
     }
 
-    public class ProjectFeaturesCreator
-    (
-        IProjectRepository projectRepository,
-        IDevAppRepository devAppRepository,
-        IGitService gitService,
-        INotificationMessageService notificationMessageService,
-        IGroupRepository groupRepository
-    )
-        : IProjectFeaturesCreator
+    public class ProjectFeaturesCreator : IProjectFeaturesCreator
     {
-        private readonly IProjectRepository projectRepository = projectRepository;
-        private readonly IDevAppRepository devAppRepository = devAppRepository;
-        private readonly IGitService gitService = gitService;
-        private readonly INotificationMessageService notificationMessageService = notificationMessageService;
+        private readonly IProjectRepository projectRepository;
+        private readonly IDevAppRepository devAppRepository;
+        private readonly IGitService gitService;
+        private readonly INotificationMessageService notificationMessageService;
+        private readonly IGroupRepository groupRepository;
+        private readonly IAddProjectService _addProjectServiceInstance;
 
-        public IAddProjectService CreateAddProjectService()
+        public ProjectFeaturesCreator(
+            IProjectRepository projectRepository,
+            IDevAppRepository devAppRepository,
+            IGitService gitService,
+            INotificationMessageService notificationMessageService,
+            IGroupRepository groupRepository
+        )
         {
-            return new AddProjectService(projectRepository, notificationMessageService);
+            this.projectRepository = projectRepository;
+            this.devAppRepository = devAppRepository;
+            this.gitService = gitService;
+            this.notificationMessageService = notificationMessageService;
+            this.groupRepository = groupRepository;
+            this._addProjectServiceInstance ??= new AddProjectService(projectRepository, notificationMessageService);
+
         }
+
+        public IAddProjectService AddProjectServiceInstance { get { return _addProjectServiceInstance; } }
+
         public IEditProjectService CreateEditAddProjectService()
         {
             return new EditProjectService(projectRepository, notificationMessageService);

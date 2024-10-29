@@ -6,15 +6,16 @@ using Infrastructure.Models;
 using Infrastructure.ViewModels;
 using System.Windows;
 using System.Windows.Input;
+using UI.MainWindowx.Presenter;
 using UI.Windows.Group;
 namespace UI;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window
+public partial class MainWindow : Window, IMainWindowPresenter
 {
-    private readonly IAddDevAppService? addDevAppService;
+    private readonly IAddDevAppService addDevAppService;
     private readonly IEditDevAppService? editDevAppService;
     private readonly IDeleteDevAppService? deleteDevAppService;
     private readonly IGetAllDevAppService? getAllDevAppService;
@@ -38,6 +39,19 @@ public partial class MainWindow : Window
     private GroupModalWindow? groupModalWindow;
     private readonly List<Group> groups = [];
 
+    public string DevAppFilePath { get; set; } = "";
+
+
+    public event EventHandler? OpenDevApp;
+    public event EventHandler? FetchDevAppsEvent;
+    public IAddDevAppService? AddDevAppService
+    {
+        get { return this.addDevAppService; }
+    }
+    public MainWindowViewModel MainWindowViewModel { get; set; }
+
+    public IGetAllDevAppService? GetAllDevAppService => this.getAllDevAppService;
+
     public MainWindow() => InitializeComponent();
 
     public MainWindow(
@@ -59,7 +73,7 @@ public partial class MainWindow : Window
         #endregion
         #region Project Services
         #region Commands
-        this.addProjectService = projectFeaturesCreator.CreateAddProjectService();
+        this.addProjectService = projectFeaturesCreator.AddProjectServiceInstance;
         this.editProjectService = projectFeaturesCreator.CreateEditAddProjectService();
         this.deleteProjectService = projectFeaturesCreator.CreateDeleteAddProjectService();
         this.openProjectFolderWindowService = projectFeaturesCreator.CreateOpenProjectFolderWindowAppService();
@@ -77,16 +91,19 @@ public partial class MainWindow : Window
         #endregion
 
         this.mainWindowViewModel = new MainWindowViewModel();
-        DataContext = this.mainWindowViewModel;
         InitializeComponent();
+        var presenter = new MainWindowPresenter(this);
+        DataContext = this.MainWindowViewModel;
     }
+
+
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         this.removeProjectFromGroupService!.Notify += RemoveProjectFromGroupNotificationService_Notify;
         this.addProjectToGroupService!.Notify += AddProjectToGroupService_Notify;
         await this.FetchProjects();
-        await this.FetchDevApps();
+        this.FetchDevAppsEvent!.Invoke(this, EventArgs.Empty);
     }
 
     private async void AddProjectToGroupService_Notify(object? sender, EventArgs e)
@@ -103,9 +120,9 @@ public partial class MainWindow : Window
         groupModalWindow!.Close();
     }
 
-    private async void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
+    private void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
     {
-        await OpenDevAppDialog();
+        OpenDevAppDialog();
     }
 
     private void ProjectPathsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

@@ -8,38 +8,15 @@ namespace UI;
 
 public partial class MainWindow
 {
-    private async Task OpenDevAppDialog()
+    private void OpenDevAppDialog()
     {
-        var openFolderDialog = new OpenFileDialog
-        {
-            Filter = "Executable Files | *.exe"
-        };
-        var result = openFolderDialog.ShowDialog() ?? false;
-
-        if (!result)
-        {
-            return;
-        }
-
-        string filePath = openFolderDialog.FileName;
-        var resultSave = await this.addDevAppService!.Add(new() { Path = filePath });
-        if (resultSave)
-        {
-            await this.FetchDevApps();
-            this.mainWindowViewModel!.SelectedIdePath = new();
-        }
+        this.OpenDevApp!.Invoke(this, EventArgs.Empty);
     }
 
     private async Task FetchProjects()
     {
         var getAllProjectVm = await this.getAllProjectService!.Handle();
         this.mainWindowViewModel!.ProjectPathModels = [.. getAllProjectVm.Projects];
-    }
-
-    private async Task FetchDevApps()
-    {
-        var getAllDevAppVm = await this.getAllDevAppService!.Handle();
-        this.mainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
     }
 
     private async Task Search()
@@ -241,7 +218,7 @@ public partial class MainWindow
 
         if (result)
         {
-            await this.FetchDevApps();
+            this.FetchDevAppsEvent!.Invoke(this, EventArgs.Empty);
             this.mainWindowViewModel!.SelectedIdePath = new();
         }
     }
