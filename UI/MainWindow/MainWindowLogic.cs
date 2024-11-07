@@ -1,5 +1,4 @@
 ﻿using ApplicationCore.Features.Projects;
-using Microsoft.Win32;
 using System.Windows.Controls;
 using System.Windows.Input;
 using UI.Windows.Group;
@@ -69,19 +68,6 @@ public partial class MainWindow
         groupModalWindow?.ShowDialog();
     }
 
-    private async Task DeleteProject()
-    {
-        if (this.mainWindowViewModel!.SelectedProjectPath!.Id == 0) return;
-
-        var result = await this.deleteProjectService!.Delete(this.mainWindowViewModel!.SelectedProjectPath!.Id);
-
-        if (result)
-        {
-            await Search();
-            this.mainWindowViewModel!.SelectedProjectPath = new();
-            this.mainWindowViewModel!.SelectedIdePath = new();
-        }
-    }
     private async Task SortUpProject()
     {
         var result = await this.sortUpProjectService!.Handle(new() { SortId = this.mainWindowViewModel!.SelectedProjectPath!.SortId });
@@ -115,21 +101,7 @@ public partial class MainWindow
         this.mainWindowViewModel!.SelectedIdePath = this.mainWindowViewModel!.IdePathsModels!.First(x => x.Id == project.IDEPathId);
     }
 
-    private void OpenProjectDialog()
-    {
-        var openFolderDialog = new OpenFolderDialog();
-        var result = openFolderDialog.ShowDialog() ?? false;
 
-        if (result)
-        {
-            string filePath = openFolderDialog.FolderName;
-            string name = openFolderDialog.SafeFolderName;
-            var project = this.mainWindowViewModel!.SelectedProjectPath!.Copy();
-            project.Name = name;
-            project.Path = filePath;
-            this.mainWindowViewModel!.SelectedProjectPath = project;
-        }
-    }
 
     private async Task SaveProject()
     {
@@ -210,17 +182,5 @@ public partial class MainWindow
         );
     }
 
-    private async Task DeleteDevApp()
-    {
-        if (this.mainWindowViewModel!.SelectedIdePath!.Id == 0) return;
-
-        var result = await this.deleteDevAppService!.Delete(new() { Id = this.mainWindowViewModel!.SelectedIdePath!.Id });
-
-        if (result)
-        {
-            this.FetchDevAppsEvent!.Invoke(this, EventArgs.Empty);
-            this.mainWindowViewModel!.SelectedIdePath = new();
-        }
-    }
 }
 

@@ -44,6 +44,11 @@ public partial class MainWindow : Window, IMainWindowPresenter
 
     public event EventHandler? OpenDevApp;
     public event EventHandler? FetchDevAppsEvent;
+    public event EventHandler DeleteDevAppEvent;
+    public event EventHandler NewProjectEvent;
+    public event EventHandler OpenProjectDialog;
+    public event EventHandler DeleteProjectEvent;
+
     public IAddDevAppService? AddDevAppService
     {
         get { return this.addDevAppService; }
@@ -51,6 +56,10 @@ public partial class MainWindow : Window, IMainWindowPresenter
     public MainWindowViewModel MainWindowViewModel { get; set; }
 
     public IGetAllDevAppService? GetAllDevAppService => this.getAllDevAppService;
+
+    public IDeleteDevAppService? DeleteDevAppService => this.deleteDevAppService;
+
+    public IDeleteProjectService? DeleteProjectService => this.deleteProjectService;
 
     public MainWindow() => InitializeComponent();
 
@@ -132,7 +141,7 @@ public partial class MainWindow : Window, IMainWindowPresenter
 
     private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
     {
-        OpenProjectDialog();
+        this.OpenProjectDialog.Invoke(this, EventArgs.Empty);
     }
     private async void btnSaveProjectPath_Click(object sender, RoutedEventArgs e)
     {
@@ -144,20 +153,19 @@ public partial class MainWindow : Window, IMainWindowPresenter
         OpenProject();
     }
 
-    private async void btnDeleteIdePath_Click(object sender, RoutedEventArgs e)
+    private void btnDeleteIdePath_Click(object sender, RoutedEventArgs e)
     {
-        await DeleteDevApp();
+        this.DeleteDevAppEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void btnNewProjectPath_Click(object sender, RoutedEventArgs e)
     {
-        this.mainWindowViewModel!.SelectedProjectPath = new();
-        this.mainWindowViewModel!.SelectedIdePath = new();
+        this.NewProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
-    private async void btnDeleteProjectPath_Click(object sender, RoutedEventArgs e)
+    private void btnDeleteProjectPath_Click(object sender, RoutedEventArgs e)
     {
-        await DeleteProject();
+        this.DeleteProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
     private async void mnuMoveUp_Click(object sender, RoutedEventArgs e)
