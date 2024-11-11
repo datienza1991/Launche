@@ -5,6 +5,7 @@ using ApplicationCore.Features.Projects;
 using Infrastructure.Models;
 using Infrastructure.ViewModels;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using UI.MainWindowx.Presenter;
 using UI.Windows.Group;
@@ -27,7 +28,7 @@ public partial class MainWindow : Window, IMainWindowPresenter
     private readonly IGetAllProjectService? getAllProjectService;
     private readonly IDeleteProjectService? deleteProjectService;
     private readonly IEditProjectService? editProjectService;
-    private readonly ISearchProjectService? searchProductService;
+    private readonly ISearchProjectService? searchProjectService;
     private readonly IOpenProjectFolderWindowService? openProjectFolderWindowService;
     private readonly IOpenProjectDevAppService? openProjectDevAppService;
     private readonly IGetCurrentGitBranchService? getCurrentGitBranchService;
@@ -48,6 +49,10 @@ public partial class MainWindow : Window, IMainWindowPresenter
     public event EventHandler NewProjectEvent;
     public event EventHandler OpenProjectDialog;
     public event EventHandler DeleteProjectEvent;
+    public event EventHandler SearchProjectEvent;
+    public event EventHandler SortUpProjectEvent;
+    public event EventHandler SelectProjectEvent;
+    public event EventHandler SortDownProjectEvent;
 
     public IAddDevAppService? AddDevAppService
     {
@@ -60,6 +65,14 @@ public partial class MainWindow : Window, IMainWindowPresenter
     public IDeleteDevAppService? DeleteDevAppService => this.deleteDevAppService;
 
     public IDeleteProjectService? DeleteProjectService => this.deleteProjectService;
+
+    public ISearchProjectService? SearchProjectService => this.searchProjectService;
+
+    public ISortUpProjectService? SortUpProjectService => this.sortUpProjectService;
+
+    public ListView ProjectPathsListView => this.lvProjectPaths;
+
+    public IGetCurrentGitBranchService? GetCurrentGitBranchService => getCurrentGitBranchService;
 
     public MainWindow() => InitializeComponent();
 
@@ -94,7 +107,7 @@ public partial class MainWindow : Window, IMainWindowPresenter
         #endregion
         #region Queries
         this.getAllProjectService = projectFeaturesCreator.CreateGetAllProjectService();
-        this.searchProductService = projectFeaturesCreator.CreateSearchProjectService();
+        this.searchProjectService = projectFeaturesCreator.CreateSearchProjectService();
         this.getCurrentGitBranchService = gitFeaturesCreator.CreateGetCurrentGitBranchService();
         #endregion
         #endregion
@@ -111,32 +124,32 @@ public partial class MainWindow : Window, IMainWindowPresenter
     {
         this.removeProjectFromGroupService!.Notify += RemoveProjectFromGroupNotificationService_Notify;
         this.addProjectToGroupService!.Notify += AddProjectToGroupService_Notify;
-        await this.FetchProjects();
+        this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
         this.FetchDevAppsEvent!.Invoke(this, EventArgs.Empty);
     }
 
-    private async void AddProjectToGroupService_Notify(object? sender, EventArgs e)
+    private void AddProjectToGroupService_Notify(object? sender, EventArgs e)
     {
-        await this.Search();
+        this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
         SelectEditedItem();
         groupModalWindow!.Close();
     }
 
-    private async void RemoveProjectFromGroupNotificationService_Notify(object? sender, RemoveProjectFromGroupEventArgs e)
+    private void RemoveProjectFromGroupNotificationService_Notify(object? sender, RemoveProjectFromGroupEventArgs e)
     {
-        await this.Search();
+        this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
         SelectEditedItem();
         groupModalWindow!.Close();
     }
 
     private void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
     {
-        OpenDevAppDialog();
+        this.OpenDevApp!.Invoke(this, EventArgs.Empty);
     }
 
     private void ProjectPathsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
-        SelectProject();
+        this.SelectProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
@@ -168,19 +181,19 @@ public partial class MainWindow : Window, IMainWindowPresenter
         this.DeleteProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
-    private async void mnuMoveUp_Click(object sender, RoutedEventArgs e)
+    private void mnuMoveUp_Click(object sender, RoutedEventArgs e)
     {
-        await SortUpProject();
+        this.SortUpProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
-    private async void mnuMoveDown_Click(object sender, RoutedEventArgs e)
+    private void mnuMoveDown_Click(object sender, RoutedEventArgs e)
     {
-        await SortDownProject();
+        this.SortDownProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
-    private async void TxtSearch_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    private void TxtSearch_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
-        await Search();
+        this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void MnuOpenFolderWindow_Click(object sender, RoutedEventArgs e)
