@@ -1,30 +1,11 @@
 ﻿using ApplicationCore.Features.Projects;
 using System.Windows.Controls;
 using System.Windows.Input;
-using UI.Windows.Group;
 
 namespace UI;
 
 public partial class MainWindow
 {
-    private void OpenDevAppDialog()
-    {
-        this.OpenDevApp!.Invoke(this, EventArgs.Empty);
-    }
-
-    private async Task FetchProjects()
-    {
-        var getAllProjectVm = await this.getAllProjectService!.Handle();
-        this.mainWindowViewModel!.ProjectPathModels = [.. getAllProjectVm.Projects];
-    }
-
-    private async Task Search()
-    {
-        var searchViewModel = await this.searchProductService!.Handle(new() { Search = this.mainWindowViewModel!.Search });
-        this.mainWindowViewModel.EnableAddNewProject = searchViewModel.EnableAddNewProject;
-        this.mainWindowViewModel!.ProjectPathModels = [.. searchViewModel.Projects];
-
-    }
 
     private void OpenProjectWhenEnter(KeyEventArgs e)
     {
@@ -57,51 +38,8 @@ public partial class MainWindow
 
     private void OpenAddToGroupDialog()
     {
-        this.groupModalWindow = new GroupModalWindow
-        (
-            getAllGroupService!,
-            addProjectToGroupService!,
-            removeProjectFromGroupService!
-        );
 
-        this.groupModalWindow!.ProjectPath = this.mainWindowViewModel!.SelectedProjectPath;
-        groupModalWindow?.ShowDialog();
     }
-
-    private async Task SortUpProject()
-    {
-        var result = await this.sortUpProjectService!.Handle(new() { SortId = this.mainWindowViewModel!.SelectedProjectPath!.SortId });
-        if (!result)
-        {
-            return;
-        }
-
-        await this.FetchProjects();
-    }
-
-    private async Task SortDownProject()
-    {
-        var result = await this.sortDownProjectService!.Handle(new() { SortId = this.mainWindowViewModel!.SelectedProjectPath!.SortId });
-        if (!result)
-        {
-            return;
-        }
-        await this.FetchProjects();
-    }
-
-    private void SelectProject()
-    {
-        if (lvProjectPaths.SelectedIndex == -1) { return; }
-        var project = (ProjectViewModel)lvProjectPaths.SelectedItem;
-        var currentGitBranch = getCurrentGitBranchService!.Handle(new() { DirectoryPath = project.Path });
-        project.CurrentGitBranch = currentGitBranch;
-        this.mainWindowViewModel!.SelectedProjectPath = project.Copy();
-
-        // Selected Dev App : Must be same reference, data must be on view model list to set the value
-        this.mainWindowViewModel!.SelectedIdePath = this.mainWindowViewModel!.IdePathsModels!.First(x => x.Id == project.IDEPathId);
-    }
-
-
 
     private async Task SaveProject()
     {
@@ -121,7 +59,7 @@ public partial class MainWindow
             if (addResult)
             {
 
-                await this.Search();
+                this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
                 SelectNewlyAddedItem();
             }
             return;
@@ -141,7 +79,7 @@ public partial class MainWindow
 
         if (editResult)
         {
-            await this.Search();
+            this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
             SelectEditedItem();
         }
     }
