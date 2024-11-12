@@ -1,7 +1,7 @@
-﻿using ApplicationCore.Features.DevApps;
-using ApplicationCore.Features.Projects;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using ApplicationCore.Features.DevApps;
+using ApplicationCore.Features.Projects;
 
 namespace Infrastructure.ViewModels
 {
@@ -24,7 +24,10 @@ namespace Infrastructure.ViewModels
             set
             {
                 _enableAddNewProject = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.EnableAddNewProject)));
+                PropertyChanged?.Invoke(
+                    this,
+                    new PropertyChangedEventArgs(nameof(this.EnableAddNewProject))
+                );
             }
         }
 
@@ -38,7 +41,10 @@ namespace Infrastructure.ViewModels
             set
             {
                 projectPathModels = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.ProjectPathModels)));
+                PropertyChanged?.Invoke(
+                    this,
+                    new PropertyChangedEventArgs(nameof(this.ProjectPathModels))
+                );
             }
         }
 
@@ -50,7 +56,10 @@ namespace Infrastructure.ViewModels
             set
             {
                 idePathsModels = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.IdePathsModels)));
+                PropertyChanged?.Invoke(
+                    this,
+                    new PropertyChangedEventArgs(nameof(this.IdePathsModels))
+                );
             }
         }
 
@@ -62,7 +71,10 @@ namespace Infrastructure.ViewModels
             set
             {
                 selectedProjectPath = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.SelectedProjectPath)));
+                PropertyChanged?.Invoke(
+                    this,
+                    new PropertyChangedEventArgs(nameof(this.SelectedProjectPath))
+                );
             }
         }
 
@@ -74,7 +86,10 @@ namespace Infrastructure.ViewModels
             set
             {
                 selectedIdePath = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.SelectedIdePath)));
+                PropertyChanged?.Invoke(
+                    this,
+                    new PropertyChangedEventArgs(nameof(this.SelectedIdePath))
+                );
             }
         }
 
