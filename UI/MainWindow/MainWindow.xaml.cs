@@ -1,14 +1,15 @@
-﻿using ApplicationCore.Features.DevApps;
+﻿using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using ApplicationCore.Features.DevApps;
 using ApplicationCore.Features.Git;
 using ApplicationCore.Features.Groups;
 using ApplicationCore.Features.Projects;
 using Infrastructure.Models;
 using Infrastructure.ViewModels;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 using UI.MainWindowx.Presenter;
 using UI.Windows.Group;
+
 namespace UI;
 
 /// <summary>
@@ -42,7 +43,6 @@ public partial class MainWindow : Window, IMainWindowPresenter
 
     public string DevAppFilePath { get; set; } = "";
 
-
     public event EventHandler? OpenDevApp;
     public event EventHandler? FetchDevAppsEvent;
     public event EventHandler DeleteDevAppEvent;
@@ -53,6 +53,8 @@ public partial class MainWindow : Window, IMainWindowPresenter
     public event EventHandler SortUpProjectEvent;
     public event EventHandler SelectProjectEvent;
     public event EventHandler SortDownProjectEvent;
+    public event EventHandler OpenAddToGroupModalWindowEvent;
+    public event EventHandler SaveProjectEvent;
 
     public IAddDevAppService? AddDevAppService
     {
@@ -73,6 +75,19 @@ public partial class MainWindow : Window, IMainWindowPresenter
     public ListView ProjectPathsListView => this.lvProjectPaths;
 
     public IGetCurrentGitBranchService? GetCurrentGitBranchService => getCurrentGitBranchService;
+
+    public ISortDownProjectService? SortDownProjectService => sortDownProjectService;
+
+    public IGetAllGroupService? GetAllGroupService => getAllGroupService;
+
+    public IAddProjectToGroupService? AddProjectToGroupService => addProjectToGroupService;
+
+    public IRemoveProjectFromGroupService? RemoveProjectFromGroupService =>
+        removeProjectFromGroupService;
+
+    public IAddProjectService? AddProjectService => AddProjectService;
+
+    public IEditProjectService? EditProjectService => editProjectService;
 
     public MainWindow() => InitializeComponent();
 
@@ -98,9 +113,11 @@ public partial class MainWindow : Window, IMainWindowPresenter
         this.addProjectService = projectFeaturesCreator.AddProjectServiceInstance;
         this.editProjectService = projectFeaturesCreator.CreateEditAddProjectService();
         this.deleteProjectService = projectFeaturesCreator.CreateDeleteAddProjectService();
-        this.openProjectFolderWindowService = projectFeaturesCreator.CreateOpenProjectFolderWindowAppService();
+        this.openProjectFolderWindowService =
+            projectFeaturesCreator.CreateOpenProjectFolderWindowAppService();
         this.openProjectDevAppService = projectFeaturesCreator.CreateOpenProjectDevAppService();
-        this.removeProjectFromGroupService = projectFeaturesCreator.CreateRemoveProjectFromGroupService();
+        this.removeProjectFromGroupService =
+            projectFeaturesCreator.CreateRemoveProjectFromGroupService();
         this.addProjectToGroupService = projectFeaturesCreator.CreateAddProjectToGroupService();
         this.sortUpProjectService = projectFeaturesCreator.CreateSortUpProjectService();
         this.sortDownProjectService = projectFeaturesCreator.CreateSortDownProjectService();
@@ -118,36 +135,31 @@ public partial class MainWindow : Window, IMainWindowPresenter
         DataContext = this.MainWindowViewModel;
     }
 
-
-
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        this.removeProjectFromGroupService!.Notify += RemoveProjectFromGroupNotificationService_Notify;
+        this.removeProjectFromGroupService!.Notify +=
+            RemoveProjectFromGroupNotificationService_Notify;
         this.addProjectToGroupService!.Notify += AddProjectToGroupService_Notify;
         this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
         this.FetchDevAppsEvent!.Invoke(this, EventArgs.Empty);
     }
 
-    private void AddProjectToGroupService_Notify(object? sender, EventArgs e)
-    {
-        this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
-        SelectEditedItem();
-        groupModalWindow!.Close();
-    }
+    private void AddProjectToGroupService_Notify(object? sender, EventArgs e) { }
 
-    private void RemoveProjectFromGroupNotificationService_Notify(object? sender, RemoveProjectFromGroupEventArgs e)
-    {
-        this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
-        SelectEditedItem();
-        groupModalWindow!.Close();
-    }
+    private void RemoveProjectFromGroupNotificationService_Notify(
+        object? sender,
+        RemoveProjectFromGroupEventArgs e
+    ) { }
 
     private void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
     {
         this.OpenDevApp!.Invoke(this, EventArgs.Empty);
     }
 
-    private void ProjectPathsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    private void ProjectPathsList_SelectionChanged(
+        object sender,
+        System.Windows.Controls.SelectionChangedEventArgs e
+    )
     {
         this.SelectProjectEvent.Invoke(this, EventArgs.Empty);
     }
@@ -156,12 +168,16 @@ public partial class MainWindow : Window, IMainWindowPresenter
     {
         this.OpenProjectDialog.Invoke(this, EventArgs.Empty);
     }
-    private async void btnSaveProjectPath_Click(object sender, RoutedEventArgs e)
+
+    private void btnSaveProjectPath_Click(object sender, RoutedEventArgs e)
     {
-        await SaveProject();
+        SaveProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
-    private void ProjectPathsList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    private void ProjectPathsList_MouseDoubleClick(
+        object sender,
+        System.Windows.Input.MouseButtonEventArgs e
+    )
     {
         OpenProject();
     }
@@ -191,15 +207,17 @@ public partial class MainWindow : Window, IMainWindowPresenter
         this.SortDownProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
-    private void TxtSearch_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    private void TxtSearch_TextChanged(
+        object sender,
+        System.Windows.Controls.TextChangedEventArgs e
+    )
     {
         this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void MnuOpenFolderWindow_Click(object sender, RoutedEventArgs e)
     {
-        this.openProjectFolderWindowService!.Handle
-        (
+        this.openProjectFolderWindowService!.Handle(
             new() { Path = this.mainWindowViewModel!.SelectedProjectPath!.Path }
         );
     }
@@ -216,6 +234,6 @@ public partial class MainWindow : Window, IMainWindowPresenter
 
     private void mnuAddToGroup_Click(object sender, RoutedEventArgs e)
     {
-        OpenAddToGroupDialog();
+        OpenAddToGroupModalWindowEvent.Invoke(this, EventArgs.Empty);
     }
 }

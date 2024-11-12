@@ -2,8 +2,7 @@
 
 namespace ApplicationCore.Features.Projects
 {
-    public record EditProjectCommand
-    (
+    public record EditProjectCommand(
         long Id,
         string Name,
         string Path,
@@ -16,7 +15,10 @@ namespace ApplicationCore.Features.Projects
         Task<bool> Edit(EditProjectCommand param);
     }
 
-    internal class EditProjectService(IProjectRepository projectRepository, INotificationMessageService notificationMessageService) : IEditProjectService
+    internal class EditProjectService(
+        IProjectRepository projectRepository,
+        INotificationMessageService notificationMessageService
+    ) : IEditProjectService
     {
         private readonly IProjectRepository projectRepository = projectRepository;
 
@@ -26,8 +28,7 @@ namespace ApplicationCore.Features.Projects
 
             if (project == null)
             {
-                notificationMessageService.Create
-                (
+                notificationMessageService.Create(
                     "Project to edit not found!",
                     "Edit Project",
                     NotificationType.Error
@@ -37,19 +38,31 @@ namespace ApplicationCore.Features.Projects
 
             if (command.Name is null || command.Name is "")
             {
-                notificationMessageService.Create("Project Name must be provided", "Edit Project", NotificationType.Error);
+                notificationMessageService.Create(
+                    "Project Name must be provided",
+                    "Edit Project",
+                    NotificationType.Error
+                );
                 return false;
             }
 
             if (command.Path is null || command.Path is "")
             {
-                notificationMessageService.Create("Project Path must be provided", "Edit Project", NotificationType.Error);
+                notificationMessageService.Create(
+                    "Project Path must be provided",
+                    "Edit Project",
+                    NotificationType.Error
+                );
                 return false;
             }
 
             if (command.IDEPathId is 0)
             {
-                notificationMessageService.Create("Project Dev App must be provided", "Edit Project", NotificationType.Error);
+                notificationMessageService.Create(
+                    "Project Dev App must be provided",
+                    "Edit Project",
+                    NotificationType.Error
+                );
                 return false;
             }
 
@@ -61,7 +74,11 @@ namespace ApplicationCore.Features.Projects
             var result = await this.projectRepository.Edit(project);
             if (result)
             {
-                notificationMessageService.Create("Record has been updated!", "Edit Project", NotificationType.Success);
+                notificationMessageService.Create(
+                    "Record has been updated!",
+                    "Edit Project",
+                    NotificationType.Success
+                );
             }
 
             return result;
