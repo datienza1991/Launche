@@ -26,6 +26,8 @@ public interface IMainWindowPresenter
     event EventHandler OpenAddToGroupModalWindowEvent;
     event EventHandler SaveProjectEvent;
     event EventHandler OpenProjectDevAppEvent;
+    event EventHandler OpenProjectFolderWindowEvent;
+    event EventHandler FocusOnListViewEvent;
 
     string DevAppFilePath { get; set; }
     IAddDevAppService? AddDevAppService { get; }
@@ -42,10 +44,10 @@ public interface IMainWindowPresenter
     IAddProjectService? AddProjectService { get; }
     IEditProjectService? EditProjectService { get; }
     IOpenProjectDevAppService? OpenProjectDevAppService { get; }
+    IOpenProjectFolderWindowService? OpenProjectFolderWindowService { get; }
 
     MainWindowViewModel MainWindowViewModel { get; set; }
     ListView ProjectPathsListView { get; }
-    TextBox SearchInput { get; }
 }
 
 public class MainWindowPresenter
@@ -70,8 +72,9 @@ public class MainWindowPresenter
         presenter.RemoveProjectFromGroupService!.Notify += RemoveProjectFromGroup_Notify;
         presenter.SaveProjectEvent += Presenter_SaveProjectEvent;
         presenter.OpenProjectDevAppEvent += Presenter_OpenProjectDevAppEvent;
-        presenter.SearchInput.KeyUp += SearchInput_KeyUp;
         presenter.ProjectPathsListView.KeyDown += ProjectPathsListView_KeyDown;
+        presenter.OpenProjectFolderWindowEvent += Presenter_OpenFolderWindowEvent;
+        presenter.FocusOnListViewEvent += Presenter_FocusOnListViewEvent;
         this.presenter = presenter;
 
         if (this.presenter.MainWindowViewModel is null)
@@ -84,19 +87,21 @@ public class MainWindowPresenter
         }
     }
 
-    private void ProjectPathsListView_KeyDown(object sender, KeyEventArgs e)
+    private void Presenter_FocusOnListViewEvent(object? sender, EventArgs e)
     {
-        if (e.Key != Key.Enter)
-        {
-            return;
-        }
-
-        OpenProjectDevApp();
+        FocusOnListViewWhenArrowDown();
     }
 
-    private void SearchInput_KeyUp(object sender, KeyEventArgs e)
+    private void Presenter_OpenFolderWindowEvent(object? sender, EventArgs e)
     {
-        FocusOnListViewWhenArrowDown(e);
+        this.presenter.OpenProjectFolderWindowService!.Handle(
+            new() { Path = this.presenter.MainWindowViewModel!.SelectedProjectPath!.Path }
+        );
+    }
+
+    private void ProjectPathsListView_KeyDown(object sender, KeyEventArgs e)
+    {
+        OpenProjectDevApp();
     }
 
     private void Presenter_OpenProjectDevAppEvent(object? sender, EventArgs e)
@@ -364,13 +369,8 @@ public class MainWindowPresenter
         );
     }
 
-    private void FocusOnListViewWhenArrowDown(KeyEventArgs e)
+    private void FocusOnListViewWhenArrowDown()
     {
-        if (e.Key != Key.Down)
-        {
-            return;
-        }
-
         if (presenter.ProjectPathsListView.Items.Count == 0)
         {
             return;
