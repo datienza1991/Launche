@@ -56,6 +56,8 @@ public partial class MainWindow : Window, IMainWindowPresenter
     public event EventHandler OpenAddToGroupModalWindowEvent;
     public event EventHandler SaveProjectEvent;
     public event EventHandler OpenProjectDevAppEvent;
+    public event EventHandler OpenProjectFolderWindowEvent;
+    public event EventHandler FocusOnListViewEvent;
 
     public IAddDevAppService? AddDevAppService
     {
@@ -92,7 +94,8 @@ public partial class MainWindow : Window, IMainWindowPresenter
 
     public IOpenProjectDevAppService? OpenProjectDevAppService => openProjectDevAppService;
 
-    public TextBox SearchInput => this.txtSearch;
+    public IOpenProjectFolderWindowService? OpenProjectFolderWindowService =>
+        openProjectFolderWindowService;
 
     public MainWindow() => InitializeComponent();
 
@@ -142,17 +145,9 @@ public partial class MainWindow : Window, IMainWindowPresenter
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        this.removeProjectFromGroupService!.Notify +=
-            RemoveProjectFromGroupNotificationService_Notify;
-
         this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
         this.FetchDevAppsEvent!.Invoke(this, EventArgs.Empty);
     }
-
-    private void RemoveProjectFromGroupNotificationService_Notify(
-        object? sender,
-        RemoveProjectFromGroupEventArgs e
-    ) { }
 
     private void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
     {
@@ -217,14 +212,28 @@ public partial class MainWindow : Window, IMainWindowPresenter
 
     private void MnuOpenFolderWindow_Click(object sender, RoutedEventArgs e)
     {
-        this.openProjectFolderWindowService!.Handle(
-            new() { Path = this.mainWindowViewModel!.SelectedProjectPath!.Path }
-        );
+        this.OpenProjectFolderWindowEvent.Invoke(this, EventArgs.Empty);
     }
 
-    private void txtSearch_KeyUp(object sender, KeyEventArgs e) { }
+    private void txtSearch_KeyUp(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Down)
+        {
+            return;
+        }
 
-    private void lvProjectPaths_KeyDown(object sender, System.Windows.Input.KeyEventArgs e) { }
+        FocusOnListViewEvent.Invoke(this, EventArgs.Empty);
+    }
+
+    private void lvProjectPaths_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter)
+        {
+            return;
+        }
+
+        this.OpenProjectDevAppEvent.Invoke(this, EventArgs.Empty);
+    }
 
     private void mnuAddToGroup_Click(object sender, RoutedEventArgs e)
     {
