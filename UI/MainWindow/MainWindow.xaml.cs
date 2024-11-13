@@ -55,6 +55,7 @@ public partial class MainWindow : Window, IMainWindowPresenter
     public event EventHandler SortDownProjectEvent;
     public event EventHandler OpenAddToGroupModalWindowEvent;
     public event EventHandler SaveProjectEvent;
+    public event EventHandler OpenProjectDevAppEvent;
 
     public IAddDevAppService? AddDevAppService
     {
@@ -85,9 +86,13 @@ public partial class MainWindow : Window, IMainWindowPresenter
     public IRemoveProjectFromGroupService? RemoveProjectFromGroupService =>
         removeProjectFromGroupService;
 
-    public IAddProjectService? AddProjectService => AddProjectService;
+    public IAddProjectService? AddProjectService => addProjectService;
 
     public IEditProjectService? EditProjectService => editProjectService;
+
+    public IOpenProjectDevAppService? OpenProjectDevAppService => openProjectDevAppService;
+
+    public TextBox SearchInput => this.txtSearch;
 
     public MainWindow() => InitializeComponent();
 
@@ -139,12 +144,10 @@ public partial class MainWindow : Window, IMainWindowPresenter
     {
         this.removeProjectFromGroupService!.Notify +=
             RemoveProjectFromGroupNotificationService_Notify;
-        this.addProjectToGroupService!.Notify += AddProjectToGroupService_Notify;
+
         this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
         this.FetchDevAppsEvent!.Invoke(this, EventArgs.Empty);
     }
-
-    private void AddProjectToGroupService_Notify(object? sender, EventArgs e) { }
 
     private void RemoveProjectFromGroupNotificationService_Notify(
         object? sender,
@@ -174,12 +177,9 @@ public partial class MainWindow : Window, IMainWindowPresenter
         SaveProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
-    private void ProjectPathsList_MouseDoubleClick(
-        object sender,
-        System.Windows.Input.MouseButtonEventArgs e
-    )
+    private void ProjectPathsList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        OpenProject();
+        OpenProjectDevAppEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void btnDeleteIdePath_Click(object sender, RoutedEventArgs e)
@@ -222,15 +222,9 @@ public partial class MainWindow : Window, IMainWindowPresenter
         );
     }
 
-    private void txtSearch_KeyUp(object sender, KeyEventArgs e)
-    {
-        FocusOnListViewWhenArrowDown(e);
-    }
+    private void txtSearch_KeyUp(object sender, KeyEventArgs e) { }
 
-    private void lvProjectPaths_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-    {
-        OpenProjectWhenEnter(e);
-    }
+    private void lvProjectPaths_KeyDown(object sender, System.Windows.Input.KeyEventArgs e) { }
 
     private void mnuAddToGroup_Click(object sender, RoutedEventArgs e)
     {
