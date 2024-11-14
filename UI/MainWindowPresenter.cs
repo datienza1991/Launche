@@ -102,11 +102,6 @@ public class MainWindowPresenter
         );
     }
 
-    private void ProjectPathsListView_KeyDown(object sender, KeyEventArgs e)
-    {
-        OpenProjectDevApp();
-    }
-
     private void Presenter_OpenProjectDevAppEvent(object? sender, EventArgs e)
     {
         this.OpenProjectDevApp();

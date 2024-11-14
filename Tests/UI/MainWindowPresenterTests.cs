@@ -1,4 +1,5 @@
-﻿using ApplicationCore.Features.Projects;
+﻿using ApplicationCore.Features.DevApps;
+using ApplicationCore.Features.Projects;
 using Moq;
 using UI.MainWindowx.Presenter;
 using Xunit;
@@ -9,23 +10,121 @@ public class MainWindowPresenterTests
 {
     private readonly Mock<IMainWindowView> mockPresenter = new();
     private readonly Mock<IAddProjectToGroupService> mock = new();
-    private MainWindowPresenter sut;
+    private readonly Mock<IRemoveProjectFromGroupService> mockRemoveProjectFromGroupService = new();
 
     [Fact]
-    public void FirstTest()
+    public void DeleteDevAppEvent_DevApp_Success()
     {
-        SetupView();
+        // Arrange
         SetupSut();
+        mockPresenter
+            .Setup(x => x.GetAllDevAppService!.Handle())
+            .Returns(() => Task.FromResult(new GetAllDevAppViewModel() { DevApps = [] }));
+
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new()
+            {
+                SelectedIdePath = new() { Id = 1 },
+                IdePathsModels = [new()],
+            }
+        );
+
+        mockPresenter
+            .Setup(x => x.DeleteDevAppService!.Delete(It.IsAny<DeleteDevAppCommand>()))
+            .Returns(() => Task.FromResult(true));
+
+        // Act
         mockPresenter.Raise(v => v.DeleteDevAppEvent += null, EventArgs.Empty);
+
+        // Assert
+        Assert.Empty(mockPresenter.Object.MainWindowViewModel.IdePathsModels ?? [new()]);
+    }
+
+    [Fact]
+    public void DeleteDevAppEvent_NoSelectedDevApp_ReturnsNotEmptyDevApps()
+    {
+        // Arrange
+        SetupSut();
+
+        mockPresenter.SetupProperty(x => x.MainWindowViewModel, new() { IdePathsModels = [new()] });
+
+        // Act
+        mockPresenter.Raise(v => v.DeleteDevAppEvent += null, EventArgs.Empty);
+
+        // Assert
+        Assert.NotEmpty(mockPresenter.Object.MainWindowViewModel.IdePathsModels ?? []);
+    }
+
+    [Fact]
+    public void FocusOnListViewEvent_Success()
+    {
+        // Arrange
+        SetupSut();
+
+        // Act
+        mockPresenter.Raise(v => v.FocusOnListViewEvent += null, EventArgs.Empty);
+
+        // Assert
+        mockPresenter.Verify(v => v.FocusOnListViewWhenArrowDown(), Times.Once());
+    }
+
+    [Fact]
+    public void OpenProjectFolderWindowEvent_Success()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.Setup(v =>
+            v.OpenProjectFolderWindowService!.Handle(It.IsAny<OpenProjectFolderWindowCommand>())
+        );
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new() { SelectedProjectPath = new() }
+        );
+
+        // Act
+        mockPresenter.Raise(v => v.OpenProjectFolderWindowEvent += null, EventArgs.Empty);
+
+        // Assert
+        mockPresenter.Verify(
+            v =>
+                v.OpenProjectFolderWindowService!.Handle(
+                    It.IsAny<OpenProjectFolderWindowCommand>()
+                ),
+            Times.Once()
+        );
+    }
+
+    [Fact]
+    public void OpenProjectDevAppEvent_Success()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new() { SelectedProjectPath = new() }
+        );
+        mockPresenter.Setup(v =>
+            v.OpenProjectDevAppService!.Handle(It.IsAny<OpenProjectDevAppCommand>())
+        );
+
+        // Act
+        mockPresenter.Raise(v => v.OpenProjectDevAppEvent += null, EventArgs.Empty);
+
+        // Assert
+        mockPresenter.Verify(
+            v => v.OpenProjectDevAppService!.Handle(It.IsAny<OpenProjectDevAppCommand>()),
+            Times.Once()
+        );
     }
 
     private void SetupSut()
     {
-        sut = new MainWindowPresenter(mockPresenter.Object);
-    }
-
-    private void SetupView()
-    {
         mockPresenter.Setup(x => x.AddProjectToGroupService).Returns(mock.Object);
+        mockPresenter
+            .Setup(x => x.RemoveProjectFromGroupService)
+            .Returns(mockRemoveProjectFromGroupService.Object);
+
+        _ = new MainWindowPresenter(mockPresenter.Object);
     }
 }
