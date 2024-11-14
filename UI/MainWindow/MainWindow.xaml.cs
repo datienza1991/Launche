@@ -15,7 +15,7 @@ namespace UI;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window, IMainWindowPresenter
+public partial class MainWindow : Window, IMainWindowView
 {
     private readonly IAddDevAppService addDevAppService;
     private readonly IEditDevAppService? editDevAppService;
@@ -97,6 +97,8 @@ public partial class MainWindow : Window, IMainWindowPresenter
     public IOpenProjectFolderWindowService? OpenProjectFolderWindowService =>
         openProjectFolderWindowService;
 
+    public ProjectViewModel SelectedProject => (ProjectViewModel)lvProjectPaths.SelectedItem;
+
     public MainWindow() => InitializeComponent();
 
     public MainWindow(
@@ -143,6 +145,38 @@ public partial class MainWindow : Window, IMainWindowPresenter
         DataContext = this.MainWindowViewModel;
     }
 
+    public void FocusOnListViewWhenArrowDown()
+    {
+        if (lvProjectPaths.Items.Count == 0)
+        {
+            return;
+        }
+
+        lvProjectPaths.Focus();
+        var item = lvProjectPaths.Items[0];
+        lvProjectPaths.SelectedItem = item;
+        ListViewItem? firstListViewItem =
+            lvProjectPaths.ItemContainerGenerator.ContainerFromIndex(0) as ListViewItem;
+        firstListViewItem?.Focus();
+    }
+
+    public void SelectNewlyAddedItem()
+    {
+        lvProjectPaths.SelectedItem = lvProjectPaths.Items[^1];
+        lvProjectPaths.ScrollIntoView(this.lvProjectPaths.SelectedItem);
+    }
+
+    public void SelectEditedItem()
+    {
+        lvProjectPaths.SelectedItem = lvProjectPaths
+            .Items.SourceCollection.Cast<ProjectViewModel>()
+            .FirstOrDefault(projectPathsViewModel =>
+                projectPathsViewModel.Id == this.MainWindowViewModel?.SelectedProjectPath?.Id
+            );
+
+        lvProjectPaths.ScrollIntoView(this.lvProjectPaths.SelectedItem);
+    }
+
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
@@ -159,6 +193,11 @@ public partial class MainWindow : Window, IMainWindowPresenter
         System.Windows.Controls.SelectionChangedEventArgs e
     )
     {
+        if (lvProjectPaths.SelectedIndex == -1)
+        {
+            return;
+        }
+
         this.SelectProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
