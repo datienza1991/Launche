@@ -118,6 +118,35 @@ public class MainWindowPresenterTests
         );
     }
 
+    [Fact]
+    public void SaveProjectEvent_AddNewProject_Success()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new()
+            {
+                SelectedProjectPath = new(),
+                SelectedIdePath = new(),
+                ProjectPathModels = [],
+            }
+        );
+        mockPresenter
+            .Setup(x => x.AddProjectService!.AddAsync(It.IsAny<AddProjectCommand>()))
+            .ReturnsAsync(true);
+        mockPresenter
+            .Setup(v => v.SearchProjectService!.Handle(It.IsAny<SearchProjectQuery>()))
+            .ReturnsAsync(new SearchProjectViewModel() { Projects = [new()] });
+
+        // Act
+        mockPresenter.Raise(v => v.SaveProjectEvent += null, EventArgs.Empty);
+
+        // Assert
+        mockPresenter.Verify(v => v.SelectNewlyAddedItem(), Times.Once());
+        Assert.NotEmpty(mockPresenter.Object.MainWindowViewModel.ProjectPathModels ?? []);
+    }
+
     private void SetupSut()
     {
         mockPresenter.Setup(x => x.AddProjectToGroupService).Returns(mock.Object);

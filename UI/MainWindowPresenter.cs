@@ -58,27 +58,27 @@ public class MainWindowPresenter
     private readonly IMainWindowView view;
     private GroupModalWindow groupModalWindow;
 
-    public MainWindowPresenter(IMainWindowView presenter)
+    public MainWindowPresenter(IMainWindowView view)
     {
-        presenter.OpenDevApp += Presenter_OpenDevApp;
-        presenter.FetchDevAppsEvent += Presenter_FetchDevAppsEvent;
-        presenter.DeleteDevAppEvent += Presenter_DeleteDevAppEvent;
-        presenter.NewProjectEvent += Presenter_NewProjectEvent;
-        presenter.OpenProjectDialog += Presenter_OpenProjectDialog;
-        presenter.DeleteProjectEvent += Presenter_DeleteProjectEvent;
-        presenter.SearchProjectEvent += Presenter_SearchProjectEvent;
-        presenter.SortUpProjectEvent += Presenter_SortUpProjectEvent;
-        presenter.SelectProjectEvent += Presenter_SelectProjectEvent;
-        presenter.SortDownProjectEvent += Presenter_SortDownProjectEvent;
-        presenter.OpenAddToGroupModalWindowEvent += Presenter_OpenAddToGroupModalWindowEvent;
-        presenter.AddProjectToGroupService!.Notify += MainWindowPresenter_Notify;
-        presenter.RemoveProjectFromGroupService!.Notify += RemoveProjectFromGroup_Notify;
-        presenter.SaveProjectEvent += Presenter_SaveProjectEvent;
-        presenter.OpenProjectDevAppEvent += Presenter_OpenProjectDevAppEvent;
+        view.OpenDevApp += Presenter_OpenDevApp;
+        view.FetchDevAppsEvent += Presenter_FetchDevAppsEvent;
+        view.DeleteDevAppEvent += Presenter_DeleteDevAppEvent;
+        view.NewProjectEvent += Presenter_NewProjectEvent;
+        view.OpenProjectDialog += Presenter_OpenProjectDialog;
+        view.DeleteProjectEvent += Presenter_DeleteProjectEvent;
+        view.SearchProjectEvent += Presenter_SearchProjectEvent;
+        view.SortUpProjectEvent += Presenter_SortUpProjectEvent;
+        view.SelectProjectEvent += Presenter_SelectProjectEvent;
+        view.SortDownProjectEvent += Presenter_SortDownProjectEvent;
+        view.OpenAddToGroupModalWindowEvent += Presenter_OpenAddToGroupModalWindowEvent;
+        view.AddProjectToGroupService!.Notify += MainWindowPresenter_Notify;
+        view.RemoveProjectFromGroupService!.Notify += RemoveProjectFromGroup_Notify;
+        view.SaveProjectEvent += Presenter_SaveProjectEvent;
+        view.OpenProjectDevAppEvent += Presenter_OpenProjectDevAppEvent;
 
-        presenter.OpenProjectFolderWindowEvent += Presenter_OpenFolderWindowEvent;
-        presenter.FocusOnListViewEvent += Presenter_FocusOnListViewEvent;
-        this.view = presenter;
+        view.OpenProjectFolderWindowEvent += Presenter_OpenFolderWindowEvent;
+        view.FocusOnListViewEvent += Presenter_FocusOnListViewEvent;
+        this.view = view;
 
         if (this.view.MainWindowViewModel is null)
         {
