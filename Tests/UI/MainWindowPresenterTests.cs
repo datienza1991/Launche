@@ -147,6 +147,66 @@ public class MainWindowPresenterTests
         Assert.NotEmpty(mockPresenter.Object.MainWindowViewModel.ProjectPathModels ?? []);
     }
 
+    [Fact]
+    public void SaveProjectEvent_EditProject_Success()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new()
+            {
+                SelectedProjectPath = new() { Id = 1 },
+                SelectedIdePath = new(),
+                ProjectPathModels = [],
+            }
+        );
+        mockPresenter
+            .Setup(x => x.EditProjectService!.Edit(It.IsAny<EditProjectCommand>()))
+            .ReturnsAsync(true);
+        mockPresenter
+            .Setup(v => v.SearchProjectService!.Handle(It.IsAny<SearchProjectQuery>()))
+            .ReturnsAsync(new SearchProjectViewModel() { Projects = [new()] });
+
+        // Act
+        mockPresenter.Raise(v => v.SaveProjectEvent += null, EventArgs.Empty);
+
+        // Assert
+        mockPresenter.Verify(v => v.SelectEditedItem(), Times.Once());
+        Assert.NotEmpty(mockPresenter.Object.MainWindowViewModel.ProjectPathModels ?? []);
+    }
+
+    [Fact]
+    public void SortDownProjectEvent_Project_Success()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new()
+            {
+                SelectedProjectPath = new(),
+                SelectedIdePath = new(),
+                ProjectPathModels = [new() { Id = 1 }, new() { Id = 2 }],
+            }
+        );
+        mockPresenter
+            .Setup(x => x.SortDownProjectService!.Handle(It.IsAny<SortDownProjectCommand>()))
+            .ReturnsAsync(true);
+        mockPresenter
+            .Setup(v => v.SearchProjectService!.Handle(It.IsAny<SearchProjectQuery>()))
+            .ReturnsAsync(
+                new SearchProjectViewModel() { Projects = [new() { Id = 2 }, new() { Id = 1 }] }
+            );
+
+        // Act
+        mockPresenter.Raise(v => v.SortDownProjectEvent += null, EventArgs.Empty);
+
+        // Assert
+        Assert.Equal(2, mockPresenter.Object.MainWindowViewModel.ProjectPathModels![0].Id);
+        Assert.Equal(1, mockPresenter.Object.MainWindowViewModel.ProjectPathModels![1].Id);
+    }
+
     private void SetupSut()
     {
         mockPresenter.Setup(x => x.AddProjectToGroupService).Returns(mock.Object);

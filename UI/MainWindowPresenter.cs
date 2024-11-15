@@ -180,6 +180,7 @@ public class MainWindowPresenter
         var result = await this.view.SortDownProjectService!.Handle(
             new() { SortId = this.view.MainWindowViewModel!.SelectedProjectPath!.SortId }
         );
+
         if (!result)
         {
             return;
