@@ -1,4 +1,5 @@
 ﻿using ApplicationCore.Features.DevApps;
+using ApplicationCore.Features.Git;
 using ApplicationCore.Features.Projects;
 using Moq;
 using UI.MainWindowx.Presenter;
@@ -205,6 +206,57 @@ public class MainWindowPresenterTests
         // Assert
         Assert.Equal(2, mockPresenter.Object.MainWindowViewModel.ProjectPathModels![0].Id);
         Assert.Equal(1, mockPresenter.Object.MainWindowViewModel.ProjectPathModels![1].Id);
+    }
+
+    [Fact]
+    public void SortDownProjectEvent_NoSelectedProject_ShowNoSelectedProjectMessage()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new() { SelectedProjectPath = new() }
+        );
+
+        mockPresenter
+            .Setup(x => x.SortDownProjectService!.Handle(It.IsAny<SortDownProjectCommand>()))
+            .ReturnsAsync(false);
+
+        // Act
+        mockPresenter.Raise(v => v.SortDownProjectEvent += null, EventArgs.Empty);
+
+        // Assert
+        mockPresenter.Verify(x => x.ShowNoSelectedProjectMessage(), Times.Once());
+    }
+
+    [Fact]
+    public void SelectProjectEvent_Project_ReturnsCorrectData()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new() { IdePathsModels = [new() { Id = 1 }] }
+        );
+
+        mockPresenter
+            .SetupGet(x => x.SelectedProject)
+            .Returns(new ProjectViewModel { Id = 1, IDEPathId = 1 });
+
+        mockPresenter
+            .Setup(x => x.GetCurrentGitBranchService!.Handle(It.IsAny<GetCurrentGitBranchQuery>()))
+            .Returns("CurrentGitBranch");
+
+        // Act
+        mockPresenter.Raise(v => v.SelectProjectEvent += null, EventArgs.Empty);
+
+        // Assert
+        Assert.Equal(1, mockPresenter.Object.MainWindowViewModel.SelectedProjectPath?.Id);
+        Assert.Equal(
+            "CurrentGitBranch",
+            mockPresenter.Object.MainWindowViewModel.SelectedProjectPath?.CurrentGitBranch
+        );
+        Assert.Equal(1, mockPresenter.Object.MainWindowViewModel.SelectedIdePath?.Id);
     }
 
     private void SetupSut()

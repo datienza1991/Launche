@@ -51,6 +51,7 @@ public interface IMainWindowView
     void SelectNewlyAddedItem();
     void SelectEditedItem();
     ProjectViewModel SelectedProject { get; }
+    void ShowNoSelectedProjectMessage();
 }
 
 public class MainWindowPresenter
@@ -183,6 +184,7 @@ public class MainWindowPresenter
 
         if (!result)
         {
+            view.ShowNoSelectedProjectMessage();
             return;
         }
 

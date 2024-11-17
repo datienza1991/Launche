@@ -278,4 +278,9 @@ public partial class MainWindow : Window, IMainWindowView
     {
         OpenAddToGroupModalWindowEvent.Invoke(this, EventArgs.Empty);
     }
+
+    public void ShowNoSelectedProjectMessage()
+    {
+        MessageBox.Show("No Selected Project", "Select Project", MessageBoxButton.OK);
+    }
 }
