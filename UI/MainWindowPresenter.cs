@@ -214,6 +214,7 @@ public class MainWindowPresenter
 
         if (!result)
         {
+            view.ShowNoSelectedProjectMessage();
             return;
         }
 

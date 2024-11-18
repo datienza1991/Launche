@@ -209,6 +209,37 @@ public class MainWindowPresenterTests
     }
 
     [Fact]
+    public void SortUpProjectEvent_Project_Success()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new()
+            {
+                SelectedProjectPath = new(),
+                SelectedIdePath = new(),
+                ProjectPathModels = [new() { Id = 2 }, new() { Id = 1 }],
+            }
+        );
+        mockPresenter
+            .Setup(x => x.SortUpProjectService!.Handle(It.IsAny<SortUpProjectCommand>()))
+            .ReturnsAsync(true);
+        mockPresenter
+            .Setup(v => v.SearchProjectService!.Handle(It.IsAny<SearchProjectQuery>()))
+            .ReturnsAsync(
+                new SearchProjectViewModel() { Projects = [new() { Id = 1 }, new() { Id = 2 }] }
+            );
+
+        // Act
+        mockPresenter.Raise(v => v.SortUpProjectEvent += null, EventArgs.Empty);
+
+        // Assert
+        Assert.Equal(1, mockPresenter.Object.MainWindowViewModel.ProjectPathModels![0].Id);
+        Assert.Equal(2, mockPresenter.Object.MainWindowViewModel.ProjectPathModels![1].Id);
+    }
+
+    [Fact]
     public void SortDownProjectEvent_NoSelectedProject_ShowNoSelectedProjectMessage()
     {
         // Arrange
@@ -224,6 +255,27 @@ public class MainWindowPresenterTests
 
         // Act
         mockPresenter.Raise(v => v.SortDownProjectEvent += null, EventArgs.Empty);
+
+        // Assert
+        mockPresenter.Verify(x => x.ShowNoSelectedProjectMessage(), Times.Once());
+    }
+
+    [Fact]
+    public void SortUpProjectEvent_NoSelectedProject_ShowNoSelectedProjectMessage()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new() { SelectedProjectPath = new() }
+        );
+
+        mockPresenter
+            .Setup(x => x.SortUpProjectService!.Handle(It.IsAny<SortUpProjectCommand>()))
+            .ReturnsAsync(false);
+
+        // Act
+        mockPresenter.Raise(v => v.SortUpProjectEvent += null, EventArgs.Empty);
 
         // Assert
         mockPresenter.Verify(x => x.ShowNoSelectedProjectMessage(), Times.Once());
