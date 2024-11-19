@@ -7,6 +7,7 @@ using ApplicationCore.Features.Groups;
 using ApplicationCore.Features.Projects;
 using Infrastructure.Models;
 using Infrastructure.ViewModels;
+using Microsoft.Win32;
 using UI.MainWindowx.Presenter;
 using UI.Windows.Group;
 
@@ -37,7 +38,6 @@ public partial class MainWindow : Window, IMainWindowView
     private readonly IAddProjectToGroupService? addProjectToGroupService;
     private readonly ISortUpProjectService? sortUpProjectService;
     private readonly ISortDownProjectService? sortDownProjectService;
-    private readonly MainWindowViewModel? mainWindowViewModel;
     private GroupModalWindow? groupModalWindow;
     private readonly List<Group> groups = [];
 
@@ -139,7 +139,6 @@ public partial class MainWindow : Window, IMainWindowView
         #endregion
         #endregion
 
-        this.mainWindowViewModel = new MainWindowViewModel();
         InitializeComponent();
         var presenter = new MainWindowPresenter(this);
         DataContext = this.MainWindowViewModel;
@@ -203,7 +202,17 @@ public partial class MainWindow : Window, IMainWindowView
 
     private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
     {
-        this.OpenProjectDialog.Invoke(this, EventArgs.Empty);
+        var openFolderDialog = new OpenFolderDialog();
+        var result = openFolderDialog.ShowDialog() ?? false;
+
+        if (!result)
+        {
+            return;
+        }
+
+        string filePath = openFolderDialog.FolderName;
+        string name = openFolderDialog.SafeFolderName;
+        this.MainWindowViewModel!.SelectedProjectPath = new() { Name = name, Path = filePath };
     }
 
     private void btnSaveProjectPath_Click(object sender, RoutedEventArgs e)

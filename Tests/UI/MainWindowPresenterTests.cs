@@ -311,6 +311,24 @@ public class MainWindowPresenterTests
         Assert.Equal(1, mockPresenter.Object.MainWindowViewModel.SelectedIdePath?.Id);
     }
 
+    [Fact]
+    public void SearchProjectEvent_Project_ReturnsCorrectData()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(x => x.MainWindowViewModel, new() { ProjectPathModels = [] });
+
+        mockPresenter
+            .Setup(x => x.SearchProjectService!.Handle(It.IsAny<SearchProjectQuery>()))
+            .ReturnsAsync(new SearchProjectViewModel() { Projects = [new() { Id = 1 }] });
+
+        // Act
+        mockPresenter.Raise(v => v.SearchProjectEvent += null, EventArgs.Empty);
+
+        // Assert
+        Assert.Equal(1, mockPresenter.Object.MainWindowViewModel.ProjectPathModels?[0].Id);
+    }
+
     private void SetupSut()
     {
         mockPresenter.Setup(x => x.AddProjectToGroupService).Returns(mock.Object);

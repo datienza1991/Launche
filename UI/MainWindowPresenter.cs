@@ -16,7 +16,7 @@ public interface IMainWindowView
     event EventHandler FetchDevAppsEvent;
     event EventHandler DeleteDevAppEvent;
     event EventHandler NewProjectEvent;
-    event EventHandler OpenProjectDialog;
+
     event EventHandler DeleteProjectEvent;
     event EventHandler SearchProjectEvent;
     event EventHandler SortUpProjectEvent;
@@ -65,7 +65,6 @@ public class MainWindowPresenter
         view.FetchDevAppsEvent += Presenter_FetchDevAppsEvent;
         view.DeleteDevAppEvent += Presenter_DeleteDevAppEvent;
         view.NewProjectEvent += Presenter_NewProjectEvent;
-        view.OpenProjectDialog += Presenter_OpenProjectDialog;
         view.DeleteProjectEvent += Presenter_DeleteProjectEvent;
         view.SearchProjectEvent += Presenter_SearchProjectEvent;
         view.SortUpProjectEvent += Presenter_SortUpProjectEvent;
@@ -254,22 +253,6 @@ public class MainWindowPresenter
         this.view.MainWindowViewModel!.ProjectPathModels = [.. searchViewModel.Projects];
     }
 
-    private void Presenter_OpenProjectDialog(object? sender, EventArgs e)
-    {
-        var openFolderDialog = new OpenFolderDialog();
-        var result = openFolderDialog.ShowDialog() ?? false;
-
-        if (result)
-        {
-            string filePath = openFolderDialog.FolderName;
-            string name = openFolderDialog.SafeFolderName;
-            var project = this.view.MainWindowViewModel!.SelectedProjectPath!.Copy();
-            project.Name = name;
-            project.Path = filePath;
-            this.view.MainWindowViewModel!.SelectedProjectPath = project;
-        }
-    }
-
     private void Presenter_NewProjectEvent(object? sender, EventArgs e)
     {
         this.view.MainWindowViewModel!.SelectedProjectPath = new();
@@ -340,4 +323,10 @@ public class MainWindowPresenter
             }
         );
     }
+}
+
+public class ProjectDialogModel
+{
+    public string FolderName { get; set; } = "";
+    public string SafeFolderName { get; set; } = "";
 }
