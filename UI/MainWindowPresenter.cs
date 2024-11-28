@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using ApplicationCore.Features.DevApps;
 using ApplicationCore.Features.Git;
@@ -11,13 +10,13 @@ using UI.Windows.Group;
 
 namespace UI.MainWindowx.Presenter;
 
-public interface IMainWindowPresenter
+public interface IMainWindowView
 {
     event EventHandler OpenDevApp;
     event EventHandler FetchDevAppsEvent;
     event EventHandler DeleteDevAppEvent;
     event EventHandler NewProjectEvent;
-    event EventHandler OpenProjectDialog;
+
     event EventHandler DeleteProjectEvent;
     event EventHandler SearchProjectEvent;
     event EventHandler SortUpProjectEvent;
@@ -47,39 +46,43 @@ public interface IMainWindowPresenter
     IOpenProjectFolderWindowService? OpenProjectFolderWindowService { get; }
 
     MainWindowViewModel MainWindowViewModel { get; set; }
-    ListView ProjectPathsListView { get; }
+
+    void FocusOnListViewWhenArrowDown();
+    void SelectNewlyAddedItem();
+    void SelectEditedItem();
+    ProjectViewModel SelectedProject { get; }
+    void ShowNoSelectedProjectMessage();
 }
 
 public class MainWindowPresenter
 {
-    private readonly IMainWindowPresenter presenter;
+    private readonly IMainWindowView view;
     private GroupModalWindow groupModalWindow;
 
-    public MainWindowPresenter(IMainWindowPresenter presenter)
+    public MainWindowPresenter(IMainWindowView view)
     {
-        presenter.OpenDevApp += Presenter_OpenDevApp;
-        presenter.FetchDevAppsEvent += Presenter_FetchDevAppsEvent;
-        presenter.DeleteDevAppEvent += Presenter_DeleteDevAppEvent;
-        presenter.NewProjectEvent += Presenter_NewProjectEvent;
-        presenter.OpenProjectDialog += Presenter_OpenProjectDialog;
-        presenter.DeleteProjectEvent += Presenter_DeleteProjectEvent;
-        presenter.SearchProjectEvent += Presenter_SearchProjectEvent;
-        presenter.SortUpProjectEvent += Presenter_SortUpProjectEvent;
-        presenter.SelectProjectEvent += Presenter_SelectProjectEvent;
-        presenter.SortDownProjectEvent += Presenter_SortDownProjectEvent;
-        presenter.OpenAddToGroupModalWindowEvent += Presenter_OpenAddToGroupModalWindowEvent;
-        presenter.AddProjectToGroupService!.Notify += MainWindowPresenter_Notify;
-        presenter.RemoveProjectFromGroupService!.Notify += RemoveProjectFromGroup_Notify;
-        presenter.SaveProjectEvent += Presenter_SaveProjectEvent;
-        presenter.OpenProjectDevAppEvent += Presenter_OpenProjectDevAppEvent;
-        presenter.ProjectPathsListView.KeyDown += ProjectPathsListView_KeyDown;
-        presenter.OpenProjectFolderWindowEvent += Presenter_OpenFolderWindowEvent;
-        presenter.FocusOnListViewEvent += Presenter_FocusOnListViewEvent;
-        this.presenter = presenter;
+        view.OpenDevApp += Presenter_OpenDevApp;
+        view.FetchDevAppsEvent += Presenter_FetchDevAppsEvent;
+        view.DeleteDevAppEvent += Presenter_DeleteDevAppEvent;
+        view.NewProjectEvent += Presenter_NewProjectEvent;
+        view.DeleteProjectEvent += Presenter_DeleteProjectEvent;
+        view.SearchProjectEvent += Presenter_SearchProjectEvent;
+        view.SortUpProjectEvent += Presenter_SortUpProjectEvent;
+        view.SelectProjectEvent += Presenter_SelectProjectEvent;
+        view.SortDownProjectEvent += Presenter_SortDownProjectEvent;
+        view.OpenAddToGroupModalWindowEvent += Presenter_OpenAddToGroupModalWindowEvent;
+        view.AddProjectToGroupService!.Notify += MainWindowPresenter_Notify;
+        view.RemoveProjectFromGroupService!.Notify += RemoveProjectFromGroup_Notify;
+        view.SaveProjectEvent += Presenter_SaveProjectEvent;
+        view.OpenProjectDevAppEvent += Presenter_OpenProjectDevAppEvent;
 
-        if (this.presenter.MainWindowViewModel is null)
+        view.OpenProjectFolderWindowEvent += Presenter_OpenFolderWindowEvent;
+        view.FocusOnListViewEvent += Presenter_FocusOnListViewEvent;
+        this.view = view;
+
+        if (this.view.MainWindowViewModel is null)
         {
-            this.presenter.MainWindowViewModel = new();
+            this.view.MainWindowViewModel = new();
         }
         else
         {
@@ -89,19 +92,14 @@ public class MainWindowPresenter
 
     private void Presenter_FocusOnListViewEvent(object? sender, EventArgs e)
     {
-        FocusOnListViewWhenArrowDown();
+        view.FocusOnListViewWhenArrowDown();
     }
 
     private void Presenter_OpenFolderWindowEvent(object? sender, EventArgs e)
     {
-        this.presenter.OpenProjectFolderWindowService!.Handle(
-            new() { Path = this.presenter.MainWindowViewModel!.SelectedProjectPath!.Path }
+        this.view.OpenProjectFolderWindowService!.Handle(
+            new() { Path = this.view.MainWindowViewModel!.SelectedProjectPath!.Path }
         );
-    }
-
-    private void ProjectPathsListView_KeyDown(object sender, KeyEventArgs e)
-    {
-        OpenProjectDevApp();
     }
 
     private void Presenter_OpenProjectDevAppEvent(object? sender, EventArgs e)
@@ -111,48 +109,40 @@ public class MainWindowPresenter
 
     private async void Presenter_SaveProjectEvent(object? sender, EventArgs e)
     {
-        if (this.presenter.MainWindowViewModel!.SelectedProjectPath?.Id == 0)
+        if (this.view.MainWindowViewModel!.SelectedProjectPath?.Id == 0)
         {
-            var addResult = await this.presenter.AddProjectService!.AddAsync(
+            var addResult = await this.view.AddProjectService!.AddAsync(
                 new(
-                    this.presenter.MainWindowViewModel!.SelectedProjectPath!.Name,
-                    this.presenter.MainWindowViewModel!.SelectedProjectPath!.Path,
-                    this.presenter.MainWindowViewModel!.SelectedIdePath!.Id,
-                    this.presenter.MainWindowViewModel!.SelectedProjectPath!.Filename
+                    this.view.MainWindowViewModel!.SelectedProjectPath!.Name,
+                    this.view.MainWindowViewModel!.SelectedProjectPath!.Path,
+                    this.view.MainWindowViewModel!.SelectedIdePath!.Id,
+                    this.view.MainWindowViewModel!.SelectedProjectPath!.Filename
                 )
             );
 
             if (addResult)
             {
                 await Search();
-                SelectNewlyAddedItem();
+                view.SelectNewlyAddedItem();
             }
             return;
         }
 
-        var editResult = await this.presenter.EditProjectService!.Edit(
+        var editResult = await this.view.EditProjectService!.Edit(
             new(
-                this.presenter.MainWindowViewModel!.SelectedProjectPath!.Id,
-                this.presenter.MainWindowViewModel!.SelectedProjectPath!.Name,
-                this.presenter.MainWindowViewModel!.SelectedProjectPath!.Path,
-                this.presenter.MainWindowViewModel!.SelectedIdePath!.Id,
-                this.presenter.MainWindowViewModel!.SelectedProjectPath!.Filename
+                this.view.MainWindowViewModel!.SelectedProjectPath!.Id,
+                this.view.MainWindowViewModel!.SelectedProjectPath!.Name,
+                this.view.MainWindowViewModel!.SelectedProjectPath!.Path,
+                this.view.MainWindowViewModel!.SelectedIdePath!.Id,
+                this.view.MainWindowViewModel!.SelectedProjectPath!.Filename
             )
         );
 
         if (editResult)
         {
             await Search();
-            SelectEditedItem();
+            view.SelectEditedItem();
         }
-    }
-
-    private void SelectNewlyAddedItem()
-    {
-        presenter.ProjectPathsListView.SelectedItem = presenter.ProjectPathsListView.Items[^1];
-        presenter.ProjectPathsListView.ScrollIntoView(
-            this.presenter.ProjectPathsListView.SelectedItem
-        );
     }
 
     private async void RemoveProjectFromGroup_Notify(
@@ -161,53 +151,39 @@ public class MainWindowPresenter
     )
     {
         await Search();
-        SelectEditedItem();
+        view.SelectEditedItem();
         groupModalWindow!.Close();
     }
 
     private async void MainWindowPresenter_Notify(object? sender, EventArgs e)
     {
         await this.Search();
-        SelectEditedItem();
+        view.SelectEditedItem();
         groupModalWindow!.Close();
-    }
-
-    private void SelectEditedItem()
-    {
-        presenter.ProjectPathsListView.SelectedItem = presenter
-            .ProjectPathsListView.Items.SourceCollection.Cast<ProjectViewModel>()
-            .FirstOrDefault(projectPathsViewModel =>
-                projectPathsViewModel.Id
-                == this.presenter.MainWindowViewModel?.SelectedProjectPath?.Id
-            );
-
-        presenter.ProjectPathsListView.ScrollIntoView(
-            this.presenter.ProjectPathsListView.SelectedItem
-        );
     }
 
     private void Presenter_OpenAddToGroupModalWindowEvent(object? sender, EventArgs e)
     {
         this.groupModalWindow = new GroupModalWindow(
-            presenter.GetAllGroupService!,
-            presenter.AddProjectToGroupService!,
-            presenter.RemoveProjectFromGroupService!
+            view.GetAllGroupService!,
+            view.AddProjectToGroupService!,
+            view.RemoveProjectFromGroupService!
         );
 
-        this.groupModalWindow!.ProjectPath = this.presenter
-            .MainWindowViewModel!
-            .SelectedProjectPath;
+        this.groupModalWindow!.ProjectPath = this.view.MainWindowViewModel!.SelectedProjectPath;
 
         groupModalWindow?.ShowDialog();
     }
 
     private async void Presenter_SortDownProjectEvent(object? sender, EventArgs e)
     {
-        var result = await this.presenter.SortDownProjectService!.Handle(
-            new() { SortId = this.presenter.MainWindowViewModel!.SelectedProjectPath!.SortId }
+        var result = await this.view.SortDownProjectService!.Handle(
+            new() { SortId = this.view.MainWindowViewModel!.SelectedProjectPath!.SortId }
         );
+
         if (!result)
         {
+            view.ShowNoSelectedProjectMessage();
             return;
         }
 
@@ -216,32 +192,28 @@ public class MainWindowPresenter
 
     private void Presenter_SelectProjectEvent(object? sender, EventArgs e)
     {
-        if (presenter.ProjectPathsListView.SelectedIndex == -1)
-        {
-            return;
-        }
-        var project = (ProjectViewModel)presenter.ProjectPathsListView.SelectedItem;
-        var currentGitBranch = presenter.GetCurrentGitBranchService!.Handle(
+        var project = view.SelectedProject;
+
+        var currentGitBranch = view.GetCurrentGitBranchService!.Handle(
             new() { DirectoryPath = project.Path }
         );
         project.CurrentGitBranch = currentGitBranch;
-        this.presenter.MainWindowViewModel!.SelectedProjectPath = project.Copy();
+        this.view.MainWindowViewModel!.SelectedProjectPath = project.Copy();
 
         // Selected Dev App : Must be same reference, data must be on view model list to set the value
-        this.presenter.MainWindowViewModel!.SelectedIdePath =
-            this.presenter.MainWindowViewModel!.IdePathsModels!.First(x =>
-                x.Id == project.IDEPathId
-            );
+        this.view.MainWindowViewModel!.SelectedIdePath =
+            this.view.MainWindowViewModel!.IdePathsModels!.First(x => x.Id == project.IDEPathId);
     }
 
     private async void Presenter_SortUpProjectEvent(object? sender, EventArgs e)
     {
-        var result = await this.presenter.SortUpProjectService!.Handle(
-            new() { SortId = this.presenter.MainWindowViewModel!.SelectedProjectPath!.SortId }
+        var result = await this.view.SortUpProjectService!.Handle(
+            new() { SortId = this.view.MainWindowViewModel!.SelectedProjectPath!.SortId }
         );
 
         if (!result)
         {
+            view.ShowNoSelectedProjectMessage();
             return;
         }
 
@@ -255,75 +227,58 @@ public class MainWindowPresenter
 
     private async void Presenter_DeleteProjectEvent(object? sender, EventArgs e)
     {
-        if (this.presenter.MainWindowViewModel!.SelectedProjectPath!.Id == 0)
+        if (this.view.MainWindowViewModel!.SelectedProjectPath!.Id == 0)
         {
             return;
         }
 
-        var result = await this.presenter.DeleteProjectService!.Delete(
-            this.presenter.MainWindowViewModel!.SelectedProjectPath!.Id
+        var result = await this.view.DeleteProjectService!.Delete(
+            this.view.MainWindowViewModel!.SelectedProjectPath!.Id
         );
 
         if (result)
         {
             await Search();
-            this.presenter.MainWindowViewModel!.SelectedProjectPath = new();
-            this.presenter.MainWindowViewModel!.SelectedIdePath = new();
+            this.view.MainWindowViewModel!.SelectedProjectPath = new();
+            this.view.MainWindowViewModel!.SelectedIdePath = new();
         }
     }
 
     private async Task Search()
     {
-        var searchViewModel = await this.presenter.SearchProjectService!.Handle(
-            new() { Search = this.presenter.MainWindowViewModel!.Search }
+        var searchViewModel = await this.view.SearchProjectService!.Handle(
+            new() { Search = this.view.MainWindowViewModel!.Search }
         );
-        this.presenter.MainWindowViewModel.EnableAddNewProject =
-            searchViewModel.EnableAddNewProject;
-        this.presenter.MainWindowViewModel!.ProjectPathModels = [.. searchViewModel.Projects];
-    }
-
-    private void Presenter_OpenProjectDialog(object? sender, EventArgs e)
-    {
-        var openFolderDialog = new OpenFolderDialog();
-        var result = openFolderDialog.ShowDialog() ?? false;
-
-        if (result)
-        {
-            string filePath = openFolderDialog.FolderName;
-            string name = openFolderDialog.SafeFolderName;
-            var project = this.presenter.MainWindowViewModel!.SelectedProjectPath!.Copy();
-            project.Name = name;
-            project.Path = filePath;
-            this.presenter.MainWindowViewModel!.SelectedProjectPath = project;
-        }
+        this.view.MainWindowViewModel.EnableAddNewProject = searchViewModel.EnableAddNewProject;
+        this.view.MainWindowViewModel!.ProjectPathModels = [.. searchViewModel.Projects];
     }
 
     private void Presenter_NewProjectEvent(object? sender, EventArgs e)
     {
-        this.presenter.MainWindowViewModel!.SelectedProjectPath = new();
-        this.presenter.MainWindowViewModel!.SelectedIdePath = new();
+        this.view.MainWindowViewModel!.SelectedProjectPath = new();
+        this.view.MainWindowViewModel!.SelectedIdePath = new();
     }
 
     private async void Presenter_DeleteDevAppEvent(object? sender, EventArgs e)
     {
-        if (this.presenter.MainWindowViewModel!.SelectedIdePath!.Id == 0)
+        if (this.view.MainWindowViewModel!.SelectedIdePath!.Id == 0)
             return;
 
-        var result = await this.presenter.DeleteDevAppService!.Delete(
-            new() { Id = this.presenter.MainWindowViewModel!.SelectedIdePath!.Id }
+        var result = await this.view.DeleteDevAppService!.Delete(
+            new() { Id = this.view.MainWindowViewModel!.SelectedIdePath!.Id }
         );
 
         if (result)
         {
-            var getAllDevAppVm = await presenter.GetAllDevAppService!.Handle();
-            presenter.MainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
+            var getAllDevAppVm = await view.GetAllDevAppService!.Handle();
+            view.MainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
         }
     }
 
     private async void Presenter_FetchDevAppsEvent(object? sender, EventArgs e)
     {
-        var getAllDevAppVm = await presenter.GetAllDevAppService!.Handle();
-        presenter.MainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
+        var getAllDevAppVm = await view.GetAllDevAppService!.Handle();
+        view.MainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
     }
 
     private async void Presenter_OpenDevApp(object? sender, EventArgs e)
@@ -336,29 +291,29 @@ public class MainWindowPresenter
             return;
         }
 
-        presenter.DevAppFilePath = openFolderDialog.FileName;
-        var resultSave = await this.presenter.AddDevAppService!.Add(
-            new() { Path = this.presenter.DevAppFilePath }
+        view.DevAppFilePath = openFolderDialog.FileName;
+        var resultSave = await this.view.AddDevAppService!.Add(
+            new() { Path = this.view.DevAppFilePath }
         );
         if (resultSave)
         {
-            var getAllDevAppVm = await presenter.GetAllDevAppService!.Handle();
-            presenter.MainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
+            var getAllDevAppVm = await view.GetAllDevAppService!.Handle();
+            view.MainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
 
-            presenter.MainWindowViewModel!.SelectedIdePath = new();
+            view.MainWindowViewModel!.SelectedIdePath = new();
         }
     }
 
     private void OpenProjectDevApp()
     {
-        var project = this.presenter.MainWindowViewModel!.SelectedProjectPath;
+        var project = this.view.MainWindowViewModel!.SelectedProjectPath;
 
         if (project is null)
         {
             return;
         }
 
-        presenter.OpenProjectDevAppService!.Handle(
+        view.OpenProjectDevAppService!.Handle(
             new()
             {
                 DevAppPath = project.DevAppPath,
@@ -368,20 +323,10 @@ public class MainWindowPresenter
             }
         );
     }
+}
 
-    private void FocusOnListViewWhenArrowDown()
-    {
-        if (presenter.ProjectPathsListView.Items.Count == 0)
-        {
-            return;
-        }
-
-        presenter.ProjectPathsListView.Focus();
-        var item = presenter.ProjectPathsListView.Items[0];
-        presenter.ProjectPathsListView.SelectedItem = item;
-        ListViewItem? firstListViewItem =
-            presenter.ProjectPathsListView.ItemContainerGenerator.ContainerFromIndex(0)
-            as ListViewItem;
-        firstListViewItem?.Focus();
-    }
+public class ProjectDialogModel
+{
+    public string FolderName { get; set; } = "";
+    public string SafeFolderName { get; set; } = "";
 }

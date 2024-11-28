@@ -15,11 +15,11 @@ public interface IAddProjectToGroupService
     Task Handle(AddProjectToGroupCommand command);
 }
 
-internal class AddProjectToGroupService
-(
+internal class AddProjectToGroupService(
     IGroupRepository groupRepository,
     IProjectRepository projectRepository,
-    INotificationMessageService notificationMessageService) : IAddProjectToGroupService
+    INotificationMessageService notificationMessageService
+) : IAddProjectToGroupService
 {
     private readonly IProjectRepository projectRepository = projectRepository;
 
@@ -31,8 +31,7 @@ internal class AddProjectToGroupService
         var group = await groupRepository.GetOne(command.GroupId);
         if (project == null)
         {
-            notificationMessageService.Create
-            (
+            notificationMessageService.Create(
                 "Project not found when adding to a group!",
                 "Add Project to Group",
                 NotificationType.Error
@@ -42,8 +41,7 @@ internal class AddProjectToGroupService
 
         if (group == null)
         {
-            notificationMessageService.Create
-            (
+            notificationMessageService.Create(
                 "Project not found when adding to a group!",
                 "Add Project to Group",
                 NotificationType.Error
@@ -57,8 +55,7 @@ internal class AddProjectToGroupService
 
         if (result)
         {
-            notificationMessageService.Create
-            (
+            notificationMessageService.Create(
                 "Project has been added to group!",
                 "Add Project to Group",
                 NotificationType.Success
@@ -66,7 +63,5 @@ internal class AddProjectToGroupService
 
             this.Notify!.Invoke(this, EventArgs.Empty);
         }
-
     }
 }
-

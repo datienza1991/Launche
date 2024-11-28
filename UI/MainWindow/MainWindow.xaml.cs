@@ -7,6 +7,7 @@ using ApplicationCore.Features.Groups;
 using ApplicationCore.Features.Projects;
 using Infrastructure.Models;
 using Infrastructure.ViewModels;
+using Microsoft.Win32;
 using UI.MainWindowx.Presenter;
 using UI.Windows.Group;
 
@@ -15,7 +16,7 @@ namespace UI;
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
-public partial class MainWindow : Window, IMainWindowPresenter
+public partial class MainWindow : Window, IMainWindowView
 {
     private readonly IAddDevAppService addDevAppService;
     private readonly IEditDevAppService? editDevAppService;
@@ -37,7 +38,6 @@ public partial class MainWindow : Window, IMainWindowPresenter
     private readonly IAddProjectToGroupService? addProjectToGroupService;
     private readonly ISortUpProjectService? sortUpProjectService;
     private readonly ISortDownProjectService? sortDownProjectService;
-    private readonly MainWindowViewModel? mainWindowViewModel;
     private GroupModalWindow? groupModalWindow;
     private readonly List<Group> groups = [];
 
@@ -97,6 +97,8 @@ public partial class MainWindow : Window, IMainWindowPresenter
     public IOpenProjectFolderWindowService? OpenProjectFolderWindowService =>
         openProjectFolderWindowService;
 
+    public ProjectViewModel SelectedProject => (ProjectViewModel)lvProjectPaths.SelectedItem;
+
     public MainWindow() => InitializeComponent();
 
     public MainWindow(
@@ -137,10 +139,41 @@ public partial class MainWindow : Window, IMainWindowPresenter
         #endregion
         #endregion
 
-        this.mainWindowViewModel = new MainWindowViewModel();
         InitializeComponent();
         var presenter = new MainWindowPresenter(this);
         DataContext = this.MainWindowViewModel;
+    }
+
+    public void FocusOnListViewWhenArrowDown()
+    {
+        if (lvProjectPaths.Items.Count == 0)
+        {
+            return;
+        }
+
+        lvProjectPaths.Focus();
+        var item = lvProjectPaths.Items[0];
+        lvProjectPaths.SelectedItem = item;
+        ListViewItem? firstListViewItem =
+            lvProjectPaths.ItemContainerGenerator.ContainerFromIndex(0) as ListViewItem;
+        firstListViewItem?.Focus();
+    }
+
+    public void SelectNewlyAddedItem()
+    {
+        lvProjectPaths.SelectedItem = lvProjectPaths.Items[^1];
+        lvProjectPaths.ScrollIntoView(this.lvProjectPaths.SelectedItem);
+    }
+
+    public void SelectEditedItem()
+    {
+        lvProjectPaths.SelectedItem = lvProjectPaths
+            .Items.SourceCollection.Cast<ProjectViewModel>()
+            .FirstOrDefault(projectPathsViewModel =>
+                projectPathsViewModel.Id == this.MainWindowViewModel?.SelectedProjectPath?.Id
+            );
+
+        lvProjectPaths.ScrollIntoView(this.lvProjectPaths.SelectedItem);
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -159,12 +192,27 @@ public partial class MainWindow : Window, IMainWindowPresenter
         System.Windows.Controls.SelectionChangedEventArgs e
     )
     {
+        if (lvProjectPaths.SelectedIndex == -1)
+        {
+            return;
+        }
+
         this.SelectProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
     {
-        this.OpenProjectDialog.Invoke(this, EventArgs.Empty);
+        var openFolderDialog = new OpenFolderDialog();
+        var result = openFolderDialog.ShowDialog() ?? false;
+
+        if (!result)
+        {
+            return;
+        }
+
+        string filePath = openFolderDialog.FolderName;
+        string name = openFolderDialog.SafeFolderName;
+        this.MainWindowViewModel!.SelectedProjectPath = new() { Name = name, Path = filePath };
     }
 
     private void btnSaveProjectPath_Click(object sender, RoutedEventArgs e)
@@ -238,5 +286,10 @@ public partial class MainWindow : Window, IMainWindowPresenter
     private void mnuAddToGroup_Click(object sender, RoutedEventArgs e)
     {
         OpenAddToGroupModalWindowEvent.Invoke(this, EventArgs.Empty);
+    }
+
+    public void ShowNoSelectedProjectMessage()
+    {
+        MessageBox.Show("No Selected Project", "Select Project", MessageBoxButton.OK);
     }
 }
