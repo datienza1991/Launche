@@ -1,18 +1,16 @@
-﻿using System.Windows;
-using System.Windows.Input;
+using System.Windows;
 using ApplicationCore.Features.DevApps;
 using ApplicationCore.Features.Git;
 using ApplicationCore.Features.Groups;
 using ApplicationCore.Features.Projects;
 using Infrastructure.ViewModels;
-using Microsoft.Win32;
 using UI.Windows.Group;
 
-namespace UI.MainWindowx.Presenter;
+namespace UI.MainWindows;
 
 public interface IMainWindowView
 {
-    event EventHandler OpenDevApp;
+    event EventHandler AddNewDevAppEvent;
     event EventHandler FetchDevAppsEvent;
     event EventHandler DeleteDevAppEvent;
     event EventHandler NewProjectEvent;
@@ -57,11 +55,11 @@ public interface IMainWindowView
 public class MainWindowPresenter
 {
     private readonly IMainWindowView view;
-    private GroupModalWindow groupModalWindow;
+    private GroupModalWindow? groupModalWindow;
 
     public MainWindowPresenter(IMainWindowView view)
     {
-        view.OpenDevApp += Presenter_OpenDevApp;
+        view.AddNewDevAppEvent += Presenter_AddNewDevAppEvent;
         view.FetchDevAppsEvent += Presenter_FetchDevAppsEvent;
         view.DeleteDevAppEvent += Presenter_DeleteDevAppEvent;
         view.NewProjectEvent += Presenter_NewProjectEvent;
@@ -111,7 +109,7 @@ public class MainWindowPresenter
     {
         if (this.view.MainWindowViewModel!.SelectedProjectPath?.Id == 0)
         {
-            var addResult = await this.view.AddProjectService!.AddAsync(
+            var addResult = await this.view.AddProjectService.AddAsync(
                 new(
                     this.view.MainWindowViewModel!.SelectedProjectPath!.Name,
                     this.view.MainWindowViewModel!.SelectedProjectPath!.Path,
@@ -165,12 +163,12 @@ public class MainWindowPresenter
     private void Presenter_OpenAddToGroupModalWindowEvent(object? sender, EventArgs e)
     {
         this.groupModalWindow = new GroupModalWindow(
-            view.GetAllGroupService!,
-            view.AddProjectToGroupService!,
-            view.RemoveProjectFromGroupService!
+            view.GetAllGroupService,
+            view.AddProjectToGroupService,
+            view.RemoveProjectFromGroupService
         );
 
-        this.groupModalWindow!.ProjectPath = this.view.MainWindowViewModel!.SelectedProjectPath;
+        this.groupModalWindow!.ProjectPath = this.view.MainWindowViewModel.SelectedProjectPath;
 
         groupModalWindow?.ShowDialog();
     }
@@ -278,27 +276,19 @@ public class MainWindowPresenter
 
     private async void Presenter_FetchDevAppsEvent(object? sender, EventArgs e)
     {
-        var getAllDevAppVm = await view.GetAllDevAppService!.Handle();
+        var getAllDevAppVm = await view.GetAllDevAppService.Handle();
         view.MainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
     }
 
-    private async void Presenter_OpenDevApp(object? sender, EventArgs e)
+    private async void Presenter_AddNewDevAppEvent(object? sender, EventArgs e)
     {
-        var openFolderDialog = new OpenFileDialog { Filter = "Executable Files | *.exe" };
-        var result = openFolderDialog.ShowDialog() ?? false;
-
-        if (!result)
-        {
-            return;
-        }
-
-        view.DevAppFilePath = openFolderDialog.FileName;
         var resultSave = await this.view.AddDevAppService!.Add(
             new() { Path = this.view.DevAppFilePath }
         );
+
         if (resultSave)
         {
-            var getAllDevAppVm = await view.GetAllDevAppService!.Handle();
+            var getAllDevAppVm = await view.GetAllDevAppService.Handle();
             view.MainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
 
             view.MainWindowViewModel!.SelectedIdePath = new();
@@ -311,6 +301,7 @@ public class MainWindowPresenter
 
         if (project is null)
         {
+            view.ShowNoSelectedProjectMessage();
             return;
         }
 
@@ -324,10 +315,4 @@ public class MainWindowPresenter
             }
         );
     }
-}
-
-public class ProjectDialogModel
-{
-    public string FolderName { get; set; } = "";
-    public string SafeFolderName { get; set; } = "";
 }

@@ -1,7 +1,8 @@
-﻿using ApplicationCore;
+﻿using System.Windows;
+using ApplicationCore;
 using ApplicationCore.Common;
 using Microsoft.Extensions.DependencyInjection;
-using System.Windows;
+using UI.MainWindows;
 
 namespace UI
 {
@@ -10,7 +11,7 @@ namespace UI
     /// </summary>
     public partial class App : Application
     {
-        protected async override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
             var serviceProvider = GetCurrentServiceProvider();
@@ -53,10 +54,9 @@ namespace UI
             var services = new ServiceCollection();
 
             return services
-                 .AddApplicationCoreServiceCollection()
-                 .AddSingleton<MainWindow>()
-                 .BuildServiceProvider();
+                .AddApplicationCoreServiceCollection()
+                .AddSingleton<MainWindow>()
+                .BuildServiceProvider();
         }
     }
-
 }

@@ -2,10 +2,10 @@
 using ApplicationCore.Features.Git;
 using ApplicationCore.Features.Projects;
 using Moq;
-using UI.MainWindowx.Presenter;
+using UI.MainWindows;
 using Xunit;
 
-namespace Tests.UI;
+namespace Tests.UITests;
 
 public class MainWindowPresenterTests
 {
@@ -374,6 +374,88 @@ public class MainWindowPresenterTests
         // Assert
         mockPresenter.Verify(x => x.ShowNoSelectedProjectMessage(), Times.Never());
         Assert.Empty(mockPresenter.Object.MainWindowViewModel.ProjectPathModels ?? [new()]);
+        Assert.Equal(0, mockPresenter.Object.MainWindowViewModel.SelectedProjectPath?.Id);
+        Assert.Equal(0, mockPresenter.Object.MainWindowViewModel.SelectedIdePath?.Id);
+    }
+
+    [Fact]
+    public void NewProjectEvent_Success()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new()
+            {
+                SelectedProjectPath = new() { Id = 1 },
+                SelectedIdePath = new() { Id = 1 },
+            }
+        );
+
+        // Act
+        mockPresenter.Raise(v => v.NewProjectEvent += null, EventArgs.Empty);
+
+        // Assert
+
+        Assert.Equal(0, mockPresenter.Object.MainWindowViewModel.SelectedProjectPath?.Id);
+        Assert.Equal(0, mockPresenter.Object.MainWindowViewModel.SelectedIdePath?.Id);
+    }
+
+    [Fact]
+    public void OpenProjectDevAppEvent_NoSelectedProject_ShowNoSelectedProjectMessage()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(x => x.MainWindowViewModel, new() { });
+
+        // Act
+        mockPresenter.Raise(v => v.OpenProjectDevAppEvent += null, EventArgs.Empty);
+
+        // Assert
+        mockPresenter.Verify(x => x.ShowNoSelectedProjectMessage(), Times.Once());
+    }
+
+    [Fact]
+    public void FetchDevAppsEvent_NoSelectedProject_ShowNoSelectedProjectMessage()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(x => x.MainWindowViewModel, new() { });
+        mockPresenter
+            .Setup(x => x.GetAllDevAppService.Handle())
+            .ReturnsAsync(new GetAllDevAppViewModel() { DevApps = [new()] });
+
+        // Act
+        mockPresenter.Raise(v => v.FetchDevAppsEvent += null, EventArgs.Empty);
+
+        // Assert
+        Assert.NotEmpty(mockPresenter.Object.MainWindowViewModel.IdePathsModels ?? []);
+    }
+
+    [Fact]
+    public void AddNewDevAppEvent_Success()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new() { SelectedIdePath = new() { Id = 1 } }
+        );
+
+        mockPresenter
+            .Setup(x => x.AddDevAppService.Add(It.IsAny<AddDevAppCommand>()))
+            .ReturnsAsync(true);
+
+        mockPresenter
+            .Setup(x => x.GetAllDevAppService.Handle())
+            .ReturnsAsync(new GetAllDevAppViewModel() { DevApps = [new()] });
+
+        // Act
+        mockPresenter.Raise(v => v.AddNewDevAppEvent += null, EventArgs.Empty);
+
+        // Assert
+        Assert.NotEmpty(mockPresenter.Object.MainWindowViewModel.IdePathsModels);
+        Assert.Equal(0, mockPresenter.Object.MainWindowViewModel.SelectedIdePath.Id);
     }
 
     private void SetupSut()
@@ -383,6 +465,6 @@ public class MainWindowPresenterTests
             .Setup(x => x.RemoveProjectFromGroupService)
             .Returns(mockRemoveProjectFromGroupService.Object);
 
-        _ = new MainWindowPresenter(mockPresenter.Object);
+        new MainWindowPresenter(mockPresenter.Object);
     }
 }

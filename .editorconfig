@@ -1,0 +1,21 @@
+root = true
+max_line_length = 120
+
+[*.cs]
+# CS8602: Dereference of a possibly null reference.
+dotnet_diagnostic.CS8602.severity = none
+
+# IDE0008: Use explicit type
+dotnet_diagnostic.IDE0008.severity = none
+
+# IDE0005: Using directive is unnecessary.
+dotnet_diagnostic.IDE0005.severity = error
+
+# CA1806: Do not ignore method results
+dotnet_diagnostic.CA1806.severity = none
+
+# CS8604: Possible null reference argument.
+dotnet_diagnostic.CS8604.severity = none
+
+
+

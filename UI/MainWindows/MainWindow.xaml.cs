@@ -8,10 +8,9 @@ using ApplicationCore.Features.Projects;
 using Infrastructure.Models;
 using Infrastructure.ViewModels;
 using Microsoft.Win32;
-using UI.MainWindowx.Presenter;
 using UI.Windows.Group;
 
-namespace UI;
+namespace UI.MainWindows;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
@@ -43,7 +42,7 @@ public partial class MainWindow : Window, IMainWindowView
 
     public string DevAppFilePath { get; set; } = "";
 
-    public event EventHandler? OpenDevApp;
+    public event EventHandler? AddNewDevAppEvent;
     public event EventHandler? FetchDevAppsEvent;
     public event EventHandler DeleteDevAppEvent;
     public event EventHandler NewProjectEvent;
@@ -61,19 +60,19 @@ public partial class MainWindow : Window, IMainWindowView
 
     public IAddDevAppService? AddDevAppService
     {
-        get { return this.addDevAppService; }
+        get { return addDevAppService; }
     }
     public MainWindowViewModel MainWindowViewModel { get; set; }
 
-    public IGetAllDevAppService? GetAllDevAppService => this.getAllDevAppService;
+    public IGetAllDevAppService? GetAllDevAppService => getAllDevAppService;
 
-    public IDeleteDevAppService? DeleteDevAppService => this.deleteDevAppService;
+    public IDeleteDevAppService? DeleteDevAppService => deleteDevAppService;
 
-    public IDeleteProjectService? DeleteProjectService => this.deleteProjectService;
+    public IDeleteProjectService? DeleteProjectService => deleteProjectService;
 
-    public ISearchProjectService? SearchProjectService => this.searchProjectService;
+    public ISearchProjectService? SearchProjectService => searchProjectService;
 
-    public ISortUpProjectService? SortUpProjectService => this.sortUpProjectService;
+    public ISortUpProjectService? SortUpProjectService => sortUpProjectService;
 
     public ListView ProjectPathsListView => this.lvProjectPaths;
 
@@ -109,39 +108,39 @@ public partial class MainWindow : Window, IMainWindowView
     )
     {
         #region Dev App Services
-        this.addDevAppService = devAppFeaturesCreator.CreateAddDevAppService();
-        this.editDevAppService = devAppFeaturesCreator.CreateEditDevAppService();
-        this.deleteDevAppService = devAppFeaturesCreator.CreateDeleteDevAppService();
-        this.getAllDevAppService = devAppFeaturesCreator.CreateGetAllDevAppService();
-        this.getOneDevAppService = devAppFeaturesCreator.CreateGetOneDevAppService();
+        addDevAppService = devAppFeaturesCreator.CreateAddDevAppService();
+        editDevAppService = devAppFeaturesCreator.CreateEditDevAppService();
+        deleteDevAppService = devAppFeaturesCreator.CreateDeleteDevAppService();
+        getAllDevAppService = devAppFeaturesCreator.CreateGetAllDevAppService();
+        getOneDevAppService = devAppFeaturesCreator.CreateGetOneDevAppService();
         #endregion
         #region Group Services
-        this.getAllGroupService = groupFeaturesCreator.CreateGetAllGroupService();
+        getAllGroupService = groupFeaturesCreator.CreateGetAllGroupService();
         #endregion
         #region Project Services
         #region Commands
-        this.addProjectService = projectFeaturesCreator.AddProjectServiceInstance;
-        this.editProjectService = projectFeaturesCreator.CreateEditAddProjectService();
-        this.deleteProjectService = projectFeaturesCreator.CreateDeleteAddProjectService();
-        this.openProjectFolderWindowService =
+        addProjectService = projectFeaturesCreator.AddProjectServiceInstance;
+        editProjectService = projectFeaturesCreator.CreateEditAddProjectService();
+        deleteProjectService = projectFeaturesCreator.CreateDeleteAddProjectService();
+        openProjectFolderWindowService =
             projectFeaturesCreator.CreateOpenProjectFolderWindowAppService();
-        this.openProjectDevAppService = projectFeaturesCreator.CreateOpenProjectDevAppService();
-        this.removeProjectFromGroupService =
+        openProjectDevAppService = projectFeaturesCreator.CreateOpenProjectDevAppService();
+        removeProjectFromGroupService =
             projectFeaturesCreator.CreateRemoveProjectFromGroupService();
-        this.addProjectToGroupService = projectFeaturesCreator.CreateAddProjectToGroupService();
-        this.sortUpProjectService = projectFeaturesCreator.CreateSortUpProjectService();
-        this.sortDownProjectService = projectFeaturesCreator.CreateSortDownProjectService();
+        addProjectToGroupService = projectFeaturesCreator.CreateAddProjectToGroupService();
+        sortUpProjectService = projectFeaturesCreator.CreateSortUpProjectService();
+        sortDownProjectService = projectFeaturesCreator.CreateSortDownProjectService();
         #endregion
         #region Queries
-        this.getAllProjectService = projectFeaturesCreator.CreateGetAllProjectService();
-        this.searchProjectService = projectFeaturesCreator.CreateSearchProjectService();
-        this.getCurrentGitBranchService = gitFeaturesCreator.CreateGetCurrentGitBranchService();
+        getAllProjectService = projectFeaturesCreator.CreateGetAllProjectService();
+        searchProjectService = projectFeaturesCreator.CreateSearchProjectService();
+        getCurrentGitBranchService = gitFeaturesCreator.CreateGetCurrentGitBranchService();
         #endregion
         #endregion
 
         InitializeComponent();
         var presenter = new MainWindowPresenter(this);
-        DataContext = this.MainWindowViewModel;
+        DataContext = MainWindowViewModel;
     }
 
     public void FocusOnListViewWhenArrowDown()
@@ -170,34 +169,40 @@ public partial class MainWindow : Window, IMainWindowView
         lvProjectPaths.SelectedItem = lvProjectPaths
             .Items.SourceCollection.Cast<ProjectViewModel>()
             .FirstOrDefault(projectPathsViewModel =>
-                projectPathsViewModel.Id == this.MainWindowViewModel?.SelectedProjectPath?.Id
+                projectPathsViewModel.Id == MainWindowViewModel?.SelectedProjectPath?.Id
             );
 
         lvProjectPaths.ScrollIntoView(this.lvProjectPaths.SelectedItem);
     }
 
-    private async void Window_Loaded(object sender, RoutedEventArgs e)
+    private void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
-        this.FetchDevAppsEvent!.Invoke(this, EventArgs.Empty);
+        SearchProjectEvent.Invoke(this, EventArgs.Empty);
+        FetchDevAppsEvent!.Invoke(this, EventArgs.Empty);
     }
 
     private void VsCodePathOpenDialogButton_Click(object sender, RoutedEventArgs e)
     {
-        this.OpenDevApp!.Invoke(this, EventArgs.Empty);
+        var openFolderDialog = new OpenFileDialog { Filter = "Executable Files | *.exe" };
+        var result = openFolderDialog.ShowDialog() ?? false;
+
+        if (!result)
+        {
+            return;
+        }
+
+        DevAppFilePath = openFolderDialog.FileName;
+        AddNewDevAppEvent!.Invoke(this, EventArgs.Empty);
     }
 
-    private void ProjectPathsList_SelectionChanged(
-        object sender,
-        System.Windows.Controls.SelectionChangedEventArgs e
-    )
+    private void ProjectPathsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (lvProjectPaths.SelectedIndex == -1)
         {
             return;
         }
 
-        this.SelectProjectEvent.Invoke(this, EventArgs.Empty);
+        SelectProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void btnOpenDialogProjectPath_Click(object sender, RoutedEventArgs e)
@@ -212,7 +217,7 @@ public partial class MainWindow : Window, IMainWindowView
 
         string filePath = openFolderDialog.FolderName;
         string name = openFolderDialog.SafeFolderName;
-        this.MainWindowViewModel!.SelectedProjectPath = new() { Name = name, Path = filePath };
+        MainWindowViewModel!.SelectedProjectPath = new() { Name = name, Path = filePath };
     }
 
     private void btnSaveProjectPath_Click(object sender, RoutedEventArgs e)
@@ -227,40 +232,37 @@ public partial class MainWindow : Window, IMainWindowView
 
     private void btnDeleteIdePath_Click(object sender, RoutedEventArgs e)
     {
-        this.DeleteDevAppEvent.Invoke(this, EventArgs.Empty);
+        DeleteDevAppEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void btnNewProjectPath_Click(object sender, RoutedEventArgs e)
     {
-        this.NewProjectEvent.Invoke(this, EventArgs.Empty);
+        NewProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void btnDeleteProjectPath_Click(object sender, RoutedEventArgs e)
     {
-        this.DeleteProjectEvent.Invoke(this, EventArgs.Empty);
+        DeleteProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void mnuMoveUp_Click(object sender, RoutedEventArgs e)
     {
-        this.SortUpProjectEvent.Invoke(this, EventArgs.Empty);
+        SortUpProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void mnuMoveDown_Click(object sender, RoutedEventArgs e)
     {
-        this.SortDownProjectEvent.Invoke(this, EventArgs.Empty);
+        SortDownProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
-    private void TxtSearch_TextChanged(
-        object sender,
-        System.Windows.Controls.TextChangedEventArgs e
-    )
+    private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
     {
-        this.SearchProjectEvent.Invoke(this, EventArgs.Empty);
+        SearchProjectEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void MnuOpenFolderWindow_Click(object sender, RoutedEventArgs e)
     {
-        this.OpenProjectFolderWindowEvent.Invoke(this, EventArgs.Empty);
+        OpenProjectFolderWindowEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void txtSearch_KeyUp(object sender, KeyEventArgs e)
@@ -273,14 +275,14 @@ public partial class MainWindow : Window, IMainWindowView
         FocusOnListViewEvent.Invoke(this, EventArgs.Empty);
     }
 
-    private void lvProjectPaths_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private void lvProjectPaths_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter)
         {
             return;
         }
 
-        this.OpenProjectDevAppEvent.Invoke(this, EventArgs.Empty);
+        OpenProjectDevAppEvent.Invoke(this, EventArgs.Empty);
     }
 
     private void mnuAddToGroup_Click(object sender, RoutedEventArgs e)
