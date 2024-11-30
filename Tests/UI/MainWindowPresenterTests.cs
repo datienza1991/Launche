@@ -329,6 +329,53 @@ public class MainWindowPresenterTests
         Assert.Equal(1, mockPresenter.Object.MainWindowViewModel.ProjectPathModels?[0].Id);
     }
 
+    [Fact]
+    public void DeleteProjectEvent_NoSelectedProject_ShowNoSelectedProjectMessage()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new() { SelectedProjectPath = new() }
+        );
+
+        // Act
+        mockPresenter.Raise(v => v.DeleteProjectEvent += null, EventArgs.Empty);
+
+        // Assert
+        mockPresenter.Verify(x => x.ShowNoSelectedProjectMessage(), Times.Once());
+    }
+
+    [Fact]
+    public void DeleteProjectEvent_Project_Success()
+    {
+        // Arrange
+        SetupSut();
+        mockPresenter.SetupProperty(
+            x => x.MainWindowViewModel,
+            new()
+            {
+                SelectedProjectPath = new() { Id = 1 },
+                ProjectPathModels = [new()],
+            }
+        );
+
+        mockPresenter
+            .Setup(x => x.SearchProjectService!.Handle(It.IsAny<SearchProjectQuery>()))
+            .ReturnsAsync(new SearchProjectViewModel() { Projects = [] });
+
+        mockPresenter
+            .Setup(x => x.DeleteProjectService!.Delete(It.IsAny<long>()))
+            .ReturnsAsync(true);
+
+        // Act
+        mockPresenter.Raise(v => v.DeleteProjectEvent += null, EventArgs.Empty);
+
+        // Assert
+        mockPresenter.Verify(x => x.ShowNoSelectedProjectMessage(), Times.Never());
+        Assert.Empty(mockPresenter.Object.MainWindowViewModel.ProjectPathModels ?? [new()]);
+    }
+
     private void SetupSut()
     {
         mockPresenter.Setup(x => x.AddProjectToGroupService).Returns(mock.Object);

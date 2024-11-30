@@ -229,6 +229,7 @@ public class MainWindowPresenter
     {
         if (this.view.MainWindowViewModel!.SelectedProjectPath!.Id == 0)
         {
+            view.ShowNoSelectedProjectMessage();
             return;
         }
 
