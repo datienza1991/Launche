@@ -1,6 +1,6 @@
-﻿using ApplicationCore.Features.Groups;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using ApplicationCore.Features.Groups;
 
 namespace UI.Windows.Group.ViewModels
 {

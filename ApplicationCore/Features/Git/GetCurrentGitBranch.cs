@@ -2,7 +2,6 @@
 
 namespace ApplicationCore.Features.Git;
 
-
 public class GetCurrentGitBranchQuery
 {
     public string DirectoryPath { get; set; } = "";
@@ -13,11 +12,7 @@ public interface IGetCurrentGitBranchService
     string Handle(GetCurrentGitBranchQuery query);
 }
 
-internal class GetCurrentGitBranchService
-(
-    IGitService gitService
-)
-    : IGetCurrentGitBranchService
+internal class GetCurrentGitBranchService(IGitService gitService) : IGetCurrentGitBranchService
 {
     private readonly IGitService gitService = gitService;
 
@@ -26,4 +21,3 @@ internal class GetCurrentGitBranchService
         return gitService.GetCurrentBranch(query.DirectoryPath);
     }
 }
-

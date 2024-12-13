@@ -7,19 +7,14 @@ public class GetAllGroupViewModel
     public IEnumerable<GroupViewModel> Groups { get; init; } = [];
 }
 
-public class GetAllGroupQuery
-{
-}
+public class GetAllGroupQuery { }
+
 public interface IGetAllGroupService
 {
     Task<GetAllGroupViewModel> Handle(GetAllGroupQuery query);
 }
 
-internal class GetAllGroupService
-(
-    IGroupRepository groupRepository
-)
-    : IGetAllGroupService
+internal class GetAllGroupService(IGroupRepository groupRepository) : IGetAllGroupService
 {
     private readonly IGroupRepository groupRepository = groupRepository;
 
@@ -29,12 +24,11 @@ internal class GetAllGroupService
 
         return new()
         {
-            Groups = groups.Select
-            (
-                group => new GroupViewModel() { Id = group.Id, Name = group.Name }
-            )
+            Groups = groups.Select(group => new GroupViewModel()
+            {
+                Id = group.Id,
+                Name = group.Name,
+            }),
         };
     }
 }
-
-

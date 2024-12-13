@@ -8,13 +8,12 @@ public enum NotificationType
     Error = 3,
     Information = 4,
 }
-public class NotificationMessageEventArgs
-(
+
+public class NotificationMessageEventArgs(
     string message,
     string title,
     NotificationType notificationType
-)
-    : EventArgs
+) : EventArgs
 {
     public string Message { get; } = message;
     public string Title { get; } = title;
@@ -28,7 +27,7 @@ public interface INotificationMessageService
     EventHandler<NotificationMessageEventArgs> GetEvent();
 }
 
-internal class NotificationMessageService : INotificationMessageService
+public class NotificationMessageService : INotificationMessageService
 {
     private EventHandler<NotificationMessageEventArgs>? _onNotifyOccured;
 
@@ -48,4 +47,3 @@ internal class NotificationMessageService : INotificationMessageService
         return _onNotifyOccured ?? delegate { };
     }
 }
-

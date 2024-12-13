@@ -7,11 +7,7 @@ public interface IGroupFeaturesCreator
     IGetAllGroupService CreateGetAllGroupService();
 }
 
-internal class GroupFeaturesCreator
-(
-    IGroupRepository groupRepository
-)
-    : IGroupFeaturesCreator
+internal class GroupFeaturesCreator(IGroupRepository groupRepository) : IGroupFeaturesCreator
 {
     private readonly IGroupRepository groupRepository = groupRepository;
 
@@ -20,4 +16,3 @@ internal class GroupFeaturesCreator
         return new GetAllGroupService(groupRepository);
     }
 }
-
