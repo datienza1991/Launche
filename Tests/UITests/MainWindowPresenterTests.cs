@@ -32,7 +32,7 @@ public class MainWindowPresenterTests
         );
 
         mockPresenter
-            .Setup(x => x.DeleteDevAppService!.Delete(It.IsAny<DeleteDevAppCommand>()))
+            .Setup(x => x.DeleteDevAppService!.HandleAsync(It.IsAny<DeleteDevAppCommand>()))
             .Returns(() => Task.FromResult(true));
 
         // Act
@@ -443,7 +443,7 @@ public class MainWindowPresenterTests
         );
 
         mockPresenter
-            .Setup(x => x.AddDevAppService.Add(It.IsAny<AddDevAppCommand>()))
+            .Setup(x => x.AddDevAppService.HandleAsync(It.IsAny<AddDevAppCommand>()))
             .ReturnsAsync(true);
 
         mockPresenter

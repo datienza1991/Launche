@@ -24,26 +24,14 @@ public interface INotificationMessageService
 {
     event EventHandler<NotificationMessageEventArgs>? Notify;
     void Create(string message, string title, NotificationType notificationType);
-    EventHandler<NotificationMessageEventArgs> GetEvent();
 }
 
 public class NotificationMessageService : INotificationMessageService
 {
-    private EventHandler<NotificationMessageEventArgs>? _onNotifyOccured;
-
-    public event EventHandler<NotificationMessageEventArgs>? Notify
-    {
-        add { _onNotifyOccured += value; }
-        remove { _onNotifyOccured -= value; }
-    }
+    public event EventHandler<NotificationMessageEventArgs>? Notify;
 
     public void Create(string message, string title, NotificationType notificationType)
     {
-        _onNotifyOccured!.Invoke(this, new(message, title, notificationType));
-    }
-
-    public EventHandler<NotificationMessageEventArgs> GetEvent()
-    {
-        return _onNotifyOccured ?? delegate { };
+        Notify!.Invoke(this, new(message, title, notificationType));
     }
 }

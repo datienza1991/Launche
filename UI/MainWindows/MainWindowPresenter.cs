@@ -263,7 +263,7 @@ public class MainWindowPresenter
         if (this.view.MainWindowViewModel!.SelectedIdePath!.Id == 0)
             return;
 
-        var result = await this.view.DeleteDevAppService!.Delete(
+        var result = await this.view.DeleteDevAppService!.HandleAsync(
             new() { Id = this.view.MainWindowViewModel!.SelectedIdePath!.Id }
         );
 
@@ -282,7 +282,7 @@ public class MainWindowPresenter
 
     private async void Presenter_AddNewDevAppEvent(object? sender, EventArgs e)
     {
-        var resultSave = await this.view.AddDevAppService!.Add(
+        var resultSave = await this.view.AddDevAppService!.HandleAsync(
             new() { Path = this.view.DevAppFilePath }
         );
 

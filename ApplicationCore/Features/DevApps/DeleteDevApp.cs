@@ -9,16 +9,15 @@ public class DeleteDevAppCommand
 
 public interface IDeleteDevAppService
 {
-    Task<bool> Delete(DeleteDevAppCommand command);
+    Task<bool> HandleAsync(DeleteDevAppCommand command);
 }
 
-internal class DeleteDevAppService(IDevAppRepository devAppRepository) : IDeleteDevAppService
+public class DeleteDevAppService(IDevAppRepository devAppRepository) : IDeleteDevAppService
 {
     private readonly IDevAppRepository devAppRepository = devAppRepository;
 
-    public async Task<bool> Delete(DeleteDevAppCommand command)
+    public async Task<bool> HandleAsync(DeleteDevAppCommand command)
     {
         return await devAppRepository.Delete(command.Id);
     }
 }
-
