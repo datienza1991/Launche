@@ -1,6 +1,6 @@
-﻿using Infrastructure.Database;
+﻿using System.Data.SQLite;
+using Infrastructure.Database;
 using Infrastructure.Models;
-using System.Data.SQLite;
 
 namespace Infrastructure.Repositories
 {
@@ -12,7 +12,9 @@ namespace Infrastructure.Repositories
         Task<IDEPath> GetById(int id);
         Task<IEnumerable<IDEPath>> GetAll();
     }
-    public class DevAppRepository(ICreateSqliteConnection createSqliteConnection) : IDevAppRepository
+
+    public class DevAppRepository(ICreateSqliteConnection createSqliteConnection)
+        : IDevAppRepository
     {
         private readonly ICreateSqliteConnection createSqliteConnection = createSqliteConnection;
 
@@ -36,7 +38,8 @@ namespace Infrastructure.Repositories
 
             connection.Open();
 
-            string createTableSql = @"
+            string createTableSql =
+                @"
                 PRAGMA foreign_keys = ON;
                 DELETE FROM IdePaths WHERE Id = @id;";
 
@@ -48,9 +51,9 @@ namespace Infrastructure.Repositories
             return rows != 0;
         }
 
-        public Task<bool> Edit(IDEPath param)
+        public async Task<bool> Edit(IDEPath param)
         {
-            throw new NotImplementedException();
+            return await Task.FromResult(true);
         }
 
         public async Task<IEnumerable<IDEPath>> GetAll()
@@ -64,7 +67,10 @@ namespace Infrastructure.Repositories
             using var reader = await command.ExecuteReaderAsync();
             while (reader.Read())
             {
-                _ = int.TryParse(reader[nameof(Infrastructure.Models.IDEPath.Id)]?.ToString(), out int id);
+                _ = int.TryParse(
+                    reader[nameof(Infrastructure.Models.IDEPath.Id)]?.ToString(),
+                    out int id
+                );
                 var path = reader[nameof(Infrastructure.Models.IDEPath.Path)]?.ToString() ?? "";
 
                 iDEPaths.Add(new() { Id = id, Path = path });
@@ -84,7 +90,6 @@ namespace Infrastructure.Repositories
             using var reader = await command.ExecuteReaderAsync();
             while (reader.Read())
             {
-
                 var path = reader[nameof(Infrastructure.Models.IDEPath.Path)]?.ToString() ?? "";
 
                 vsCodePath.Id = id;

@@ -19,7 +19,7 @@ public class MainWindowPresenterTests
         // Arrange
         SetupSut();
         mockPresenter
-            .Setup(x => x.GetAllDevAppService!.Handle())
+            .Setup(x => x.GetAllDevAppService!.HandleAsync())
             .Returns(() => Task.FromResult(new GetAllDevAppViewModel() { DevApps = [] }));
 
         mockPresenter.SetupProperty(
@@ -134,7 +134,7 @@ public class MainWindowPresenterTests
             }
         );
         mockPresenter
-            .Setup(x => x.AddProjectService!.AddAsync(It.IsAny<AddProjectCommand>()))
+            .Setup(x => x.AddProjectService!.HandleAsync(It.IsAny<AddProjectCommand>()))
             .ReturnsAsync(true);
         mockPresenter
             .Setup(v => v.SearchProjectService!.Handle(It.IsAny<SearchProjectQuery>()))
@@ -422,7 +422,7 @@ public class MainWindowPresenterTests
         SetupSut();
         mockPresenter.SetupProperty(x => x.MainWindowViewModel, new() { });
         mockPresenter
-            .Setup(x => x.GetAllDevAppService.Handle())
+            .Setup(x => x.GetAllDevAppService.HandleAsync())
             .ReturnsAsync(new GetAllDevAppViewModel() { DevApps = [new()] });
 
         // Act
@@ -447,7 +447,7 @@ public class MainWindowPresenterTests
             .ReturnsAsync(true);
 
         mockPresenter
-            .Setup(x => x.GetAllDevAppService.Handle())
+            .Setup(x => x.GetAllDevAppService.HandleAsync())
             .ReturnsAsync(new GetAllDevAppViewModel() { DevApps = [new()] });
 
         // Act

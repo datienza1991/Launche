@@ -109,7 +109,7 @@ public class MainWindowPresenter
     {
         if (this.view.MainWindowViewModel!.SelectedProjectPath?.Id == 0)
         {
-            var addResult = await this.view.AddProjectService.AddAsync(
+            var addResult = await this.view.AddProjectService.HandleAsync(
                 new(
                     this.view.MainWindowViewModel!.SelectedProjectPath!.Name,
                     this.view.MainWindowViewModel!.SelectedProjectPath!.Path,
@@ -269,14 +269,14 @@ public class MainWindowPresenter
 
         if (result)
         {
-            var getAllDevAppVm = await view.GetAllDevAppService!.Handle();
+            var getAllDevAppVm = await view.GetAllDevAppService!.HandleAsync();
             view.MainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
         }
     }
 
     private async void Presenter_FetchDevAppsEvent(object? sender, EventArgs e)
     {
-        var getAllDevAppVm = await view.GetAllDevAppService.Handle();
+        var getAllDevAppVm = await view.GetAllDevAppService.HandleAsync();
         view.MainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
     }
 
@@ -288,7 +288,7 @@ public class MainWindowPresenter
 
         if (resultSave)
         {
-            var getAllDevAppVm = await view.GetAllDevAppService.Handle();
+            var getAllDevAppVm = await view.GetAllDevAppService.HandleAsync();
             view.MainWindowViewModel!.IdePathsModels = [.. getAllDevAppVm.DevApps];
 
             view.MainWindowViewModel!.SelectedIdePath = new();

@@ -9,27 +9,22 @@ namespace ApplicationCore.Features.DevApps
 
     public interface IGetAllDevAppService
     {
-        Task<GetAllDevAppViewModel> Handle();
+        Task<GetAllDevAppViewModel> HandleAsync();
     }
 
     public class GetAllDevAppService(IDevAppRepository devAppRepository) : IGetAllDevAppService
     {
-        public async Task<GetAllDevAppViewModel> Handle()
+        public async Task<GetAllDevAppViewModel> HandleAsync()
         {
             var devApps = await devAppRepository.GetAll();
             return new()
             {
-                DevApps = devApps.Select
-                (
-                    devApp => new IDEPathViewModel
-                    {
-                        Id = devApp.Id,
-                        Path = devApp.Path
-                    }
-                )
+                DevApps = devApps.Select(devApp => new IDEPathViewModel
+                {
+                    Id = devApp.Id,
+                    Path = devApp.Path,
+                }),
             };
         }
-
-
     }
 }

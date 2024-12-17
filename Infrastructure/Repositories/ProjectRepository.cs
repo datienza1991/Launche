@@ -1,6 +1,6 @@
-﻿using Infrastructure.Database;
+﻿using System.Data.SQLite;
+using Infrastructure.Database;
 using Infrastructure.Models;
-using System.Data.SQLite;
 
 namespace ApplicationCore.Features.Projects;
 
@@ -14,7 +14,6 @@ public interface IProjectRepository
     Task<bool> Delete(long id);
     Task<bool> SortUp(int sortId);
     Task<bool> SortDown(int sortId);
-
 }
 
 public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) : IProjectRepository
@@ -25,10 +24,9 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
     public async Task<bool> Add(Project param)
     {
         using var connection = createSqliteConnection.Execute();
-
         connection.Open();
-
-        string createTableSql = @$"
+        string createTableSql =
+            @$"
                 PRAGMA foreign_keys = ON; 
                 INSERT INTO {TABLE}( Path , Name , IDEPathId, SortId,  Filename ) 
                     VALUES ( @path , @name , @idePath , @sortId, @fileName );
@@ -53,14 +51,15 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
 
         connection.Open();
 
-        string createTableSql = @$"PRAGMA foreign_keys = ON;
-            UPDATE {TABLE} SET  " +
-            $"Path = @path, " +
-            $"Name = @name, " +
-            $"IDEPathId = @idePathId," +
-            $"Filename = @fileName," +
-            $"GroupId = @groupId " +
-            $"WHERE Id = @id;";
+        string createTableSql =
+            @$"PRAGMA foreign_keys = ON;
+            UPDATE {TABLE} SET  "
+            + $"Path = @path, "
+            + $"Name = @name, "
+            + $"IDEPathId = @idePathId,"
+            + $"Filename = @fileName,"
+            + $"GroupId = @groupId "
+            + $"WHERE Id = @id;";
 
         using var command = new SQLiteCommand(createTableSql, connection);
 
@@ -103,10 +102,15 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
         using var reader = await command.ExecuteReaderAsync();
         while (reader.Read())
         {
-            _ = int.TryParse(reader[nameof(Infrastructure.Models.Project.Id)]?.ToString(), out int id);
+            _ = int.TryParse(
+                reader[nameof(Infrastructure.Models.Project.Id)]?.ToString(),
+                out int id
+            );
             var path = reader[nameof(Infrastructure.Models.Project.Path)]?.ToString() ?? "";
             var name = reader[nameof(Infrastructure.Models.Project.Name)]?.ToString() ?? "";
-            var idePathId = int.Parse(reader[nameof(Infrastructure.Models.Project.IDEPathId)]?.ToString() ?? "0");
+            var idePathId = int.Parse(
+                reader[nameof(Infrastructure.Models.Project.IDEPathId)]?.ToString() ?? "0"
+            );
             var filename = reader[nameof(Infrastructure.Models.Project.Filename)]?.ToString() ?? "";
 
             projectPath.Id = id;
@@ -132,13 +136,16 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
             var id = int.Parse(reader[nameof(Infrastructure.Models.Project.Id)]?.ToString() ?? "0");
             var path = reader[nameof(Infrastructure.Models.Project.Path)]?.ToString() ?? "";
             var name = reader[nameof(Infrastructure.Models.Project.Name)]?.ToString() ?? "";
-            var idePathId = reader[nameof(Infrastructure.Models.Project.IDEPathId)]?.ToString() ?? "";
+            var idePathId =
+                reader[nameof(Infrastructure.Models.Project.IDEPathId)]?.ToString() ?? "";
             var sortId = reader[nameof(Infrastructure.Models.Project.SortId)]?.ToString() ?? "";
             var fileName = reader[nameof(Infrastructure.Models.Project.Filename)]?.ToString() ?? "";
-            var isGroupId = int.TryParse(reader[nameof(Infrastructure.Models.Project.GroupId)]?.ToString(), out int groupId);
+            var isGroupId = int.TryParse(
+                reader[nameof(Infrastructure.Models.Project.GroupId)]?.ToString(),
+                out int groupId
+            );
 
-            projectPaths.Add
-            (
+            projectPaths.Add(
                 new()
                 {
                     Id = id,
@@ -166,12 +173,14 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
         using var reader = await command.ExecuteReaderAsync();
         while (reader.Read())
         {
-
             var path = reader[nameof(Project.Path)]?.ToString() ?? "";
             var name = reader[nameof(Project.Name)]?.ToString() ?? "";
             var idePathId = int.Parse(reader[nameof(Project.IDEPathId)]?.ToString() ?? "0");
             var filename = reader[nameof(Project.Filename)]?.ToString() ?? "";
-            var isGroupId = int.TryParse(reader[nameof(Infrastructure.Models.Project.GroupId)]?.ToString(), out int groupId);
+            var isGroupId = int.TryParse(
+                reader[nameof(Infrastructure.Models.Project.GroupId)]?.ToString(),
+                out int groupId
+            );
 
             projectPath.Id = id;
             projectPath.Path = path;
@@ -190,7 +199,8 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
 
         connection.Open();
 
-        string createTableSql = @$"
+        string createTableSql =
+            @$"
                 update {TABLE}
                     set SortId = @SortIdTop + @SortIdDown - SortId
                     where SortId in (@SortIdTop, @SortIdDown)";
@@ -212,7 +222,8 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
 
         connection.Open();
 
-        string createTableSql = @$"
+        string createTableSql =
+            @$"
                 update {TABLE}
                     set SortId = @SortIdTop + @SortIdDown - SortId
                     where SortId in (@SortIdTop, @SortIdDown)";
@@ -228,4 +239,3 @@ public class ProjectRepository(ICreateSqliteConnection createSqliteConnection) :
         return rows != 0;
     }
 }
-

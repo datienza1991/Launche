@@ -9,12 +9,12 @@ namespace ApplicationCore.Features.DevApps
 
     public interface IGetOneDevAppService
     {
-        Task<IDEPathViewModel> GetOneAsync(GetOneDevAppQuery query);
+        Task<IDEPathViewModel> HandleAsync(GetOneDevAppQuery query);
     }
 
     public class GetOneDevAppService(IDevAppRepository devAppRepository) : IGetOneDevAppService
     {
-        public async Task<IDEPathViewModel> GetOneAsync(GetOneDevAppQuery query)
+        public async Task<IDEPathViewModel> HandleAsync(GetOneDevAppQuery query)
         {
             var devApp = await devAppRepository.GetById(query.Id);
 

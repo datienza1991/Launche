@@ -12,7 +12,7 @@ public interface IGetCurrentGitBranchService
     string Handle(GetCurrentGitBranchQuery query);
 }
 
-internal class GetCurrentGitBranchService(IGitService gitService) : IGetCurrentGitBranchService
+public class GetCurrentGitBranchService(IGitService gitService) : IGetCurrentGitBranchService
 {
     private readonly IGitService gitService = gitService;
 
