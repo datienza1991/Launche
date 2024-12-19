@@ -42,16 +42,22 @@ namespace ApplicationCore.Features.Projects
             this.gitService = gitService;
             this.notificationMessageService = notificationMessageService;
             this.groupRepository = groupRepository;
-            this._addProjectServiceInstance ??= new AddProjectService(projectRepository, notificationMessageService);
-
+            this._addProjectServiceInstance ??= new AddProjectService(
+                projectRepository,
+                notificationMessageService
+            );
         }
 
-        public IAddProjectService AddProjectServiceInstance { get { return _addProjectServiceInstance; } }
+        public IAddProjectService AddProjectServiceInstance
+        {
+            get { return _addProjectServiceInstance; }
+        }
 
         public IEditProjectService CreateEditAddProjectService()
         {
             return new EditProjectService(projectRepository, notificationMessageService);
         }
+
         public IDeleteProjectService CreateDeleteAddProjectService()
         {
             return new DeleteProjectService(projectRepository);
@@ -59,8 +65,7 @@ namespace ApplicationCore.Features.Projects
 
         public IGetAllProjectService CreateGetAllProjectService()
         {
-            return new GetAllProjectService
-            (
+            return new GetAllProjectService(
                 projectRepository,
                 devAppRepository,
                 gitService,
@@ -90,7 +95,11 @@ namespace ApplicationCore.Features.Projects
 
         public IAddProjectToGroupService CreateAddProjectToGroupService()
         {
-            return new AddProjectToGroupService(groupRepository, projectRepository, notificationMessageService);
+            return new AddProjectToGroupService(
+                groupRepository,
+                projectRepository,
+                notificationMessageService
+            );
         }
 
         public IRemoveProjectFromGroupService CreateRemoveProjectFromGroupService()

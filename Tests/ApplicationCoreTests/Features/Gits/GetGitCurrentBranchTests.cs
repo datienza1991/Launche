@@ -18,7 +18,7 @@ public class GetGitCurrentBranchTests
         var sut = new GetCurrentGitBranchService(stubService.Object);
 
         // Act
-        var actual = sut.Handle(It.IsAny<GetCurrentGitBranchQuery>());
+        var actual = sut.Handle(new());
 
         // Assert
         Assert.Equal("Branch", actual);

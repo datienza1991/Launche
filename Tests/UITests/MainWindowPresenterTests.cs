@@ -163,7 +163,7 @@ public class MainWindowPresenterTests
             }
         );
         mockPresenter
-            .Setup(x => x.EditProjectService!.Edit(It.IsAny<EditProjectCommand>()))
+            .Setup(x => x.EditProjectService!.HandleAsync(It.IsAny<EditProjectCommand>()))
             .ReturnsAsync(true);
         mockPresenter
             .Setup(v => v.SearchProjectService!.Handle(It.IsAny<SearchProjectQuery>()))
@@ -365,7 +365,7 @@ public class MainWindowPresenterTests
             .ReturnsAsync(new SearchProjectViewModel() { Projects = [] });
 
         mockPresenter
-            .Setup(x => x.DeleteProjectService!.Delete(It.IsAny<long>()))
+            .Setup(x => x.DeleteProjectService!.HandleAsync(It.IsAny<long>()))
             .ReturnsAsync(true);
 
         // Act

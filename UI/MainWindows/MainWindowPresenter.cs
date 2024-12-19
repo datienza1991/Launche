@@ -126,7 +126,7 @@ public class MainWindowPresenter
             return;
         }
 
-        var editResult = await this.view.EditProjectService!.Edit(
+        var editResult = await this.view.EditProjectService!.HandleAsync(
             new(
                 this.view.MainWindowViewModel!.SelectedProjectPath!.Id,
                 this.view.MainWindowViewModel!.SelectedProjectPath!.Name,
@@ -231,7 +231,7 @@ public class MainWindowPresenter
             return;
         }
 
-        var result = await this.view.DeleteProjectService!.Delete(
+        var result = await this.view.DeleteProjectService!.HandleAsync(
             this.view.MainWindowViewModel!.SelectedProjectPath!.Id
         );
 

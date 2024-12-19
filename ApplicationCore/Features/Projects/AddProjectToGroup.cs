@@ -12,10 +12,10 @@ public class AddProjectToGroupCommand
 public interface IAddProjectToGroupService
 {
     event EventHandler Notify;
-    Task Handle(AddProjectToGroupCommand command);
+    Task<bool> HandleAsync(AddProjectToGroupCommand command);
 }
 
-internal class AddProjectToGroupService(
+public class AddProjectToGroupService(
     IGroupRepository groupRepository,
     IProjectRepository projectRepository,
     INotificationMessageService notificationMessageService
@@ -25,7 +25,7 @@ internal class AddProjectToGroupService(
 
     public event EventHandler? Notify;
 
-    public async Task Handle(AddProjectToGroupCommand command)
+    public async Task<bool> HandleAsync(AddProjectToGroupCommand command)
     {
         var project = await projectRepository.GetOne(command.ProjectId);
         var group = await groupRepository.GetOne(command.GroupId);
@@ -36,7 +36,7 @@ internal class AddProjectToGroupService(
                 "Add Project to Group",
                 NotificationType.Error
             );
-            return;
+            return false;
         }
 
         if (group == null)
@@ -46,7 +46,7 @@ internal class AddProjectToGroupService(
                 "Add Project to Group",
                 NotificationType.Error
             );
-            return;
+            return false;
         }
 
         project.GroupId = command.GroupId;
@@ -63,5 +63,7 @@ internal class AddProjectToGroupService(
 
             this.Notify!.Invoke(this, EventArgs.Empty);
         }
+
+        return result;
     }
 }

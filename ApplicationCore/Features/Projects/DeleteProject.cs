@@ -2,15 +2,15 @@
 
 public interface IDeleteProjectService
 {
-    Task<bool> Delete(long id);
+    Task<bool> HandleAsync(long id);
 }
-internal class DeleteProjectService(IProjectRepository projectRepository) : IDeleteProjectService
+
+public class DeleteProjectService(IProjectRepository projectRepository) : IDeleteProjectService
 {
     private readonly IProjectRepository projectRepository = projectRepository;
 
-    public async Task<bool> Delete(long id)
+    public async Task<bool> HandleAsync(long id)
     {
         return await this.projectRepository.Delete(id);
     }
 }
-

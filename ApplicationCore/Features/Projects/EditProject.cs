@@ -12,17 +12,17 @@ namespace ApplicationCore.Features.Projects
 
     public interface IEditProjectService
     {
-        Task<bool> Edit(EditProjectCommand param);
+        Task<bool> HandleAsync(EditProjectCommand param);
     }
 
-    internal class EditProjectService(
+    public class EditProjectService(
         IProjectRepository projectRepository,
         INotificationMessageService notificationMessageService
     ) : IEditProjectService
     {
         private readonly IProjectRepository projectRepository = projectRepository;
 
-        public async Task<bool> Edit(EditProjectCommand command)
+        public async Task<bool> HandleAsync(EditProjectCommand command)
         {
             var project = await projectRepository.GetOne(command.Id);
 

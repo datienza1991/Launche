@@ -1,6 +1,6 @@
-﻿using ApplicationCore.Features.Groups;
+﻿using System.Windows;
+using ApplicationCore.Features.Groups;
 using ApplicationCore.Features.Projects;
-using System.Windows;
 using UI.Windows.Group.ViewModels;
 
 namespace UI.Windows.Group;
@@ -24,8 +24,7 @@ public partial class GroupModalWindow : Window
         DataContext = dataContext;
     }
 
-    public GroupModalWindow
-    (
+    public GroupModalWindow(
         IGetAllGroupService getAllGroupService,
         IAddProjectToGroupService addProjectToGroupService,
         IRemoveProjectFromGroupService removeProjectFromGroupService
@@ -41,11 +40,12 @@ public partial class GroupModalWindow : Window
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        var getAllGroupVm = await getAllGroupService!.Handle(new()); ;
+        var getAllGroupVm = await getAllGroupService!.Handle(new());
+        ;
         dataContext.Groups = [.. getAllGroupVm.Groups];
-        this.ListBoxGroup.SelectedItem = this.ListBoxGroup.Items.SourceCollection
-                 .Cast<GroupViewModel>()
-                 .FirstOrDefault(groupViewModel => groupViewModel.Id == ProjectPath?.GroupId);
+        this.ListBoxGroup.SelectedItem = this
+            .ListBoxGroup.Items.SourceCollection.Cast<GroupViewModel>()
+            .FirstOrDefault(groupViewModel => groupViewModel.Id == ProjectPath?.GroupId);
 
         dataContext.EnableReset = ProjectPath!.EnabledGroupReset;
         dataContext.EnableSave = false;
@@ -65,7 +65,9 @@ public partial class GroupModalWindow : Window
 
         var groupId = dataContext.SelectedOption.Id;
 
-        await addProjectToGroupService!.Handle(new() { ProjectId = ProjectPath.Id, GroupId = groupId });
+        await addProjectToGroupService!.HandleAsync(
+            new() { ProjectId = ProjectPath.Id, GroupId = groupId }
+        );
 
         OnSave?.Invoke(this, EventArgs.Empty);
     }
@@ -83,9 +85,11 @@ public partial class GroupModalWindow : Window
         OnSave?.Invoke(this, EventArgs.Empty);
     }
 
-    private void ListBoxGroup_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    private void ListBoxGroup_SelectionChanged(
+        object sender,
+        System.Windows.Controls.SelectionChangedEventArgs e
+    )
     {
         dataContext.EnableSave = true;
     }
 }
-

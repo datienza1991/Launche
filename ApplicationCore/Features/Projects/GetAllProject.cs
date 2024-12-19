@@ -6,7 +6,10 @@ namespace ApplicationCore.Features.Projects;
 public class GetAllProjectViewModel
 {
     public IEnumerable<ProjectViewModel> Projects { get; init; } = [];
-    public int Count { get { return this.Projects.Count(); } }
+    public int Count
+    {
+        get { return this.Projects.Count(); }
+    }
 };
 
 public interface IGetAllProjectService
@@ -14,14 +17,12 @@ public interface IGetAllProjectService
     Task<GetAllProjectViewModel> Handle();
 }
 
-internal class GetAllProjectService
-(
+internal class GetAllProjectService(
     IProjectRepository projectRepository,
     IDevAppRepository devAppRepository,
     IGitService gitService,
     IGroupRepository groupRepository
-)
-    : IGetAllProjectService
+) : IGetAllProjectService
 {
     private readonly IProjectRepository projectRepository = projectRepository;
     private readonly IDevAppRepository devAppRepository = devAppRepository;
@@ -35,8 +36,7 @@ internal class GetAllProjectService
         var groups = await this.groupRepository.GetAll();
         return new()
         {
-            Projects = projects.Select
-            (
+            Projects = projects.Select(
                 (value, index) =>
                 {
                     var position = index + 1;
@@ -55,11 +55,11 @@ internal class GetAllProjectService
                         EnableAddToGroup = true,
                         GroupName = groups.FirstOrDefault(group => group.Id == value.GroupId)?.Name,
                         DevAppPath = devApps.First(devApp => devApp.Id == value.IDEPathId).Path,
-                        CurrentGitBranch = $"Current Git Branch: {this.gitService.GetCurrentBranch(value.Path)}"
+                        CurrentGitBranch =
+                            $"Current Git Branch: {this.gitService.GetCurrentBranch(value.Path)}",
                     };
                 }
-            )
+            ),
         };
     }
 }
-
